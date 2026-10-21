@@ -13,17 +13,16 @@
 
 | 문서 | 내용 | 상태 |
 |------|------|------|
-| [CURRENT_STACK.md](CURRENT_STACK.md) | 확정 기술 스택, 버전, 포트, 환경 변수 | 초안 (대부분 미정) |
+| [CURRENT_STACK.md](CURRENT_STACK.md) | 확정 기술 스택, 버전, 포트, 환경 변수 | 확정 (첫 구현 기준) |
+| [api-v1.md](api-v1.md) | 외부 API, 내부 API, SSE 이벤트, Continuity 리포트 형식 | 첫 구현 기준 |
 
 ## 작성 예정 (기획서 §16 "즉시 다음 단계" 기준)
 
 | 예정 문서 | 기준 절 |
 |-----------|---------|
-| OpenAPI 명세 초안 | §11 API 설계 원칙 |
 | 데이터 모델 ERD | §10 데이터 모델 초안 |
 | FastAPI 파이프라인 PoC 스펙 (Bible → Outline → Chapter 1) | §7.2, §8.3 |
 | Angular Material 테마·TipTap PoC 스펙 | §9 |
-| Docker Compose 개발 환경 스펙 | §12 |
 | 디자인 시스템 토큰 | §9.3, §9.4 |
 
 새 문서를 추가하면 위 표로 옮깁니다.

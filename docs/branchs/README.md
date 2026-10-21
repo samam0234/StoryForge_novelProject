@@ -28,6 +28,7 @@
 | `main` | 배포 기준 통합 | — | 2026-10-22 | 진행 중 |
 | `develop` | 개발 통합 | `main` | 2026-10-22 | 진행 중 |
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | 진행 중 |
+| `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | 진행 중 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 
