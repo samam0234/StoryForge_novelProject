@@ -21,11 +21,19 @@ AI가 필요한 단계만 내부망의 FastAPI(`storyforge-ai`)에 위임합니�
 | 폴더 | 내용 |
 |------|------|
 | [src/](src/) | 소스 루트 |
+| [.mvn/](.mvn/) | Maven Wrapper 설정 |
 
 ## 현재 상태
 
-폴더 구조와 README만 있습니다. 빌드 설정(Gradle/Maven), `StoryforgeApplication.java`, `application.yml`은 아직 만들지 않았습니다.
-빌드 도구와 버전은 `docs/plan/CURRENT_STACK.md`에 먼저 확정합니다.
+Spring Boot 3.5.16 + Maven Wrapper로 기초 API를 구현했습니다.
+
+- 프로젝트·Bible·Outline·챕터 CRUD, 상태 머신(`service/orchestration/`), FastAPI 호출(`client/`), 챕터 SSE 중계
+- Flyway `V1__init_schema.sql` (기획서 §10 엔티티)
+- OpenAPI: http://localhost:8080/swagger-ui.html
+- 실행 `./mvnw spring-boot:run`, 테스트 `./mvnw test`
+- 아직 없음: JWT 인증(현재 `/api/v1/**` 개방, `SecurityConfig`의 TODO), Rate Limiting, Circuit Breaker
+
+API 목록은 [docs/plan/api-v1.md](../docs/plan/api-v1.md), 실행 방법은 [docs/guidance/local-dev-setup.md](../docs/guidance/local-dev-setup.md)를 보세요.
 
 ## 관련 문서
 
