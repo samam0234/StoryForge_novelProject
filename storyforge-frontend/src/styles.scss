@@ -1,0 +1,65 @@
+// 글로벌 스타일 진입점. 토큰과 테마는 src/styles/ 에서 관리합니다.
+@use './styles/tokens';
+@use './styles/theme';
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--sf-bg);
+  color: var(--sf-text);
+  font-family: var(--sf-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.sf-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.sf-muted {
+  color: var(--sf-text-muted);
+}
+
+.sf-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sf-spacer {
+  flex: 1;
+}
+
+.sf-full {
+  width: 100%;
+}
+
+// 전체 폭 폼 필드 (Material 기본 폭 대신)
+.sf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.sf-empty {
+  border: 1px dashed var(--sf-border);
+  border-radius: var(--sf-radius);
+  padding: 32px;
+  text-align: center;
+  color: var(--sf-text-muted);
+}

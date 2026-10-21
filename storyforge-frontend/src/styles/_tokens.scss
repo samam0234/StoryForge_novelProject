@@ -1,0 +1,24 @@
+// 디자인 토큰 — 기획서 v1.2 §9.3 컬러 팔레트, §9.4 타이포그래피
+// light-dark()는 html의 color-scheme(ThemeService)에 따라 값을 고릅니다.
+:root {
+  --sf-primary: #1f4e79;
+  --sf-secondary: #2e75b6;
+  --sf-accent: #e8a838;
+
+  --sf-bg: light-dark(#f8f9fa, #121212);
+  --sf-surface: light-dark(#ffffff, #1e1e1e);
+  --sf-surface-2: light-dark(#f1f3f5, #262626);
+  --sf-text: light-dark(#1a1a1a, #e0e0e0);
+  --sf-text-muted: light-dark(#5f6368, #9aa0a6);
+  --sf-border: light-dark(#dde1e6, #333333);
+
+  // 다크 배경에서 딥 블루 대비가 낮아 Secondary로 강조합니다.
+  --sf-emphasis: light-dark(var(--sf-primary), var(--sf-secondary));
+
+  --sf-severity-high: light-dark(#c62828, #ef9a9a);
+  --sf-severity-medium: light-dark(#b26a00, #e8a838);
+  --sf-severity-low: light-dark(#5f6368, #9aa0a6);
+
+  --sf-font: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  --sf-radius: 10px;
+}
