@@ -26,10 +26,11 @@
 | 브랜치 | 목적 | 분기 원본 | 생성일 | 상태 |
 |--------|------|-----------|--------|------|
 | `main` | 배포 기준 통합 (GitHub 기본 브랜치) | — | 2026-10-22 | 진행 중 |
-| `develop` | 개발 통합 | `main` | 2026-10-22 | 진행 중 |
+| `develop` | 개발 통합 | `main` | 2026-10-22 | main 병합 |
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
 | `feature/merge-records` | 병합 커밋 기록 | `develop` | 2026-10-22 | develop 병합 |
+| `feature/merge-records-main` | main 병합 기록 | `develop` | 2026-10-22 | develop 병합 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 
@@ -39,6 +40,7 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-10-22 03:51 | `ba40a40` | merge: develop into main (no-ff) | `main` | [기록](commits/261022_0351_ba40a40_merge-develop-into-main_main.md) |
 | 2026-10-22 03:50 | `0af0fe0` | merge: feature/web-foundation into develop (no-ff) | `develop` | [기록](commits/261022_0350_0af0fe0_merge-web-foundation_develop.md) |
 | 2026-10-22 03:50 | `7ee5019` | merge: feature/project-scaffold into develop (no-ff) | `develop` | [기록](commits/261022_0350_7ee5019_merge-project-scaffold_develop.md) |
 | 2026-10-22 03:44 | `7059f16` | docs(docs): 첫 구현에 맞춰 스택·API·아키텍처 문서 갱신 | `feature/web-foundation` | [기록](commits/261022_0344_7059f16_web-foundation-docs_feature-web-foundation.md) |
