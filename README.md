@@ -30,7 +30,9 @@ StoryForge/
 ├── docs/                       # 스펙, 아키텍처, 커밋 기록, 가이드 등
 ├── storyforge-frontend/        # Angular SPA
 ├── storyforge-backend/         # Spring Boot Orchestrator
-└── storyforge-ai/              # FastAPI AI Service (내부망 전용)
+├── storyforge-ai/              # FastAPI AI Service (내부망 전용)
+├── docker-compose.yml          # 개발용 PostgreSQL
+└── .env.example                # 환경 변수 키 목록 (.env는 커밋 금지)
 ```
 
 모든 폴더에는 그 폴더를 소개하는 `README.md`가 있습니다.
@@ -55,8 +57,10 @@ Angular는 FastAPI를 직접 호출하지 않습니다. 모든 요청은 Spring 
 
 ## 현재 상태
 
-- **뼈대 단계**: 기획서 §8의 폴더 구조와 폴더별 README만 있습니다.
-- 각 서비스의 프레임워크 초기화(Angular CLI, Spring Initializr, Python 패키지 설정)는 아직 하지 않았습니다.
+- **기초 구현 단계**: Story Bible → Outline → 챕터 순차 생성(스트리밍) → Continuity 리포트 → 승인까지 웹에서 동작합니다.
+- AI는 기본적으로 키 없이 동작하는 `mock` 공급자를 쓰고, `LLM_PROVIDER=anthropic`으로 Claude를 연결합니다.
+- 아직 없음: 인증(JWT), TipTap 에디터, 내보내기, 버전 히스토리. 상태 머신의 임시 전이는 [확인 대기](docs/Architecture/pipeline-state-machine.md) 중입니다.
+- 실행 방법: [docs/guidance/local-dev-setup.md](docs/guidance/local-dev-setup.md)
 - 버전·포트·인프라 확정값은 [docs/plan/CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)에서 관리합니다.
 
 ## 작업 흐름 요약

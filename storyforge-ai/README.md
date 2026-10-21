@@ -20,11 +20,18 @@ StoryForge의 **FastAPI AI Service**입니다. 프롬프트 조립, LLM 스트�
 | 폴더 | 내용 |
 |------|------|
 | [app/](app/) | 애플리케이션 패키지 |
+| [tests/](tests/) | 테스트 (mock 공급자) |
 
 ## 현재 상태
 
-폴더 구조와 README만 있습니다. 패키지 설정(`pyproject.toml` 등)과 `app/main.py`는 아직 만들지 않았습니다.
-Python 버전과 패키지 관리 도구는 `docs/plan/CURRENT_STACK.md`에 먼저 확정합니다.
+FastAPI + anthropic SDK로 기초 AI 파이프라인을 구현했습니다.
+
+- `LLM_PROVIDER=mock`(기본): API 키 없이 동작하는 개발용 생성기. 생성물에 mock 표시가 붙습니다
+- `LLM_PROVIDER=anthropic`: Claude `claude-opus-5-5`, 서버 측 refusal fallback, effort 명시
+- 챕터: 토큰 스트리밍 → 요약 → Continuity 검증(규칙 기반 + LLM) → `done`
+- 실행 `.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`, 테스트 `pytest` ([tests/](tests/))
+
+의존성은 `requirements.txt`(실행), `requirements-dev.txt`(테스트)에 있습니다. 실행 방법은 [docs/guidance/local-dev-setup.md](../docs/guidance/local-dev-setup.md)를 보세요.
 
 ## 관련 문서
 

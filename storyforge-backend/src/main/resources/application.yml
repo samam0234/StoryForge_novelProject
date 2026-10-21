@@ -1,0 +1,34 @@
+# 값의 기준은 docs/plan/CURRENT_STACK.md. 실제 값은 환경 변수로 주입합니다.
+server:
+  port: ${BACKEND_PORT:8080}
+
+spring:
+  application:
+    name: storyforge-backend
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/storyforge}
+    username: ${DB_USER:storyforge}
+    password: ${DB_PASSWORD:storyforge}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  mvc:
+    async:
+      # 챕터 생성 SSE 중계 (기획서 §4: P95 < 90초)
+      request-timeout: 180s
+
+storyforge:
+  ai:
+    base-url: ${AI_SERVICE_URL:http://localhost:8000}
+    timeout: 180s
+  cors:
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

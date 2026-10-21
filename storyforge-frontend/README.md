@@ -21,11 +21,23 @@ StoryForge의 **Angular 18+ SPA**입니다. 사용자 화면, 리치 텍스트 �
 | 폴더 | 내용 |
 |------|------|
 | [src/](src/) | 앱 소스 루트 |
+| [public/](public/) | 그대로 복사되는 정적 파일 (favicon) |
 
 ## 현재 상태
 
-폴더 구조와 README만 있습니다. Angular CLI 초기화(`package.json`, `angular.json`, `src/main.ts`, `app.routes.ts` 등)는 아직 하지 않았습니다.
-초기화할 때 버전을 `docs/plan/CURRENT_STACK.md`에 먼저 확정합니다.
+Angular 21.2 + Angular Material로 기초 화면을 구현했습니다.
+
+| 화면 | 경로 | 내용 |
+|------|------|------|
+| 대시보드 | `/` | 프로젝트 카드 그리드, 진행률, 새 프로젝트 |
+| Story Bible | `/projects/:id/bible` | AI 생성, Overview/Characters/World/Themes 탭 편집, 확정 |
+| Outline | `/projects/:id/outline` | AI 생성, 드래그 앤 드롭 재배치, Beats 편집, 확정 |
+| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, Continuity 리포트, 승인·재생성 |
+
+- 개발 서버: `npx ng serve` (http://localhost:4200, `/api`는 `proxy.conf.json`으로 백엔드에 전달)
+- 아직 없음: 인증(JWT) 화면, TipTap 에디터(현재 textarea), 내보내기, 프로젝트 설정 화면
+
+실행 방법은 [docs/guidance/local-dev-setup.md](../docs/guidance/local-dev-setup.md)를 보세요.
 
 ## 관련 문서
 

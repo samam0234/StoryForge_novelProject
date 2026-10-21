@@ -1,0 +1,10 @@
+<story_bible>
+세계관: {{ bible.world_setting or "(없음)" }}
+테마: {{ bible.theme or "(없음)" }}
+톤: {{ bible.tone or "(없음)" }}
+캐릭터:
+{% for c in bible.characters %}
+- {{ c.name }}: {{ c.description or "" }} / 성격: {{ c.personality or "" }} / 관계: {{ c.relationships or "" }}{% if c.current_state %} / 현재 상태: {{ c.current_state }}{% endif %}
+
+{% endfor %}
+</story_bible>
