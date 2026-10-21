@@ -1,0 +1,38 @@
+@use '@angular/material' as mat;
+
+// Angular Material 커스텀 테마 (기획서 §9.2). color-scheme에 따라 light/dark가 바뀝니다.
+html {
+  color-scheme: dark;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$orange-palette,
+        theme-type: color-scheme,
+      ),
+      typography: (
+        plain-family: var(--sf-font),
+        brand-family: var(--sf-font),
+      ),
+      density: 0,
+    )
+  );
+
+  @include mat.theme-overrides(
+    (
+      primary: light-dark(#1f4e79, #8fbcea),
+      on-primary: light-dark(#ffffff, #0b2a45),
+      primary-container: light-dark(#d3e4f5, #1f4e79),
+      on-primary-container: light-dark(#0b2a45, #d3e4f5),
+      tertiary: #e8a838,
+      on-tertiary: #2b1d00,
+      surface: light-dark(#ffffff, #1e1e1e),
+      on-surface: light-dark(#1a1a1a, #e0e0e0),
+      surface-container: light-dark(#f1f3f5, #262626),
+      surface-container-low: light-dark(#f8f9fa, #1a1a1a),
+      surface-container-high: light-dark(#e9ecef, #2c2c2c),
+      outline-variant: light-dark(#dde1e6, #333333),
+    )
+  );
+}

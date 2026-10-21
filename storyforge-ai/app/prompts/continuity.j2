@@ -1,0 +1,28 @@
+새로 쓴 챕터가 기존 설정과 맞는지 검증하세요.
+
+{% include "_bible_context.j2" %}
+
+<previous_chapters>
+{% for p in previous_chapters %}
+{{ p.number }}장: {{ p.summary or "" }}
+{% else %}
+(첫 챕터입니다)
+{% endfor %}
+</previous_chapters>
+
+<outline_for_this_chapter>
+Beats: {{ outline.beats | join(" / ") }}
+연속성 포인트: {{ outline.continuity_points | join(" / ") }}
+</outline_for_this_chapter>
+
+<new_chapter>
+{{ content }}
+</new_chapter>
+
+다음 네 가지 유형의 문제만 찾습니다. 문제가 없으면 빈 목록을 반환합니다.
+- setting_conflict: 세계관 규칙이나 설정과 충돌
+- character_consistency: 캐릭터 성격·관계·상태와 맞지 않는 행동 (OOC)
+- timeline: 이전 챕터와 시간 순서·인과가 맞지 않음
+- plot_thread: Outline의 Beats나 연속성 포인트를 빠뜨리거나 어김
+severity는 독자가 바로 알아챌 모순이면 high, 어색하지만 설명 가능하면 medium, 사소하면 low입니다.
+description에는 본문의 어느 부분이 어떤 설정과 어긋나는지 구체적으로 적습니다.

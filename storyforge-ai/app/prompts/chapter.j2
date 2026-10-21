@@ -1,0 +1,28 @@
+「{{ project.title }}」 {{ chapter_number }}장을 쓰세요.
+
+{% include "_bible_context.j2" %}
+
+<previous_chapters>
+{% for p in previous_chapters %}
+{{ p.number }}장 {{ p.title or "" }}: {{ p.summary or "" }}
+{% else %}
+(첫 챕터입니다)
+{% endfor %}
+</previous_chapters>
+
+<this_chapter>
+제목: {{ outline.title }}
+주요 Beats:
+{% for b in outline.beats %}
+- {{ b }}
+{% endfor %}
+등장 캐릭터: {{ outline.characters | join(", ") }}
+긴장/감정 목표: {{ outline.goals or "" }}
+연속성 포인트: {{ outline.continuity_points | join(" / ") }}
+</this_chapter>
+
+규칙:
+- 위 Beats를 순서대로 모두 다룹니다. 이전 챕터 요약과 모순되는 사건을 만들지 않습니다.
+- 캐릭터는 Story Bible의 성격과 관계에 맞게 행동합니다.
+- 분량은 4,000~6,000자입니다.
+- 챕터 제목이나 머리말 없이 본문만 씁니다.

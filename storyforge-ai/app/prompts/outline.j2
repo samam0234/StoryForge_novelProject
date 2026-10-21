@@ -1,0 +1,18 @@
+아래 Story Bible로 {{ chapter_count }}장 분량의 Outline을 만드세요.
+
+<project>
+제목: {{ project.title }}
+장르: {{ project.genre or "미정" }}
+</project>
+
+{% include "_bible_context.j2" %}
+
+각 챕터마다 다음을 작성합니다.
+- order: 1부터 순서대로
+- title: 챕터 제목
+- beats: 이 챕터에서 일어나는 주요 사건 3~5개 (시간 순서)
+- characters: 등장 캐릭터 이름 (Story Bible의 이름을 그대로 사용)
+- goals: 이 챕터의 긴장/감정 목표
+- continuity_points: 이후 챕터가 이어받아야 할 사실 (복선, 상태 변화, 약속 등)
+
+전체가 하나의 완결된 이야기 흐름(도입-전개-위기-절정-결말)을 이루게 합니다.
