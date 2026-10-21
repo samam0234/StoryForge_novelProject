@@ -37,4 +37,5 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
-| | | | | |
+| 2026-10-22 03:14 | `1bd8e86` | chore(docs): 프로젝트 뼈대와 문서 규칙 구성 | `feature/project-scaffold` | [기록](commits/261022_0314_1bd8e86_project-scaffold_feature-project-scaffold.md) |
+| 2026-10-22 03:13 | `63740e1` | chore(repo): 저장소 초기화 | `main` | [기록](commits/261022_0313_63740e1_repo-init_main.md) |
