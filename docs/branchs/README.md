@@ -38,5 +38,9 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-10-22 03:44 | `7059f16` | docs(docs): 첫 구현에 맞춰 스택·API·아키텍처 문서 갱신 | `feature/web-foundation` | [기록](commits/261022_0344_7059f16_web-foundation-docs_feature-web-foundation.md) |
+| 2026-10-22 03:44 | `fc3cbb9` | feat(ai): FastAPI AI 파이프라인 기초 구현 | `feature/web-foundation` | [기록](commits/261022_0344_fc3cbb9_web-foundation-ai_feature-web-foundation.md) |
+| 2026-10-22 03:44 | `5349f0a` | feat(api): Spring Boot 기초 API와 파이프라인 상태 머신 구현 | `feature/web-foundation` | [기록](commits/261022_0344_5349f0a_web-foundation-backend_feature-web-foundation.md) |
+| 2026-10-22 03:43 | `c21d882` | feat(web): Angular 기초 화면 구현 | `feature/web-foundation` | [기록](commits/261022_0343_c21d882_web-foundation-frontend_feature-web-foundation.md) |
 | 2026-10-22 03:14 | `1bd8e86` | chore(docs): 프로젝트 뼈대와 문서 규칙 구성 | `feature/project-scaffold` | [기록](commits/261022_0314_1bd8e86_project-scaffold_feature-project-scaffold.md) |
 | 2026-10-22 03:13 | `63740e1` | chore(repo): 저장소 초기화 | `main` | [기록](commits/261022_0313_63740e1_repo-init_main.md) |
