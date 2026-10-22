@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -38,7 +39,7 @@ public class ChapterService {
     }
 
     public Chapter load(Long chapterId) {
-        return chapters.findById(chapterId)
+        return chapters.findById(Objects.requireNonNull(chapterId))
                 .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + chapterId));
     }
 

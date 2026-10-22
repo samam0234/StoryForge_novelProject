@@ -2,6 +2,14 @@
 
 프로젝트 **목록 조회와 신규 생성** 화면입니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `project-shell.page.ts` | 프로젝트 상단(제목, 파이프라인 단계) + Bible/Outline/챕터 탭 |
+| `project-context.ts` | 프로젝트·상태 신호를 하위 화면과 공유 (화면 단위 provider) |
+| `project-create.dialog.ts` | 새 프로젝트 입력 다이얼로그 |
+
 ## 들어갈 것
 
 - 프로젝트 목록, 생성 폼 (`POST /api/v1/projects`)

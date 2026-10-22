@@ -2,6 +2,12 @@
 
 **챕터**의 저장, 요약 보관, Continuity 리포트 보관을 맡습니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `ChapterService.java` | 챕터 Draft 저장, Continuity 리포트 저장, 수정 |
+
 ## 들어갈 것
 
 - Chapter CRUD, 상태(DRAFT/CONFIRMED) 저장

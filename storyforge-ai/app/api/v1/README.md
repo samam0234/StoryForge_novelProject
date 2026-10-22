@@ -2,11 +2,20 @@
 
 **v1 내부 라우터**입니다. 요청을 검증하고 `services/`의 생성기·검증기를 호출합니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `__init__.py` | `/internal/generate` prefix 라우터 묶음 |
+| `bible.py` | `POST /internal/generate/bible` |
+| `outline.py` | `POST /internal/generate/outline` |
+| `chapter.py` | `POST /internal/generate/chapter` — SSE (token → done | error) |
+
 ## 들어갈 것
 
-- `bible.py` — Story Bible 생성 (예정)
-- `outline.py` — Outline 생성 (예정)
-- `chapter.py` — 챕터 생성 + Continuity 결과 반환 (예정)
+- `bible.py` — Story Bible 생성
+- `outline.py` — Outline 생성
+- `chapter.py` — 챕터 생성 + Continuity 결과 반환
 - Spring Boot가 호출하는 경로 (예: `POST /internal/generate/chapter`, §7.2)
 
 ## 들어가지 않을 것

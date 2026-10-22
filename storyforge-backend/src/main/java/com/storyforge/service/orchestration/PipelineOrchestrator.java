@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.storyforge.client.AiDtos.*;
 import com.storyforge.client.AiServiceClient;
 import com.storyforge.domain.bible.BibleDtos.BibleResponse;
-import com.storyforge.domain.bible.BibleDtos.CharacterDto;
 import com.storyforge.domain.bible.BibleDtos.UpdateBibleRequest;
 import com.storyforge.domain.bible.Character;
 import com.storyforge.domain.bible.StoryBible;
@@ -28,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -35,6 +35,7 @@ import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.storyforge.domain.project.ProjectStatus.*;
@@ -74,13 +75,13 @@ public class PipelineOrchestrator {
     // ───────────── Story Bible ─────────────
 
     public BibleResponse generateBible(Long projectId, String prompt) {
-        ProjectInfo info = tx.execute(s -> {
+        ProjectInfo info = inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, BIBLE_DRAFT);
             return projectInfo(p);
         });
         BibleGenerateResponse generated = ai.generateBible(new BibleGenerateRequest(info, prompt));
-        return tx.execute(s -> {
+        return inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, BIBLE_DRAFT);
             List<Character> characters = generated.characters().stream()
@@ -93,11 +94,11 @@ public class PipelineOrchestrator {
     }
 
     public BibleResponse updateBible(Long projectId, UpdateBibleRequest request) {
-        return tx.execute(s -> {
+        return inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, BIBLE_DRAFT);
             List<Character> characters = request.characters() == null ? List.of()
-                    : request.characters().stream().map(CharacterDto::toEntity).toList();
+                    : request.characters().stream().map(c -> c.toEntity()).toList();
             return BibleResponse.from(bibleService.replace(p, request.worldSetting(), request.theme(),
                     request.tone(), characters));
         });
@@ -114,13 +115,13 @@ public class PipelineOrchestrator {
     // ───────────── Outline ─────────────
 
     public OutlineResponse generateOutline(Long projectId, int chapterCount) {
-        OutlineGenerateRequest request = tx.execute(s -> {
+        OutlineGenerateRequest request = inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, BIBLE_CONFIRMED, OUTLINE_DRAFT);
             return new OutlineGenerateRequest(projectInfo(p), bibleInfo(bibleService.get(projectId)), chapterCount);
         });
         OutlineGenerateResponse generated = ai.generateOutline(request);
-        return tx.execute(s -> {
+        return inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, BIBLE_CONFIRMED, OUTLINE_DRAFT);
             Outline outline = outlineService.replace(p, generated.chapters());
@@ -132,7 +133,7 @@ public class PipelineOrchestrator {
     }
 
     public OutlineResponse updateOutline(Long projectId, List<OutlineChapter> chapters) {
-        return tx.execute(s -> {
+        return inTx(s -> {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, OUTLINE_DRAFT);
             p.touch();
@@ -160,18 +161,23 @@ public class PipelineOrchestrator {
      * 이전 챕터가 모두 확정되어야 다음 챕터를 생성할 수 있습니다 (CHAPTER_REVIEW를 건너뛰지 않음).
      */
     public Flux<ServerSentEvent<Object>> generateChapter(Long projectId, int number) {
-        Prepared prepared = tx.execute(s -> prepareChapter(projectId, number));
+        Prepared prepared = inTx(s -> prepareChapter(projectId, number));
         AtomicBoolean finished = new AtomicBoolean(false);
 
         return ai.generateChapter(prepared.context())
-                .concatMap(event -> switch (event.event() == null ? "" : event.event()) {
-                    case "token" -> Mono.just(sse("token", Map.of("text", event.data() == null ? "" : event.data())));
-                    case "done" -> Mono.fromCallable(() -> completeChapter(prepared, event.data()))
-                            .subscribeOn(Schedulers.boundedElastic())
-                            .doOnSuccess(r -> finished.set(true))
-                            .map(r -> sse("done", r));
-                    case "error" -> Mono.error(new AiServiceException("AI 서비스 오류: " + event.data(), null));
-                    default -> Mono.empty();
+                .concatMap(event -> {
+                    String type = Objects.requireNonNullElse(event.event(), "");
+                    String data = Objects.requireNonNullElse(event.data(), "");
+                    return switch (type) {
+                        case "token" -> Mono.just(sse("token", Map.of("text", data)));
+                        case "done" -> Mono.fromCallable(() -> completeChapter(prepared, data))
+                                .subscribeOn(Schedulers.boundedElastic())
+                                .doOnSuccess(r -> finished.set(true))
+                                .map(r -> sse("done", r));
+                        case "error" -> Mono.<ServerSentEvent<Object>>error(
+                                new AiServiceException("AI 서비스 오류: " + data, null));
+                        default -> Mono.<ServerSentEvent<Object>>empty();
+                    };
                 })
                 .onErrorResume(e -> {
                     log.warn("chapter generation failed: project={}, chapter={}", projectId, number, e);
@@ -212,7 +218,7 @@ public class PipelineOrchestrator {
         ChapterGenerateResult result = objectMapper.readValue(doneJson, ChapterGenerateResult.class);
         Map<String, Object> contextMap = objectMapper.convertValue(prepared.context(), new TypeReference<>() {
         });
-        return tx.execute(s -> {
+        return inTx(s -> {
             Project p = projectService.load(prepared.projectId());
             ContinuityResult report = result.report() == null ? new ContinuityResult(List.of(), 0) : result.report();
             Chapter chapter = chapterService.saveDraft(p, prepared.number(), result.title(), result.content(),
@@ -238,7 +244,7 @@ public class PipelineOrchestrator {
 
     /** 사용자 승인 (기획서 §7.2 6단계). 마지막 챕터면 COMPLETED. */
     public ChapterResponse confirmChapter(Long chapterId) {
-        return tx.execute(s -> {
+        return inTx(s -> {
             Chapter chapter = chapterService.load(chapterId);
             Project p = chapter.getProject();
             stateMachine.requireIn(p, CHAPTER_REVIEW);
@@ -260,6 +266,11 @@ public class PipelineOrchestrator {
 
     // ───────────── helpers ─────────────
 
+    /** TransactionTemplate.execute는 null을 반환할 수 있으므로 결과가 비면 바로 실패시킵니다. */
+    private <T> T inTx(TransactionCallback<T> action) {
+        return Objects.requireNonNull(tx.execute(Objects.requireNonNull(action)), "트랜잭션 결과가 비어 있습니다.");
+    }
+
     private static ProjectInfo projectInfo(Project p) {
         return new ProjectInfo(p.getTitle(), p.getGenre());
     }
@@ -273,7 +284,7 @@ public class PipelineOrchestrator {
     }
 
     private static ServerSentEvent<Object> sse(String event, Object data) {
-        return ServerSentEvent.builder(data).event(event).build();
+        return ServerSentEvent.builder(Objects.requireNonNull(data)).event(Objects.requireNonNull(event)).build();
     }
 
     private static String userMessage(Throwable e) {

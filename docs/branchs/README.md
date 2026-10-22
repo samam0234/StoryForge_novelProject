@@ -31,6 +31,8 @@
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
 | `feature/merge-records` | 병합 커밋 기록 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/merge-records-main` | main 병합 기록 | `develop` | 2026-10-22 | develop 병합 |
+| `feature/diagnostics-readme` | VS Code 경고 정리, README 실행 가이드 개편 | `develop` | 2026-10-23 | develop 병합 |
+| `feature/merge-records-diagnostics` | diagnostics-readme 병합 기록 | `develop` | 2026-10-23 | develop 병합 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 
@@ -40,6 +42,9 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-10-23 00:22 | `285f83e` | merge: feature/diagnostics-readme into develop (no-ff) | `develop` | [기록](commits/261023_0022_285f83e_merge-diagnostics-readme_develop.md) |
+| 2026-10-23 00:11 | `d4f2e85` | docs(docs): 서비스 README를 실행 방법 중심으로 개편 | `feature/diagnostics-readme` | [기록](commits/261023_0011_d4f2e85_readme-run-guides_feature-diagnostics-readme.md) |
+| 2026-10-23 00:11 | `ff57fb9` | fix(api): VS Code null 안전성 경고와 Spring 힌트 정리 | `feature/diagnostics-readme` | [기록](commits/261023_0011_ff57fb9_fix-null-safety-warnings_feature-diagnostics-readme.md) |
 | 2026-10-22 03:51 | `ba40a40` | merge: develop into main (no-ff) | `main` | [기록](commits/261022_0351_ba40a40_merge-develop-into-main_main.md) |
 | 2026-10-22 03:50 | `0af0fe0` | merge: feature/web-foundation into develop (no-ff) | `develop` | [기록](commits/261022_0350_0af0fe0_merge-web-foundation_develop.md) |
 | 2026-10-22 03:50 | `7ee5019` | merge: feature/project-scaffold into develop (no-ff) | `develop` | [기록](commits/261022_0350_7ee5019_merge-project-scaffold_develop.md) |

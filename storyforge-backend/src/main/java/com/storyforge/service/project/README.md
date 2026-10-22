@@ -2,6 +2,13 @@
 
 **프로젝트** 생성·조회·수정·삭제와 진행률 계산을 맡습니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `ProjectService.java` | 프로젝트 CRUD, 진행률·다음 챕터 번호 계산 |
+| `OutlineService.java` | Outline 저장·조회 (order 재번호) |
+
 ## 들어갈 것
 
 - 프로젝트 CRUD
