@@ -2,6 +2,15 @@
 
 **예외 타입과 전역 예외 처리기**를 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `GlobalExceptionHandler.java` | 예외 → ProblemDetail (404, 409, 400, 502) |
+| `NotFoundException.java` | 404 |
+| `InvalidStateException.java` | 409 (현재 상태에서 불가) |
+| `AiServiceException.java` | 502 (AI 서비스 장애) |
+
 ## 들어갈 것
 
 - 도메인 예외, 전역 예외 핸들러, 표준 에러 응답

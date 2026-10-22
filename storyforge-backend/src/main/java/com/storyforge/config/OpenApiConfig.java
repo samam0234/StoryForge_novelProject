@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI storyforgeOpenApi() {
+    OpenAPI storyforgeOpenApi() {
         return new OpenAPI().info(new Info()
                 .title("StoryForge API")
                 .version("v1")

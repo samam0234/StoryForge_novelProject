@@ -2,6 +2,14 @@
 
 **Security, Web, OpenAPI, WebClient** 설정 클래스를 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `SecurityConfig.java` | CORS, 무상태 세션, 경로별 허용 (인증 도입 전 `/api/v1/**` 개방) |
+| `WebClientConfig.java` | FastAPI용 WebClient (연결 5초, 응답 타임아웃) |
+| `OpenApiConfig.java` | OpenAPI 문서 정보 |
+
 ## 들어갈 것
 
 - Spring Security (JWT 필터, 인가 규칙)

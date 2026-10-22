@@ -2,6 +2,12 @@
 
 **Story Bible과 캐릭터**의 저장, 버전 관리, 조회를 맡습니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `BibleService.java` | Bible·캐릭터 전체 교체 저장, 버전 증가 |
+
 ## 들어갈 것
 
 - Bible·Character CRUD

@@ -2,6 +2,15 @@
 
 외부에 노출되는 **REST Controller**입니다. 모든 경로는 `/api/v1/` 아래에 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `ProjectController.java` | `/projects`, `/projects/{id}`, `/projects/{id}/status` |
+| `BibleController.java` | `/projects/{id}/bible` 조회·저장·생성·확정 |
+| `OutlineController.java` | `/projects/{id}/outline` 조회·저장·생성·확정 |
+| `ChapterController.java` | 챕터 목록, 생성(SSE), 조회·수정·승인 |
+
 ## 들어갈 것
 
 - 기획서 §11 주요 엔드포인트:

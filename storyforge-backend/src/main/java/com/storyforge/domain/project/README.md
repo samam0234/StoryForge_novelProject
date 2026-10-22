@@ -2,6 +2,15 @@
 
 **Project** 엔티티와 관련 DTO·Repository입니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `Project.java` | 엔티티 |
+| `ProjectStatus.java` | 파이프라인 상태 enum |
+| `ProjectRepository.java` | 리포지토리 |
+| `ProjectDtos.java` | 요청·응답 record |
+
 ## 들어갈 것
 
 - Project: id, title, genre, status, ownerId, createdAt, updatedAt (§10)

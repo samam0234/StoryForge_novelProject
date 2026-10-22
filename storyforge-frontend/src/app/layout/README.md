@@ -2,6 +2,13 @@
 
 헤더, 사이드바 등 **앱 공통 레이아웃**을 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `shell.component.ts` | 툴바 + 사이드 내비게이션 + 본문 `router-outlet` |
+| `theme.service.ts` | Light/Dark 토글 (기본 dark, 선택값 localStorage 저장) |
+
 ## 들어갈 것
 
 - 헤더, 사이드 내비게이션, 페이지 셸

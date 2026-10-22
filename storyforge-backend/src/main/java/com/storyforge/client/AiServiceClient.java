@@ -11,6 +11,7 @@ import org.springframework.web.reactive.function.client.WebClientException;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * 내부망 FastAPI AI Service 호출. 백엔드에서 FastAPI로 가는 호출은 모두 여기를 거칩니다.
@@ -43,9 +44,9 @@ public class AiServiceClient {
         return webClient.post()
                 .uri("/internal/generate/chapter")
                 .accept(MediaType.TEXT_EVENT_STREAM)
-                .bodyValue(context)
+                .bodyValue(Objects.requireNonNull(context))
                 .retrieve()
-                .bodyToFlux(SSE_TYPE)
+                .bodyToFlux(Objects.requireNonNull(SSE_TYPE))
                 .timeout(timeout)
                 .onErrorMap(e -> !(e instanceof AiServiceException),
                         e -> new AiServiceException("AI 서비스 챕터 생성 실패: " + e.getMessage(), e));
@@ -53,7 +54,12 @@ public class AiServiceClient {
 
     private <T> T post(String uri, Object body, Class<T> type) {
         try {
-            T result = webClient.post().uri(uri).bodyValue(body).retrieve().bodyToMono(type).block(timeout);
+            T result = webClient.post()
+                    .uri(Objects.requireNonNull(uri))
+                    .bodyValue(Objects.requireNonNull(body))
+                    .retrieve()
+                    .bodyToMono(Objects.requireNonNull(type))
+                    .block(timeout);
             if (result == null) {
                 throw new AiServiceException("AI 서비스 응답이 비어 있습니다: " + uri, null);
             }

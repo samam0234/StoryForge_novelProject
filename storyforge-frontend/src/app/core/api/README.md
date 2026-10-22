@@ -2,6 +2,13 @@
 
 Spring Boot API(`/api/v1/`)를 호출하는 **HTTP 클라이언트 래퍼**입니다. 화면 코드는 `HttpClient`를 직접 쓰지 않고 이 래퍼를 씁니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `storyforge-api.service.ts` | `/api/v1` REST 래퍼 + `errorMessage()` (ProblemDetail → 사용자 메시지) |
+| `chapter-stream.service.ts` | 챕터 생성 SSE를 `fetch` 스트림으로 읽어 token/done/error 이벤트로 변환 |
+
 ## 들어갈 것
 
 - REST 호출 래퍼 (기본 URL은 `environments/`에서)

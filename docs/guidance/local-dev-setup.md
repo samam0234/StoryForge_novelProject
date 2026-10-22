@@ -68,4 +68,5 @@ cd storyforge-frontend && npx ng build
 
 - 백엔드가 `Connection refused ... 5433`으로 멈춤 → `docker compose ps`로 DB가 `healthy`인지 확인
 - 챕터 생성 시 "챕터 생성에 실패했습니다" → AI 서비스(8000)가 떠 있는지 확인. 실패하면 상태는 생성 전으로 되돌아갑니다
+- `health`가 JSON 대신 HTML을 돌려주거나 `Port ... already in use` → 다른 프로그램이 포트를 쓰고 있습니다. [../repeater/local-port-conflicts.md](../repeater/local-port-conflicts.md)
 - 그 밖의 문제는 [../find_debug/](../find_debug/), 환경 문제는 [../repeater/](../repeater/)에 기록합니다

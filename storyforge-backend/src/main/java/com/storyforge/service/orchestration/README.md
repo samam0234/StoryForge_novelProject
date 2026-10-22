@@ -2,6 +2,13 @@
 
 **파이프라인 상태 머신과 오케스트레이션**을 맡는 핵심 패키지입니다. 프로젝트 상태 전이는 여기서만 일어납니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `PipelineStateMachine.java` | 상태 전이 표 (기획서 전이 `DEFINED` / 임시 전이 `PROVISIONAL`) |
+| `PipelineOrchestrator.java` | Bible·Outline·챕터 단계 실행, 컨텍스트 조립, 실패 시 상태 복귀 |
+
 ## 들어갈 것
 
 - 상태 머신: `BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED → CHAPTER_GENERATING → CHAPTER_REVIEW → COMPLETED`

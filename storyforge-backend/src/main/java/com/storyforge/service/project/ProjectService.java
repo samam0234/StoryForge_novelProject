@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @Transactional(readOnly = true)
@@ -55,11 +56,11 @@ public class ProjectService {
 
     @Transactional
     public void delete(Long id) {
-        projects.delete(load(id));
+        projects.delete(Objects.requireNonNull(load(id)));
     }
 
     public Project load(Long id) {
-        return projects.findById(id).orElseThrow(() -> new NotFoundException("프로젝트를 찾을 수 없습니다: " + id));
+        return projects.findById(Objects.requireNonNull(id)).orElseThrow(() -> new NotFoundException("프로젝트를 찾을 수 없습니다: " + id));
     }
 
     private int totalChapters(Long projectId) {

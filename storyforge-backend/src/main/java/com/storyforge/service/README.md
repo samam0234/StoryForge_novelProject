@@ -22,7 +22,7 @@
 | [project/](project/) | 프로젝트 서비스 |
 
 > 기획서 §8.2의 `service/` 아래에는 `outline/` 패키지가 없습니다 (`orchestration`, `project`, `bible`, `chapter`만 있음).
-> Outline 비즈니스 로직을 어디에 둘지는 구현 전에 확인합니다. 임의로 패키지를 추가하지 않았습니다.
+> 임의로 패키지를 추가하지 않고, 현재 Outline 저장·조회는 `project/OutlineService.java`에 두었습니다 (위치 확인 대기).
 
 ## 관련 문서
 

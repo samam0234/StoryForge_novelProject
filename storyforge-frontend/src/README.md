@@ -2,6 +2,14 @@
 
 Angular 앱의 소스 루트입니다. 앱 코드(`app/`), 정적 리소스, 환경 설정, 글로벌 스타일로 나뉩니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `main.ts` | 앱 부트스트랩 |
+| `index.html` | HTML 셸. Pretendard, Material Icons 폰트 로드 |
+| `styles.scss` | 글로벌 스타일 진입점 (`styles/` 토큰·테마 불러옴) |
+
 ## 들어갈 것
 
 - `main.ts`, `index.html` 등 진입 파일 (CLI 초기화 시 생성)

@@ -8,17 +8,19 @@ import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
+import java.util.Objects;
+
 @Configuration
 public class WebClientConfig {
 
     @Bean
-    public WebClient aiWebClient(WebClient.Builder builder, AiServiceProperties properties) {
+    WebClient aiWebClient(WebClient.Builder builder, AiServiceProperties properties) {
         HttpClient httpClient = HttpClient.create()
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5_000)
                 .responseTimeout(properties.timeout());
         return builder
-                .baseUrl(properties.baseUrl())
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl(Objects.requireNonNull(properties.baseUrl(), "storyforge.ai.base-url 설정이 필요합니다."))
+                .clientConnector(new ReactorClientHttpConnector(Objects.requireNonNull(httpClient)))
                 .codecs(c -> c.defaultCodecs().maxInMemorySize(4 * 1024 * 1024))
                 .build();
     }

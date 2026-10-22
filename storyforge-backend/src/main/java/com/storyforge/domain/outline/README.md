@@ -2,6 +2,15 @@
 
 **Outline** 엔티티와 관련 DTO·Repository입니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `Outline.java` | 엔티티 (`chapters` JSONB) |
+| `OutlineChapter.java` | 챕터 한 칸 record |
+| `OutlineRepository.java` | 리포지토리 |
+| `OutlineDtos.java` | 요청·응답 record |
+
 ## 들어갈 것
 
 - Outline: projectId, chapters[] (order, title, beats, characters, goals, continuityPoints) (§10)

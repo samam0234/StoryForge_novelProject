@@ -2,6 +2,18 @@
 
 **Chapter** 엔티티와 관련 DTO·Repository입니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `Chapter.java` | 엔티티 |
+| `ChapterStatus.java` | DRAFT / CONFIRMED |
+| `ContinuityReport.java` | 엔티티 (`issues` JSONB) |
+| `ContinuityIssue.java` | 이슈 record |
+| `ChapterRepository.java` | 리포지토리 |
+| `ContinuityReportRepository.java` | 리포지토리 |
+| `ChapterDtos.java` | 요청·응답 record |
+
 ## 들어갈 것
 
 - Chapter: projectId, number, title, content, status (DRAFT/CONFIRMED), summary, generationContext, createdAt (§10)

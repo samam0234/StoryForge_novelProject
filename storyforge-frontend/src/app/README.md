@@ -2,9 +2,17 @@
 
 애플리케이션 코드가 들어가는 폴더입니다. 역할에 따라 `core`, `shared`, `features`, `layout`으로 나눕니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `app.ts` | 루트 컴포넌트. `sf-shell` 레이아웃만 렌더링 |
+| `app.config.ts` | Router(컴포넌트 입력 바인딩), HttpClient(fetch) 등록 |
+| `app.routes.ts` | 최상위 라우트: `/`, `/projects/:projectId/{bible,outline,chapters}` (지연 로딩) |
+
 ## 들어갈 것
 
-- `app.routes.ts` — 최상위 라우트 정의 (예정)
+- `app.routes.ts` — 최상위 라우트 정의
 - `app.config.ts`, 루트 컴포넌트 (CLI 초기화 시 생성)
 
 ## 들어가지 않을 것

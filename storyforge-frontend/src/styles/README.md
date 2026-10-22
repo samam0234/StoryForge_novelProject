@@ -2,6 +2,13 @@
 
 **글로벌 스타일과 Light/Dark 테마**를 둡니다. Angular Material 커스텀 테마도 여기서 정의합니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `_tokens.scss` | 디자인 토큰 (`--sf-*` CSS 변수, `light-dark()`) |
+| `_theme.scss` | Angular Material 테마와 시스템 토큰 오버라이드 |
+
 ## 들어갈 것
 
 - 디자인 토큰 (색상, 타이포, 간격)
