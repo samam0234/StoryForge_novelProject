@@ -2,6 +2,16 @@
 
 **AI 파이프라인 단계별 서비스**를 둡니다. 프롬프트에 컨텍스트를 주입하고 LLM을 호출합니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `bible_generator.py` | Story Bible 생성 |
+| `outline_generator.py` | Outline 생성, order 재번호 |
+| `chapter_generator.py` | 본문 스트리밍 → 요약 → Continuity 검증 → 결과 |
+| `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
+| `mock_writer.py` | `LLM_PROVIDER=mock`용 결정적 생성기 (mock 표시 포함) |
+
 ## 들어갈 것
 
 - `bible_generator.py` — Story Bible 초기 생성 (§6.1)

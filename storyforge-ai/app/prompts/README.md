@@ -2,6 +2,19 @@
 
 **프롬프트 템플릿** 파일(`.txt` 또는 Jinja)을 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `__init__.py` | `render(name, **context)` — Jinja2 로더 (`StrictUndefined`) |
+| `system.j2` | 공통 시스템 프롬프트 |
+| `_bible_context.j2` | Story Bible 블록 (include용) |
+| `bible.j2` | Bible 생성 |
+| `outline.j2` | Outline 생성 |
+| `chapter.j2` | 챕터 본문 |
+| `summary.j2` | 다음 챕터용 요약 |
+| `continuity.j2` | Continuity 검증 |
+
 ## 들어갈 것
 
 - 단계별 템플릿 (Bible, Outline, Chapter, Continuity)

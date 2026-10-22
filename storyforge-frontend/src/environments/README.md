@@ -2,6 +2,12 @@
 
 개발/운영 등 **환경별 설정**을 둡니다. 주로 Spring Boot API의 기본 URL입니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `environment.ts` | `apiBaseUrl: '/api/v1'` (개발 서버는 프록시로 백엔드 연결) |
+
 ## 들어갈 것
 
 - `environment.ts` 등 환경 파일 (CLI 초기화 시 생성)

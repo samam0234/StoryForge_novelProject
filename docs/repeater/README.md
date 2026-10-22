@@ -36,4 +36,4 @@
 
 | 문서 | 환경 | 요약 |
 |------|------|------|
-| (아직 없음) | | |
+| [local-port-conflicts.md](local-port-conflicts.md) | Windows 로컬 개발 | 5432·8000·8080 포트 충돌, 남은 백엔드 JVM |

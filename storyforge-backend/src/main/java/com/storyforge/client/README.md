@@ -2,6 +2,14 @@
 
 내부망의 **FastAPI AI Service를 호출하는 WebClient 클라이언트**입니다. 백엔드에서 FastAPI로 가는 호출은 모두 여기를 거칩니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `AiServiceClient.java` | FastAPI 호출 (Bible·Outline 동기, 챕터 SSE) |
+| `AiDtos.java` | 내부 계약 record — `storyforge-ai/app/models/schemas.py`와 짝 |
+| `AiServiceProperties.java` | `storyforge.ai.*` 설정 |
+
 ## 들어갈 것
 
 - 내부 엔드포인트 호출 (예: `POST /internal/generate/chapter`, §7.2)

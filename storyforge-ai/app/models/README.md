@@ -2,6 +2,12 @@
 
 요청·응답을 정의하는 **Pydantic v2 스키마**를 둡니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `schemas.py` | Pydantic 스키마 (JSON은 camelCase alias) |
+
 ## 들어갈 것
 
 - Spring Boot가 보내는 컨텍스트 패키지 스키마

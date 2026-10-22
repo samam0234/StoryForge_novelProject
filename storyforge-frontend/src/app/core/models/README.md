@@ -2,6 +2,12 @@
 
 API 응답과 화면이 공유하는 **TypeScript 타입**을 둡니다. 기획서 §10 엔티티를 기준으로 합니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `models.ts` | 엔티티 타입, `ProjectStatus`, `PIPELINE_STAGES` |
+
 ## 들어갈 것
 
 - `Project`, `StoryBible`, `Character`, `Outline`, `Chapter`, `ContinuityReport` (§10)

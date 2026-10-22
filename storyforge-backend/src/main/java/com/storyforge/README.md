@@ -2,9 +2,15 @@
 
 백엔드의 **루트 패키지**입니다. 기획서 §8.2의 계층 구조를 따릅니다.
 
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `StoryforgeApplication.java` | 애플리케이션 진입점 (`@ConfigurationPropertiesScan`) |
+
 ## 들어갈 것
 
-- `StoryforgeApplication.java` — 애플리케이션 진입점 (예정)
+- `StoryforgeApplication.java` — 애플리케이션 진입점
 
 ## 들어가지 않을 것
 
