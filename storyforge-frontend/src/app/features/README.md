@@ -10,7 +10,7 @@
 | | `project-context.ts` | 프로젝트·상태 신호를 하위 화면과 공유 | |
 | | `project-settings.page.ts` | 제목, 장르, 모델, 기본 톤, 내보내기 형식, 삭제 (`.../settings`) | §9.6-5 |
 | | `project-create.dialog.ts` | 새 프로젝트 입력 (장편·단편) | |
-| | `project-activity.page.ts` | 작업 기록 (`.../activity`) | |
+| | `project-activity.page.ts` | 작업 기록, 함께 쓰기, 작업 커밋 (`.../activity`) | |
 | | `project-publish.page.ts` | 게시 (`.../publish`) | |
 | | `project-upstream.page.ts` | Clone 원본 비교 (`.../upstream`) | |
 | `story-bible/` | `story-bible.page.ts` | AI 생성, Overview/Characters/World/Themes 편집, 이력 비교, 확정 (`.../bible`) | §6.1, §9.6-2 |
@@ -19,7 +19,7 @@
 | `board/` | `board.page.ts` | 롱품, 숏품, 패키지포지 게시판 (`/board/:kind`) | |
 | | `work-detail.page.ts` | 작품 읽기, 세계관, 작업 그래프, 공유 그래프, Clone 네트워크, 이력, 댓글, 패키지 구성 (`/works/:id`) | |
 | | `clone.dialog.ts`, `share.dialog.ts`, `comment-thread.component.ts` | Clone 범위, 공유 링크, 댓글 | |
-| `lounge/` | `create.page.ts`, `post-detail.page.ts`, `post-edit.dialog.ts` | 창작하기와 창작 라운지 (`/create`, `/posts/:id`) | |
+| `lounge/` | `create.page.ts`, `post-detail.page.ts`, `post-edit.dialog.ts` | 창작하기, 함께 창작 초대, 창작 라운지 (`/create`, `/posts/:id`) | |
 | `issues/` | `issues.page.ts` | 달성 축하, 인기작, 새 작품 (`/issues`) | |
 | `packages/` | `package-forge.page.ts` | 패키지 생성·편집 (`/package-forge[/:id]`) | |
 | `profile/` | `profile.page.ts` | 프로필, 활동 잔디, 업적 (`/users/:id`) | |

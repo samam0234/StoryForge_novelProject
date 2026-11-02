@@ -116,6 +116,9 @@ type Sort = 'recent' | 'title' | 'progress';
                   @if (p.workId) {
                     <a class="sf-badge published" [routerLink]="['/works', p.workId]"><mat-icon inline>public</mat-icon> 게시됨</a>
                   }
+                  @if (p.role === 'COLLABORATOR') {
+                    <span class="sf-badge">함께 쓰는 중</span>
+                  }
                   @if (p.clonedFromTitle) {
                     <span class="sf-muted origin"><mat-icon inline>call_split</mat-icon> {{ p.clonedFromTitle }} ({{ modeLabel(p.cloneMode) }})</span>
                   }

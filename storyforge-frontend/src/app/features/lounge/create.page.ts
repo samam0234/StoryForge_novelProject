@@ -13,7 +13,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CommunityApi } from '../../core/api/community-api.service';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { GENRES, POST_CATEGORIES, PostCard, PostCategory, labelOf } from '../../core/models/community';
+import { Collaborator, GENRES, POST_CATEGORIES, PostCard, PostCategory, labelOf } from '../../core/models/community';
 import { ProjectForm } from '../../core/models/models';
 import { UserChipComponent } from '../../shared/components/user-chip/user-chip.component';
 import { ProjectCreateDialog } from '../projects/project-create.dialog';
@@ -67,6 +67,29 @@ import { PostEditDialog } from './post-edit.dialog';
           <button type="button" class="genre" (click)="start('LONG', g)">{{ g }}</button>
         }
       </div>
+
+      </div>
+
+      @if (auth.isLoggedIn()) {
+        <h2>함께 창작</h2>
+        <p class="sf-muted">다른 사람과 쓰고 있는 작품을 공유하려면 프로젝트의 작업 기록에서 이메일로 초대합니다. 수락한 사람들만 원고를 보고, 작업 커밋으로 고친 구간을 글로 남깁니다.</p>
+        @if (!invitations().length) {
+          <p class="sf-muted">받은 초대가 없습니다.</p>
+        } @else {
+          <ul class="invites">
+            @for (item of invitations(); track item.id) {
+              <li>
+                <a [routerLink]="['/projects', item.projectId]">{{ item.projectTitle }}</a>
+                <span class="sf-badge">{{ item.status === 'ACCEPTED' ? '참여 중' : '수락 대기' }}</span>
+                @if (item.status === 'PENDING') {
+                  <button mat-flat-button type="button" (click)="accept(item)">수락</button>
+                  <button mat-button type="button" (click)="decline(item)">거절</button>
+                }
+              </li>
+            }
+          </ul>
+        }
+      }
 
       <div class="sf-row lounge-head">
         <h2>창작 라운지</h2>
@@ -188,6 +211,20 @@ import { PostEditDialog } from './post-edit.dialog';
     .genre:hover {
       border-color: var(--sf-secondary);
     }
+    .invites {
+      list-style: none;
+      margin: 0 0 8px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .invites li {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
     .filters {
       margin-bottom: 12px;
     }
@@ -223,7 +260,7 @@ import { PostEditDialog } from './post-edit.dialog';
 export class CreatePage {
   private readonly api = inject(CommunityApi);
   private readonly projects = inject(StoryforgeApi);
-  private readonly auth = inject(AuthService);
+  protected readonly auth = inject(AuthService);
   private readonly dialog = inject(MatDialog);
   private readonly router = inject(Router);
   private readonly snack = inject(MatSnackBar);
@@ -236,6 +273,7 @@ export class CreatePage {
   protected readonly category = signal<PostCategory | 'ALL'>('ALL');
   protected readonly query = signal('');
   protected readonly error = signal<string | null>(null);
+  protected readonly invitations = signal<Collaborator[]>([]);
   private readonly reload = signal(0);
   protected q = '';
 
@@ -252,6 +290,30 @@ export class CreatePage {
           },
           error: (e) => this.error.set(errorMessage(e)),
         });
+    });
+    effect(() => {
+      if (!this.auth.isLoggedIn()) {
+        this.invitations.set([]);
+        return;
+      }
+      this.api.invitations().subscribe((rows) => this.invitations.set(rows));
+    });
+  }
+
+  protected accept(item: Collaborator): void {
+    this.api.acceptInvitation(item.id).subscribe({
+      next: () => {
+        this.invitations.update((rows) => rows.map((row) => (row.id === item.id ? { ...row, status: 'ACCEPTED' } : row)));
+        this.snack.open('초대를 수락했습니다. 이제 그 프로젝트에서 함께 쓸 수 있습니다.', '닫기', { duration: 4000 });
+      },
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
+    });
+  }
+
+  protected decline(item: Collaborator): void {
+    this.api.declineInvitation(item.id).subscribe({
+      next: () => this.invitations.update((rows) => rows.filter((row) => row.id !== item.id)),
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
     });
   }
 

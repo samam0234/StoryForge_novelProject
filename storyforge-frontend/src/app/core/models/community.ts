@@ -377,6 +377,31 @@ export interface Contributions {
   days: ContributionDay[];
 }
 
+export type CommitTarget = 'BIBLE' | 'OUTLINE' | 'CHAPTER';
+
+export interface Collaborator {
+  id: number;
+  projectId: number;
+  projectTitle: string;
+  user: UserSummary;
+  status: 'PENDING' | 'ACCEPTED';
+  createdAt: string;
+}
+
+export interface WorkCommit {
+  id: number;
+  projectId: number;
+  author: UserSummary;
+  parentId: number | null;
+  message: string;
+  target: CommitTarget;
+  chapterNumber: number | null;
+  startOffset: number | null;
+  endOffset: number | null;
+  quote: string | null;
+  createdAt: string;
+}
+
 export interface Achievement {
   code: string;
   name: string;

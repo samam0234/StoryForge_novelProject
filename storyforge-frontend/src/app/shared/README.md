@@ -9,7 +9,8 @@
 | `pipeline-stepper/` | 프로젝트의 현재 파이프라인 단계를 7단계 칩으로 표시 (기획서 §9.1 "단계적 진행 가시화"). 입력: `status` |
 | `rich-text-editor/` | TipTap 에디터. 입력 `value`·`editable`, 출력 `valueChange`. **입출력은 Markdown** ([저장 형식 결정](../../../../docs/trainings/2026-11-02_chapter-content-markdown.md)) |
 | `user-chip/`, `work-card/` | 유저 아바타·이름, 작품 카드 |
-| `work-graph/` | 작업 그래프: 수동·에이전트 비율, 날짜별 막대, 기록 표. 막대를 누르면 그날 작업만 |
+| `work-graph/` | 작업 그래프: 수동·에이전트 비율, 날짜별 막대, 기록 표, git 형식 작업 기록표. 막대는 그날 작업, 점은 기록 문단 |
+| `commit-graph/` | 참여자 작업 커밋 기록표. 점을 누르면 메시지와 표시 구간 |
 | `share-graph/` | 공유 그래프: 유저 → 채널 연결과 표 |
 | `clone-network/` | 원작 → 파생작 트리와 Clone 기록 |
 | `package-map/` | 패키지 작품 연결 지도 |
