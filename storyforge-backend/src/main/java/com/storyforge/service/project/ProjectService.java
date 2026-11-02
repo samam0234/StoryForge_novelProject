@@ -31,13 +31,13 @@ public class ProjectService {
     }
 
     @Transactional
-    public ProjectResponse create(CreateProjectRequest request) {
-        Project project = projects.save(new Project(request.title().trim(), request.genre()));
+    public ProjectResponse create(CreateProjectRequest request, Long ownerId) {
+        Project project = projects.save(new Project(request.title().trim(), request.genre(), ownerId));
         return toResponse(project);
     }
 
-    public List<ProjectResponse> list() {
-        return projects.findAllByOrderByUpdatedAtDesc().stream().map(this::toResponse).toList();
+    public List<ProjectResponse> list(Long ownerId) {
+        return projects.findByOwnerIdOrderByUpdatedAtDesc(ownerId).stream().map(this::toResponse).toList();
     }
 
     public ProjectResponse get(Long id) {

@@ -16,6 +16,7 @@
 
 | 폴더 | 내용 |
 |------|------|
+| [auth/](auth/) | 가입·로그인·JWT 발급 |
 | [bible/](bible/) | Story Bible 서비스 |
 | [chapter/](chapter/) | 챕터 서비스 |
 | [orchestration/](orchestration/) | 파이프라인 오케스트레이션 & 상태 머신 |

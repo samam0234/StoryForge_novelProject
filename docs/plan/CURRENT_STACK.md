@@ -42,6 +42,8 @@
 | `BACKEND_PORT` | backend | `8080` | |
 | `AI_SERVICE_URL` | backend | `http://localhost:8001` | 백엔드만 사용. 프론트에 넣지 않음 |
 | `FRONTEND_ORIGIN` | backend | `http://localhost:4200` | CORS 허용 출처 |
+| `JWT_SECRET` | backend | (없음) | 32바이트 이상. 비우면 시작할 때 무작위 생성(재시작하면 로그인 풀림). **운영에서는 필수** |
+| `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
 | `LLM_PROVIDER` | ai | `mock` | `mock` / `anthropic` |
 | `LLM_MODEL` | ai | `claude-opus-5-5` | |
 | `LLM_EFFORT` | ai | `medium` | Claude Opus 5.5 기본값과 같게 명시 |
@@ -66,4 +68,5 @@
 |------|------|-----------|
 | 2026-10-22 | 초안 작성 (기획서 기준값만 기록, 확정값 미정) | — |
 | 2026-10-22 | 첫 구현에 맞춰 버전·포트·환경 변수 확정 | `feature/web-foundation` 커밋 기록 참고 |
+| 2026-11-02 | JWT 인증 환경 변수 추가 | [auth.md](auth.md) |
 | 2026-11-02 | Spring Boot 4.1.2 전환, AI 기본 포트 8001 | [roadmap-progress.md](roadmap-progress.md) |

@@ -42,7 +42,7 @@ cd storyforge-backend
 |------|-------------|-----------|
 | 상태 | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | API 문서 | http://localhost:8080/swagger-ui.html | Swagger UI |
-| 프로젝트 목록 | `curl http://localhost:8080/api/v1/projects` | `[]` 또는 프로젝트 배열 |
+| 인증 확인 | `curl -i http://localhost:8080/api/v1/projects` | 토큰이 없으면 `401` |
 
 ### 명령어
 
@@ -65,6 +65,8 @@ cd storyforge-backend
 | `DB_USER` / `DB_PASSWORD` | `storyforge` / `storyforge` | 개발용. 운영에서는 반드시 바꿉니다 |
 | `AI_SERVICE_URL` | `http://localhost:8001` | FastAPI 주소 (내부망) |
 | `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
+| `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
+| `JWT_TTL` | `12h` | 토큰 유효 기간 |
 
 예: `DB_PASSWORD=secret BACKEND_PORT=9090 ./mvnw spring-boot:run`
 
@@ -76,12 +78,14 @@ cd storyforge-backend
 
 | 단계 | 요청 | 허용 상태 |
 |------|------|-----------|
+| 가입 / 로그인 | `POST /api/v1/auth/register`, `POST /api/v1/auth/login` | 토큰 불필요 |
 | 프로젝트 생성 | `POST /api/v1/projects` | — |
 | Bible 생성 / 저장 / 확정 | `POST .../bible/generate`, `PUT .../bible`, `PUT .../bible/confirm` | `BIBLE_DRAFT` |
 | Outline 생성 / 저장 / 확정 | `POST .../outline/generate`, `PUT .../outline`, `PUT .../outline/confirm` | `BIBLE_CONFIRMED`, `OUTLINE_DRAFT` |
 | 챕터 생성 (SSE) | `POST .../chapters/{num}/generate` | `OUTLINE_CONFIRMED`, `CHAPTER_REVIEW` |
 | 챕터 승인 | `PUT /api/v1/chapters/{id}/confirm` | `CHAPTER_REVIEW` |
 
+- 나머지 API는 모두 `Authorization: Bearer <토큰>`이 필요합니다. 없으면 **401**, 다른 사용자의 리소스는 **404**입니다 ([auth.md](../docs/plan/auth.md)).
 - 허용되지 않는 상태에서 요청하면 **409**, AI 서비스 장애는 **502**입니다.
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
@@ -97,10 +101,10 @@ storyforge-backend/
     │   ├── controller/           # REST (/api/v1)
     │   ├── service/
     │   │   ├── orchestration/    # 상태 머신, 파이프라인 실행
-    │   │   ├── project/ bible/ chapter/
-    │   ├── domain/               # Entity, DTO, Repository (project, bible, outline, chapter)
+    │   │   ├── auth/ project/ bible/ chapter/
+    │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter)
     │   ├── client/               # FastAPI WebClient + 내부 계약(AiDtos)
-    │   ├── config/               # Security, WebClient, OpenAPI
+    │   ├── config/               # Security, JWT, 소유자 검사, WebClient, OpenAPI
     │   └── exception/            # ProblemDetail 변환
     ├── main/resources/
     │   ├── application.yml
@@ -119,7 +123,6 @@ storyforge-backend/
 
 ## 아직 없는 것
 
-- JWT 인증 — 현재 `/api/v1/**`가 열려 있습니다 ([SecurityConfig](src/main/java/com/storyforge/config/SecurityConfig.java)의 TODO)
 - Rate Limiting, Circuit Breaker (기획서 §13, §15)
 - 생성 도중 서버가 종료됐을 때 `CHAPTER_GENERATING` 상태 복구
 

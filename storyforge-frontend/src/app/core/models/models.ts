@@ -28,6 +28,19 @@ export function stageLabel(status: ProjectStatus): string {
   return PIPELINE_STAGES[stageIndex(status)]?.label ?? status;
 }
 
+export interface User {
+  id: number;
+  email: string;
+  displayName: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  tokenType: string;
+  expiresAt: string;
+  user: User;
+}
+
 export interface Project {
   id: number;
   title: string;

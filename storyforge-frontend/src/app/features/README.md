@@ -15,6 +15,7 @@
 
 | 폴더 | 내용 |
 |------|------|
+| [auth/](auth/) | 로그인·회원가입 |
 | [chapters/](chapters/) | 챕터 워크스페이스 |
 | [dashboard/](dashboard/) | 프로젝트 대시보드 |
 | [outline/](outline/) | Outline 관리 |

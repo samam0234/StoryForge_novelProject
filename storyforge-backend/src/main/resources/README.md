@@ -6,7 +6,7 @@ Spring Boot **설정 파일과 리소스**를 둡니다.
 
 | 파일 | 내용 |
 |------|------|
-| `application.yml` | 포트, DB, AI 주소, CORS (모두 환경 변수로 덮어쓰기 가능) |
+| `application.yml` | 포트, DB, AI 주소, CORS, JWT (모두 환경 변수로 덮어쓰기 가능) |
 
 ## 들어갈 것
 

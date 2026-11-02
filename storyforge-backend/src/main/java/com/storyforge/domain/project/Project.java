@@ -21,7 +21,7 @@ public class Project {
     @Column(nullable = false)
     private ProjectStatus status;
 
-    /** 인증 도입 전까지 비어 있습니다. */
+    /** 소유자. 인증 도입 전 데이터만 비어 있습니다. */
     private Long ownerId;
 
     @Column(nullable = false)
@@ -33,9 +33,10 @@ public class Project {
     protected Project() {
     }
 
-    public Project(String title, String genre) {
+    public Project(String title, String genre, Long ownerId) {
         this.title = title;
         this.genre = genre;
+        this.ownerId = ownerId;
         this.status = ProjectStatus.BIBLE_DRAFT;
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;

@@ -12,4 +12,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     Optional<Chapter> findByProjectIdAndNumber(Long projectId, int number);
 
     int countByProjectIdAndStatus(Long projectId, ChapterStatus status);
+
+    boolean existsByIdAndProjectOwnerId(Long id, Long ownerId);
 }

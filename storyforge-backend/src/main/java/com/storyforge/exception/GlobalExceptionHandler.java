@@ -18,6 +18,11 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ProblemDetail authenticationFailed(AuthenticationFailedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
     @ExceptionHandler(InvalidStateException.class)
     public ProblemDetail invalidState(InvalidStateException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());

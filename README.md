@@ -57,11 +57,11 @@ npx ng serve
 | AI 서비스 | `curl http://127.0.0.1:8001/health` | `{"status":"ok","provider":"mock",...}` |
 | 백엔드 | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | API 문서 | http://localhost:8080/swagger-ui.html | Swagger UI |
-| 웹 화면 | http://localhost:4200 | 다크 테마 대시보드 |
+| 웹 화면 | http://localhost:4200 | 로그인 화면 (회원가입 후 대시보드) |
 
 `health`가 JSON이 아니거나 포트 사용 중 오류가 나면 [local-port-conflicts.md](docs/repeater/local-port-conflicts.md)를 보세요.
 
-화면에서 **새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
+화면에서 **회원가입 → 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
 
 ### 4. 실제 Claude로 생성하기
 
@@ -116,8 +116,8 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 | 상태 | 항목 |
 |------|------|
-| ✅ 동작 | 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), Continuity 리포트, 사용자 승인, 다크/라이트 테마 |
-| ⏳ 미구현 | 인증(JWT — 현재 API 개방), TipTap 에디터(현재 textarea), 내보내기, 버전 히스토리·Diff |
+| ✅ 동작 | JWT 인증(가입·로그인·소유자 검사), 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), Continuity 리포트, 사용자 승인, 다크/라이트 테마 |
+| ⏳ 미구현 | TipTap 에디터(현재 textarea), 내보내기, 버전 히스토리·Diff |
 
 ## 저장소 구조
 

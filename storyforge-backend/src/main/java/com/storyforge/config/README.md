@@ -6,7 +6,9 @@
 
 | 파일 | 내용 |
 |------|------|
-| `SecurityConfig.java` | CORS, 무상태 세션, 경로별 허용 (인증 도입 전 `/api/v1/**` 개방) |
+| `SecurityConfig.java` | JWT 리소스 서버, CORS, 무상태 세션, 경로별 허용, 401 ProblemDetail |
+| `JwtConfig.java`, `JwtProperties.java` | HS256 키, 인코더·디코더, BCrypt |
+| `OwnershipInterceptor.java`, `WebMvcConfig.java` | 경로 변수 `{projectId}`, `{chapterId}` 소유자 일괄 검사 |
 | `WebClientConfig.java` | FastAPI용 WebClient (연결 5초, 응답 타임아웃) |
 | `OpenApiConfig.java` | OpenAPI 문서 정보 |
 

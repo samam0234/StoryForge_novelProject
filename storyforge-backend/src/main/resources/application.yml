@@ -26,6 +26,10 @@ storyforge:
     timeout: 180s
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
+  jwt:
+    # 비우면 시작할 때 무작위 키를 만듭니다. 운영에서는 반드시 지정 (docs/plan/auth.md)
+    secret: ${JWT_SECRET:}
+    ttl: ${JWT_TTL:12h}
 
 management:
   endpoints:

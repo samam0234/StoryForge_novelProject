@@ -58,6 +58,7 @@ npx ng serve          # 또는 npm start
 
 | 화면 | 경로 | 주요 기능 | 기획서 |
 |------|------|-----------|--------|
+| 로그인·가입 | `/login` | 이메일·비밀번호, 성공하면 원래 가려던 화면으로 | 기획서 §7.1 |
 | 대시보드 | `/` | 프로젝트 카드 그리드, 진행률, 새 프로젝트 | §9.6-1 |
 | Story Bible | `/projects/:id/bible` | AI 생성, Overview/Characters/World/Themes 탭 편집, 확정 | §6.1, §9.6-2 |
 | Outline | `/projects/:id/outline` | AI 생성, 드래그 앤 드롭 재배치, Beats 편집, 확정 | §6.2, §9.6-3 |
@@ -83,9 +84,9 @@ storyforge-frontend/
     ├── environments/      # apiBaseUrl
     ├── styles/            # 디자인 토큰, Material 테마
     └── app/
-        ├── core/          # api(REST·SSE 래퍼), models(타입), auth(예정)
+        ├── core/          # api(REST·SSE 래퍼), models(타입), auth(세션·인터셉터·가드)
         ├── shared/        # 공통 컴포넌트 (pipeline-stepper)
-        ├── features/      # dashboard, projects, story-bible, outline, chapters
+        ├── features/      # auth, dashboard, projects, story-bible, outline, chapters
         └── layout/        # 셸, 테마 서비스
 ```
 
@@ -100,7 +101,6 @@ storyforge-frontend/
 
 ## 아직 없는 것
 
-- 인증(JWT) 화면 — 백엔드 인증 도입과 함께 `core/auth/`에 추가
 - TipTap 에디터 (기획서 §9.2) — 현재 챕터 본문은 textarea
 - 내보내기, 프로젝트 설정 화면 (§9.6-5)
 

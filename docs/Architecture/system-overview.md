@@ -82,6 +82,10 @@ sequenceDiagram
 > 다이어그램은 §7.2의 번호 순서를 그대로 옮긴 것입니다. 스트리밍 중계의 실제 시점(생성 중 실시간 중계인지)은 구현 스펙에서 확정합니다.
 > 승인 엔드포인트는 §11의 `PUT /api/v1/chapters/{id}/confirm`을 사용했습니다.
 
+## 인증 (2026-11-02)
+
+`/api/v1/**`는 JWT가 필요합니다. 토큰 검증은 Spring Security가, 프로젝트·챕터 소유자 검사는 `OwnershipInterceptor`가 합니다. FastAPI는 기존대로 내부 전용이라 인증을 하지 않습니다. 자세한 내용은 [../plan/auth.md](../plan/auth.md)를 보세요.
+
 ## 구현 메모 (2026-10-22)
 
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)

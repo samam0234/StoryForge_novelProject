@@ -6,6 +6,7 @@
 
 | 파일 | 내용 |
 |------|------|
+| `AuthController.java` | `/auth/register`, `/auth/login`, `/auth/me` |
 | `ProjectController.java` | `/projects`, `/projects/{id}`, `/projects/{id}/status` |
 | `BibleController.java` | `/projects/{id}/bible` 조회·저장·생성·확정 |
 | `OutlineController.java` | `/projects/{id}/outline` 조회·저장·생성·확정 |

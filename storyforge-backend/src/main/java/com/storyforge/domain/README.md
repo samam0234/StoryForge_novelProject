@@ -14,6 +14,7 @@
 
 | 폴더 | 내용 |
 |------|------|
+| [user/](user/) | 사용자 도메인 |
 | [bible/](bible/) | Story Bible 도메인 |
 | [chapter/](chapter/) | Chapter 도메인 |
 | [outline/](outline/) | Outline 도메인 |
