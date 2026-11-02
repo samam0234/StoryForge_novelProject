@@ -151,3 +151,4 @@ storyforge-ai/
 - [docs/novel/](../docs/novel/) — 프롬프트 작성 규칙, Continuity 규칙
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md), [docs/plan/CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)
+- 보안: [../SECURITY.md](../SECURITY.md), 라이선스: [../LICENSE](../LICENSE)

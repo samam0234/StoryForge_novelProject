@@ -20,6 +20,17 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 
 > `vaildates/`의 스펠링은 의도적입니다. 교정하지 않습니다.
 
+## 루트 문서
+
+| 문서 | 내용 |
+|------|------|
+| [README.md](../README.md) | 프로젝트 소개, 전체 스택 실행 |
+| [LICENSE](../LICENSE) | 독점 (All rights reserved) |
+| [SECURITY.md](../SECURITY.md) | 보안 정책, 취약점 신고, 알려진 제한, 배포 전 체크리스트 |
+| [CONTRIBUTING.md](../CONTRIBUTING.md) | 기여 안내 |
+| [CHANGELOG.md](../CHANGELOG.md) | 변경 내역 |
+| [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) | 제3자 라이선스 고지 |
+
 ## 어디에 써야 할지 모를 때
 
 ```
@@ -33,6 +44,7 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 포트, 도메인, 배포 단계 기록이다              → web_management/
 "왜 A 대신 B를 골랐는지" 남긴다              → trainings/
 Story Bible 템플릿, 프롬프트 작성 규칙이다    → novel/
+보안 정책, 라이선스, 기여 안내, 변경 내역         → 루트 문서 (docs/ 밖)
 ```
 
 ## 공통 규칙
