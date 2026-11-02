@@ -62,7 +62,7 @@ npx ng serve          # 또는 npm start
 | 대시보드 | `/` | 프로젝트 카드 그리드, 진행률, 새 프로젝트 | §9.6-1 |
 | Story Bible | `/projects/:id/bible` | AI 생성, Overview/Characters/World/Themes 탭 편집, 확정 | §6.1, §9.6-2 |
 | Outline | `/projects/:id/outline` | AI 생성, 드래그 앤 드롭 재배치, Beats 편집, 확정 | §6.2, §9.6-3 |
-| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, Continuity 리포트, 수정·승인·재생성 | §6.3, §9.6-4 |
+| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, TipTap 편집, Continuity 리포트, 승인·재생성 | §6.3, §9.6-4 |
 
 화면 위쪽의 파이프라인 표시는 백엔드가 알려 준 상태를 그대로 보여줍니다. 버튼 활성화도 그 상태를 따릅니다. 실제 상태 판단은 백엔드가 합니다.
 
@@ -85,7 +85,7 @@ storyforge-frontend/
     ├── styles/            # 디자인 토큰, Material 테마
     └── app/
         ├── core/          # api(REST·SSE 래퍼), models(타입), auth(세션·인터셉터·가드)
-        ├── shared/        # 공통 컴포넌트 (pipeline-stepper)
+        ├── shared/        # 공통 컴포넌트 (pipeline-stepper, rich-text-editor)
         ├── features/      # auth, dashboard, projects, story-bible, outline, chapters
         └── layout/        # 셸, 테마 서비스
 ```
@@ -101,7 +101,6 @@ storyforge-frontend/
 
 ## 아직 없는 것
 
-- TipTap 에디터 (기획서 §9.2) — 현재 챕터 본문은 textarea
 - 내보내기, 프로젝트 설정 화면 (§9.6-5)
 
 ## 규칙

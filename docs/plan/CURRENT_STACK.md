@@ -8,7 +8,7 @@
 
 | 레이어 | 기획서 기준 | 확정 버전 | 비고 |
 |--------|-------------|-----------|------|
-| Frontend | Angular 18+, Angular Material, RxJS, TipTap | Angular 21.2, Angular Material 21.2, RxJS 7.8, TypeScript 5.9 | Standalone + signals, zoneless. Angular 22는 Node 24.15+가 필요해 보류. TipTap은 아직 미도입 |
+| Frontend | Angular 18+, Angular Material, RxJS, TipTap | Angular 21.2, Angular Material 21.2, RxJS 7.8, TypeScript 5.9 | Standalone + signals, zoneless. Angular 22는 Node 24.15+가 필요해 보류. TipTap 3.32 (본문은 Markdown으로 저장) |
 | Node.js (개발) | — | 24.14 | |
 | Main Backend | Spring Boot 4.x, Spring Security, WebClient, Flyway | Spring Boot 4.1.2 (Spring Framework 7, Jackson 3, Hibernate 7), springdoc-openapi 3.2.0 | 빌드 도구: Maven Wrapper (Maven 3.10.0) |
 | Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행 |

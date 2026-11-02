@@ -38,6 +38,16 @@ import { ProjectContext } from './project-context';
     }
   `,
   styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    mat-tab-nav-panel {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+    }
     .header {
       padding: 16px 24px 0;
       background: var(--sf-surface);

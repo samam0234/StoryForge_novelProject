@@ -87,6 +87,7 @@ import { ThemeService } from './theme.service';
     }
     .container {
       flex: 1;
+      min-height: 0;
       background: var(--sf-bg);
     }
     .sidenav {

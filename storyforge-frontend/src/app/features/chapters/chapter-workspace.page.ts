@@ -12,12 +12,12 @@ import { Subscription, forkJoin } from 'rxjs';
 import { ChapterStream } from '../../core/api/chapter-stream.service';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
 import { Chapter, OutlineChapter, StoryBible } from '../../core/models/models';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
 import { ProjectContext } from '../projects/project-context';
 
 /**
  * 챕터 워크스페이스 (기획서 §9.6 4번)
  * 좌: Outline + Bible 컨텍스트 / 중앙: 에디터(스트리밍) / 우: Continuity 리포트, 캐릭터 상태 / 하단: 승인·재생성
- * TODO(editor): 기획서 §9.2의 TipTap 에디터로 교체
  */
 @Component({
   selector: 'sf-chapter-workspace-page',
@@ -30,6 +30,7 @@ import { ProjectContext } from '../projects/project-context';
     MatInputModule,
     MatProgressBarModule,
     MatTooltipModule,
+    RichTextEditorComponent,
   ],
   template: `
     @if (!ready()) {
@@ -105,9 +106,9 @@ import { ProjectContext } from '../projects/project-context';
                 <mat-label>제목</mat-label>
                 <input matInput [(ngModel)]="editTitle" (ngModelChange)="dirty.set(true)" />
               </mat-form-field>
-              <textarea class="editor" [(ngModel)]="editContent" (ngModelChange)="dirty.set(true)"></textarea>
+              <sf-rich-text-editor [value]="editContent" (valueChange)="onContentChange($event)" />
             } @else {
-              <article class="stream">{{ c.content }}</article>
+              <sf-rich-text-editor [value]="c.content ?? ''" [editable]="false" />
             }
           } @else {
             <div class="sf-empty">
@@ -184,8 +185,8 @@ import { ProjectContext } from '../projects/project-context';
     .workspace {
       display: grid;
       grid-template-columns: 280px minmax(0, 1fr) 300px;
-      height: calc(100vh - 64px - 150px);
-      min-height: 520px;
+      height: 100%;
+      min-height: 420px;
     }
     .col {
       overflow-y: auto;
@@ -290,8 +291,7 @@ import { ProjectContext } from '../projects/project-context';
         opacity: 0.2;
       }
     }
-    .stream,
-    .editor {
+    .stream {
       flex: 1;
       white-space: pre-wrap;
       line-height: 1.85;
@@ -302,14 +302,6 @@ import { ProjectContext } from '../projects/project-context';
       border: 1px solid var(--sf-border);
       color: var(--sf-text);
       overflow-y: auto;
-    }
-    .editor {
-      font-family: inherit;
-      resize: none;
-      outline: none;
-    }
-    .editor:focus {
-      border-color: var(--sf-secondary);
     }
     .actions {
       padding-top: 4px;
@@ -516,6 +508,11 @@ export class ChapterWorkspacePage {
   private replace(c: Chapter): void {
     this.chapters.update((l) => l.map((x) => (x.id === c.id ? c : x)));
     this.resetEdit();
+  }
+
+  protected onContentChange(markdown: string): void {
+    this.editContent = markdown;
+    this.dirty.set(true);
   }
 
   private resetEdit(): void {
