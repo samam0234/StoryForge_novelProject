@@ -13,14 +13,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 승인된 챕터를 원고 파일로 내보냅니다 (기획서 §6.4: Markdown, DOCX, PDF).
- * 검토 중인 초안은 포함하지 않습니다.
+ * 승인된 챕터를 원고 파일로 내보냅니다 (기획서 §6.4: Markdown, DOCX, PDF + 추가 형식 TXT, HTML, EPUB, ODT, RTF).
+ * 검토 중인 초안은 포함하지 않습니다. 게시 작품과 패키지는 render를 함께 씁니다.
  */
 @Service
 @Transactional(readOnly = true)
 public class ExportService {
 
     public record ExportFile(String filename, String contentType, byte[] bytes) {
+    }
+
+    public record ManuscriptChapter(String heading, String markdown) {
+    }
+
+    public record Manuscript(String title, String author, List<ManuscriptChapter> chapters) {
     }
 
     private final ProjectService projectService;
@@ -45,33 +51,47 @@ public class ExportService {
             throw new InvalidStateException("승인된 챕터가 있어야 내보낼 수 있습니다.");
         }
         String format = requestedFormat == null || requestedFormat.isBlank() ? project.getExportFormat() : requestedFormat;
-        String name = safeFilename(project.getTitle());
+        List<ManuscriptChapter> sections = confirmed.stream()
+                .map(c -> new ManuscriptChapter(heading(c), c.getContent()))
+                .toList();
+        return render(new Manuscript(project.getTitle(), null, sections), format);
+    }
+
+    public ExportFile render(Manuscript m, String format) {
+        String name = safeFilename(m.title());
         return switch (format) {
             case "md" -> new ExportFile(name + ".md", "text/markdown; charset=UTF-8",
-                    markdown(project, confirmed).getBytes(StandardCharsets.UTF_8));
+                    markdown(m).getBytes(StandardCharsets.UTF_8));
+            case "txt" -> new ExportFile(name + ".txt", "text/plain; charset=UTF-8", ManuscriptWriters.txt(blocks(m)));
             case "docx" -> new ExportFile(name + ".docx",
                     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    docxWriter.write(blocks(project, confirmed)));
-            case "pdf" -> new ExportFile(name + ".pdf", "application/pdf", pdfWriter.write(blocks(project, confirmed)));
+                    docxWriter.write(blocks(m)));
+            case "pdf" -> new ExportFile(name + ".pdf", "application/pdf", pdfWriter.write(blocks(m)));
+            case "html" -> new ExportFile(name + ".html", "text/html; charset=UTF-8",
+                    ManuscriptWriters.html(m.title(), m.author(), blocks(m)));
+            case "epub" -> new ExportFile(name + ".epub", "application/epub+zip",
+                    ManuscriptWriters.epub(m.title(), m.author(), blocks(m)));
+            case "odt" -> new ExportFile(name + ".odt", "application/vnd.oasis.opendocument.text", ManuscriptWriters.odt(blocks(m)));
+            case "rtf" -> new ExportFile(name + ".rtf", "application/rtf", ManuscriptWriters.rtf(blocks(m)));
             default -> throw new InvalidStateException("지원하지 않는 형식입니다: " + format);
         };
     }
 
-    private static String markdown(Project project, List<Chapter> confirmed) {
-        StringBuilder out = new StringBuilder("# ").append(project.getTitle()).append("\n\n");
-        for (Chapter c : confirmed) {
-            out.append("## ").append(heading(c)).append("\n\n");
-            out.append(c.getContent() == null ? "" : c.getContent().strip()).append("\n\n");
+    private static String markdown(Manuscript m) {
+        StringBuilder out = new StringBuilder("# ").append(m.title()).append("\n\n");
+        for (ManuscriptChapter c : m.chapters()) {
+            out.append("## ").append(c.heading()).append("\n\n");
+            out.append(c.markdown() == null ? "" : c.markdown().strip()).append("\n\n");
         }
         return out.toString();
     }
 
-    private static List<ManuscriptBlocks.Block> blocks(Project project, List<Chapter> confirmed) {
+    private static List<ManuscriptBlocks.Block> blocks(Manuscript m) {
         List<ManuscriptBlocks.Block> blocks = new ArrayList<>();
-        blocks.add(ManuscriptBlocks.plain(ManuscriptBlocks.Kind.TITLE, project.getTitle()));
-        for (Chapter c : confirmed) {
-            blocks.add(ManuscriptBlocks.plain(ManuscriptBlocks.Kind.CHAPTER_HEADING, heading(c)));
-            blocks.addAll(ManuscriptBlocks.parse(c.getContent() == null ? "" : c.getContent()));
+        blocks.add(ManuscriptBlocks.plain(ManuscriptBlocks.Kind.TITLE, m.title()));
+        for (ManuscriptChapter c : m.chapters()) {
+            blocks.add(ManuscriptBlocks.plain(ManuscriptBlocks.Kind.CHAPTER_HEADING, c.heading()));
+            blocks.addAll(ManuscriptBlocks.parse(c.markdown() == null ? "" : c.markdown()));
         }
         return blocks;
     }

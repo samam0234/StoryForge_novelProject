@@ -29,6 +29,13 @@ storyforge:
   rate-limit:
     auth-per-minute: ${RATE_LIMIT_AUTH_PER_MINUTE:20}
     generate-per-minute: ${RATE_LIMIT_GENERATE_PER_MINUTE:30}
+    community-per-minute: ${RATE_LIMIT_COMMUNITY_PER_MINUTE:60}
+  community:
+    # 작업 그래프와 활동 잔디의 날짜 기준 시간대
+    zone: ${COMMUNITY_ZONE:Asia/Seoul}
+  collab:
+    # 가이드챗의 콜라보 이동 주소. 비우면 이동 버튼을 표시하지 않습니다.
+    codicomperchat-url: ${CODICOMPERCHAT_URL:}
   jwt:
     # 비우면 시작할 때 무작위 키를 만듭니다. 운영에서는 반드시 지정 (docs/plan/auth.md)
     secret: ${JWT_SECRET:}

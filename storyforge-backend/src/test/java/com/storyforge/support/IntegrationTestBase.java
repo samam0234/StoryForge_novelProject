@@ -50,6 +50,7 @@ public abstract class IntegrationTestBase {
         // 테스트는 같은 IP에서 많이 호출합니다. 제한 동작은 RateLimitFilterTest에서 검증합니다.
         registry.add("storyforge.rate-limit.auth-per-minute", () -> 100_000);
         registry.add("storyforge.rate-limit.generate-per-minute", () -> 100_000);
+        registry.add("storyforge.rate-limit.community-per-minute", () -> 100_000);
     }
 
     @LocalServerPort

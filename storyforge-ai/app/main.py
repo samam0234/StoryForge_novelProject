@@ -4,6 +4,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+from app.api.v1 import guide
 from app.api.v1 import router as v1_router
 from app.core.config import get_settings
 from app.core.llm import LLMError
@@ -12,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="StoryForge AI Service", version="0.1.0")
 app.include_router(v1_router)
+app.include_router(guide.router)
 
 
 @app.exception_handler(LLMError)

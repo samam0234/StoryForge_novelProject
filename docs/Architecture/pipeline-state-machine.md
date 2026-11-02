@@ -26,6 +26,18 @@ stateDiagram-v2
 
 둘째 챕터부터 생성이 실패하면 `CHAPTER_GENERATING → CHAPTER_REVIEW`로 돌아갑니다.
 
+## Clone 프로젝트의 시작 상태 (2026-11-03)
+
+새 프로젝트는 `BIBLE_DRAFT`에서 시작합니다. Clone한 프로젝트는 범위에 맞는 기존 상태에서 시작합니다. **상태와 전이는 추가하지 않았고**, 시작한 뒤의 전이는 위 규칙을 그대로 따릅니다.
+
+| Clone 범위 | 시작 상태 | 이유 |
+|-----------|-----------|------|
+| 세계관 | `BIBLE_DRAFT` | Bible을 새 주인이 고치고 확정 |
+| 플롯 | `OUTLINE_DRAFT` | Bible은 원작 그대로, Outline을 고치고 확정 |
+| 전체 원고 | `CHAPTER_REVIEW` | 복제 원고는 모두 Draft. 앞 장부터 다시 승인 (검토를 건너뛰지 않음) |
+
+게시(`publish`)는 상태를 바꾸지 않습니다. [community.md](../plan/community.md)
+
 ## 상태별 의미와 담당
 
 | 상태 | 의미 | 상태를 바꾸는 주체 |

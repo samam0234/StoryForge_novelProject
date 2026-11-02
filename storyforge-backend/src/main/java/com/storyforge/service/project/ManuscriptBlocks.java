@@ -53,6 +53,9 @@ final class ManuscriptBlocks {
             out.add(plain(kind, code.getLiteral().strip()));
         } else if (node instanceof IndentedCodeBlock code) {
             out.add(plain(kind, code.getLiteral().strip()));
+        } else if (node instanceof HtmlBlock html) {
+            // 원고의 태그도 글자로 남깁니다. 각 형식의 작성기가 이스케이프합니다.
+            out.add(plain(kind, html.getLiteral().strip()));
         }
     }
 
@@ -68,6 +71,8 @@ final class ManuscriptBlocks {
                 out.add(new Span(text.getLiteral(), bold, italic));
             } else if (n instanceof Code code) {
                 out.add(new Span(code.getLiteral(), bold, italic));
+            } else if (n instanceof HtmlInline html) {
+                out.add(new Span(html.getLiteral(), bold, italic));
             } else if (n instanceof SoftLineBreak) {
                 out.add(new Span(" ", bold, italic));
             } else if (n instanceof HardLineBreak) {

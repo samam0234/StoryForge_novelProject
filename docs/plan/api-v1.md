@@ -51,6 +51,45 @@
 | GET | `/projects/{id}/bible/versions` | Bible 버전 이력 (최신순) |
 | GET | `/chapters/{id}/versions` | 챕터 생성·수정 이력 (최신순) |
 
+### 커뮤니티 ([community.md](community.md))
+
+🌐는 로그인 없이 읽을 수 있습니다. 다른 사용자의 리소스를 고치려 하면 404입니다.
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| GET 🌐 | `/works?kind=&genre=&q=&sort=&page=&size=` | 게시판 (`sort`: latest, popular, views, clones) |
+| GET 🌐 | `/works/{id}`, `/works/{id}/chapters/{n}` | 작품 상세, 챕터 읽기 |
+| POST | `/projects/{id}/publish` | 게시 |
+| PUT / DELETE | `/works/{id}` | 작품 정보 수정, 삭제 |
+| PUT | `/works/{id}/chapters/{n}` | 게시본 본문 수정 |
+| POST | `/works/{id}/sync` | 프로젝트에서 업데이트 |
+| GET | `/works/{id}/export?format=` | 내려받기 |
+| PUT / DELETE | `/works/{id}/like` | 추천, 취소 |
+| GET 🌐 / POST | `/works/{id}/comments` | 댓글 |
+| PUT / DELETE | `/comments/{id}` | 댓글 수정, 삭제 |
+| GET 🌐 | `/works/{id}/activity` | 작업 그래프 |
+| GET | `/projects/{id}/activity` | 프로젝트 작업 기록 |
+| POST | `/works/{id}/clone` | Clone |
+| GET 🌐 | `/works/{id}/network` | Clone 네트워크 |
+| GET | `/projects/{id}/upstream` | 원본 비교 |
+| GET 🌐 / POST | `/works/{id}/shares` | 공유 그래프, 공유 |
+| POST 🌐 | `/shares/{token}/visit` | 공유 링크 방문 |
+| POST | `/packages` | 패키지 생성 |
+| POST / PUT / DELETE | `/packages/{id}/items[/{itemId}]` | 작품 추가(다른 작가는 승인 대기), 수정, 빼기 |
+| PUT | `/packages/{id}/order` | 독서 순서 |
+| POST / DELETE | `/packages/{id}/links[/{linkId}]` | 연결 |
+| GET / PUT | `/me/package-requests[/{itemId}]` | 편입 요청 조회, 승인·거절 |
+| GET 🌐 / POST | `/posts` | 라운지 목록, 글쓰기 |
+| GET 🌐 / PUT / DELETE | `/posts/{id}` | 글 읽기, 수정, 삭제 |
+| PUT / DELETE | `/posts/{id}/like` | 추천, 취소 |
+| GET 🌐 / POST | `/posts/{id}/comments` | 댓글 |
+| GET 🌐 | `/issues` | 이슈 게시판 |
+| GET 🌐 | `/users/{id}`, `/users/{id}/works`, `/users/{id}/contributions`, `/users/{id}/activity?date=`, `/users/{id}/achievements` | 프로필, 작품, 활동 잔디, 활동 내역, 업적 |
+| GET | `/me/works` | 내 작품 (비공개 포함) |
+| PUT | `/me/profile`, `/me/password` | 프로필, 비밀번호 |
+| POST | `/me/delete` | 계정 삭제 (본문에 비밀번호) |
+| POST | `/guide/chat` | AI 가이드챗 |
+
 ### 챕터 생성 규칙
 
 - 생성할 수 있는 챕터는 **확정된 챕터 수 + 1**뿐입니다. 이전 챕터를 승인하지 않으면 다음 챕터를 만들 수 없습니다.
@@ -77,6 +116,8 @@
 | GET | `/health` | — | `{status, provider, model}` |
 
 계약 정의 위치: 백엔드 `client/AiDtos.java` ↔ AI `app/models/schemas.py`. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다.
+
+내부 API에 `POST /internal/guide/chat`(가이드챗)이 추가되었습니다. 요청 `{message, context}`, 응답 `{reply, actions[{label, kind, target}]}`.
 
 ## Continuity 리포트
 

@@ -14,6 +14,7 @@
 | `chapter.j2` | 챕터 본문 |
 | `summary.j2` | 다음 챕터용 요약 |
 | `continuity.j2` | Continuity 검증 |
+| `guide.j2`, `guide_question.j2` | AI 가이드챗 시스템 프롬프트와 질문 |
 
 ## 들어갈 것
 

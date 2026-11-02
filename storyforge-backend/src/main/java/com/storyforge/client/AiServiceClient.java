@@ -45,6 +45,10 @@ public class AiServiceClient {
         return post("/internal/generate/outline", request, OutlineGenerateResponse.class);
     }
 
+    public GuideChatResponse guideChat(GuideChatRequest request) {
+        return post("/internal/guide/chat", request, GuideChatResponse.class);
+    }
+
     /** 이벤트: token(본문 조각), done(ChapterGenerateResult JSON), error(메시지) */
     public Flux<ServerSentEvent<String>> generateChapter(ChapterContext context) {
         return webClient.post()

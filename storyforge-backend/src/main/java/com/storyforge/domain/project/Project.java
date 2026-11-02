@@ -8,6 +8,9 @@ import java.time.Instant;
 @Table(name = "project")
 public class Project {
 
+    /** 장편·단편 구분. 게시 종류와 Outline 챕터 수 기본값에 씁니다. */
+    public enum Form { LONG, SHORT }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,6 +37,19 @@ public class Project {
     @Column(nullable = false)
     private String exportFormat = "md";
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Form form = Form.LONG;
+
+    /** Clone 출처. 원본 작품을 지워도 제목과 리비전은 남습니다. */
+    private Long clonedFromWorkId;
+
+    private String clonedFromTitle;
+
+    private Integer clonedFromRevision;
+
+    private String cloneMode;
+
     /** 동시 요청 방지 (낙관적 락) */
     @Version
     private long version;
@@ -54,6 +70,26 @@ public class Project {
         this.status = ProjectStatus.BIBLE_DRAFT;
         this.createdAt = Instant.now();
         this.updatedAt = this.createdAt;
+    }
+
+    public Project(String title, String genre, Long ownerId, Form form) {
+        this(title, genre, ownerId);
+        this.form = form == null ? Form.LONG : form;
+    }
+
+    /**
+     * Clone 프로젝트 생성. 범위에 맞는 단계에서 시작합니다 (전이가 아니라 시작 상태이며, 이후 전이는 상태 머신을 따릅니다).
+     * docs/Architecture/pipeline-state-machine.md
+     */
+    public static Project cloned(String title, String genre, Long ownerId, ProjectStatus start, Form form,
+                                 Long workId, String workTitle, int revision, String mode) {
+        Project p = new Project(title, genre, ownerId, form);
+        p.status = start;
+        p.clonedFromWorkId = workId;
+        p.clonedFromTitle = workTitle;
+        p.clonedFromRevision = revision;
+        p.cloneMode = mode;
+        return p;
     }
 
     /** 상태 변경은 PipelineStateMachine을 통해서만 호출합니다. */
@@ -83,6 +119,11 @@ public class Project {
     public String getModel() { return model; }
     public String getDefaultTone() { return defaultTone; }
     public String getExportFormat() { return exportFormat; }
+    public Form getForm() { return form; }
+    public Long getClonedFromWorkId() { return clonedFromWorkId; }
+    public String getClonedFromTitle() { return clonedFromTitle; }
+    public Integer getClonedFromRevision() { return clonedFromRevision; }
+    public String getCloneMode() { return cloneMode; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
