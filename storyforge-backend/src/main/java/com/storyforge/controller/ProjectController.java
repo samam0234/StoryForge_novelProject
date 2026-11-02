@@ -45,7 +45,7 @@ public class ProjectController {
 
     @GetMapping("/{projectId}")
     public ProjectResponse get(@PathVariable Long projectId) {
-        return projectService.get(projectId);
+        return projectService.get(projectId, currentUser.id());
     }
 
     @PutMapping("/{projectId}")

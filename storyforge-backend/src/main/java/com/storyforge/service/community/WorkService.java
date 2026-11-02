@@ -197,6 +197,9 @@ public class WorkService {
             throw new InvalidStateException("패키지는 패키지포지에서 만듭니다.");
         }
         Project project = projects.load(projectId);
+        if (!userId.equals(project.getOwnerId())) {
+            throw new InvalidStateException("게시할 수 있는 사람은 작품 주인뿐입니다.");
+        }
         if (works.findIdByProjectId(projectId).isPresent()) {
             throw new InvalidStateException("이미 게시한 프로젝트입니다. 게시본 업데이트를 사용하세요.");
         }

@@ -19,6 +19,8 @@ public enum ActivityType {
     WORK_UPDATED(Actor.MANUAL, true),
     WORK_SYNCED(Actor.MANUAL, true),
     WORK_CHAPTER_EDITED(Actor.MANUAL, true),
+    /** 참여자가 남긴 작업 커밋. 요약에는 본문을 넣지 않습니다. */
+    WORK_COMMITTED(Actor.MANUAL, true),
     PACKAGE_CREATED(Actor.MANUAL, false),
     PACKAGE_UPDATED(Actor.MANUAL, false),
     PROJECT_CLONED(Actor.MANUAL, false),

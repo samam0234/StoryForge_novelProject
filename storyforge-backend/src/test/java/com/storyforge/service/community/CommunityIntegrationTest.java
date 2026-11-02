@@ -653,4 +653,44 @@ class CommunityIntegrationTest extends IntegrationTestBase {
         assertThat(reply.get("actions")).hasSize(1);
         assertThat(reply.get("actions").get(0).get("kind").asString()).isEqualTo("route");
     }
+
+    @Test
+    void collaboratorsShareTheDraftAndSeeTheCommitSpan() throws Exception {
+        String email = "mate" + UUID.randomUUID() + "@example.com";
+        String mate = call("POST", "/auth/register", Map.of(
+                "email", email, "password", "password123", "displayName", "동료"), null).json().get("accessToken").asString();
+        String owner = newUser();
+        long project = call("POST", "/projects", Map.of("title", "함께", "genre", "판타지"), owner).json().get("id").asLong();
+        assertThat(call("GET", "/projects/" + project, null, mate).status()).isEqualTo(404);
+
+        Response invite = call("POST", "/projects/" + project + "/collaborators", Map.of("email", email), owner);
+        assertThat(invite.status()).isEqualTo(201);
+        long invitation = invite.json().get("id").asLong();
+        assertThat(call("GET", "/projects/" + project, null, mate).status()).isEqualTo(404);
+
+        assertThat(call("POST", "/me/invitations/" + invitation + "/accept", null, mate).status()).isEqualTo(200);
+        assertThat(call("GET", "/projects/" + project, null, mate).status()).isEqualTo(200);
+        assertThat(call("GET", "/projects", null, mate).json().get(0).get("role").asString()).isEqualTo("COLLABORATOR");
+        assertThat(call("DELETE", "/projects/" + project, null, mate).status()).isEqualTo(409);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("message", "첫 문단을 고쳤다");
+        body.put("target", "CHAPTER");
+        body.put("chapterNumber", 1);
+        body.put("startOffset", 0);
+        body.put("endOffset", 2);
+        body.put("quote", "문단시작");
+        Response commit = call("POST", "/projects/" + project + "/commits", body, mate);
+        assertThat(commit.status()).isEqualTo(201);
+        assertThat(commit.json().get("quote").asString()).isEqualTo("문단시작");
+        assertThat(commit.json().get("endOffset").asInt()).isEqualTo(2);
+
+        JsonNode listed = call("GET", "/projects/" + project + "/commits", null, owner).json();
+        assertThat(listed).hasSize(1);
+        assertThat(listed.get(0).get("message").asString()).isEqualTo("첫 문단을 고쳤다");
+        assertThat(call("GET", "/projects/" + project + "/commits", null, newUser()).status()).isEqualTo(404);
+
+        JsonNode graph = call("GET", "/projects/" + project + "/activity", null, owner).json();
+        assertThat(graph.get("events").toString()).contains("작업 커밋");
+    }
 }

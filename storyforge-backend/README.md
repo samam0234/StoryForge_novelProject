@@ -109,7 +109,7 @@ storyforge-backend/
     │   │   ├── auth/ project/ bible/ chapter/
     │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter)
     │   ├── client/               # FastAPI WebClient + 내부 계약(AiDtos)
-    │   ├── config/               # Security, JWT, 소유자 검사, WebClient, OpenAPI
+    │   ├── config/               # Security, JWT, 주인·공동 창작자 검사, WebClient, OpenAPI
     │   └── exception/            # ProblemDetail 변환
     ├── main/resources/
     │   ├── application.yml
