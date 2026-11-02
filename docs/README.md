@@ -41,4 +41,4 @@ Story Bible 템플릿, 프롬프트 작성 규칙이다    → novel/
 - 구현을 바꾸면 [Architecture/](Architecture/)와 [plan/CURRENT_STACK.md](plan/CURRENT_STACK.md)를 함께 갱신합니다.
 - 커밋 기록은 `docs/branchs/commits/`에만 둡니다. `docs/commits/`는 만들지 않습니다.
 - 새 하위 폴더가 필요하면 먼저 정본 [SKILL.md](../.agents/skills/storyforge/SKILL.md)의 docs 표에 용도를 추가한 뒤 만들고, 이 표도 갱신합니다.
-- 모든 폴더에 `README.md`를 둡니다.
+- README는 필요한 곳에만 둡니다. 이 폴더의 최상위 폴더들은 정의와 템플릿이 README에 있어 유지하고, 그 아래 하위 폴더에는 두지 않습니다.

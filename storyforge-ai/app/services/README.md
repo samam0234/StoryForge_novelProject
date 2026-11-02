@@ -28,4 +28,3 @@
 
 - [기획서 §6, §7.2, §8.3](../../../StoryForge_기획서_v1.2.md)
 - [docs/novel/](../../../docs/novel)
-- 상위 폴더: [../README.md](../README.md)

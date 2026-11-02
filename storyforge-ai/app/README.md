@@ -1,36 +1,35 @@
 # storyforge-ai/app/
 
-FastAPI **애플리케이션 패키지**입니다. 기획서 §8.3 구조를 따릅니다.
-
-## 현재 파일
-
-| 파일 | 내용 |
-|------|------|
-| `main.py` | FastAPI 앱, 라우터 등록, `/health`, LLMError → 502 |
-
-## 들어갈 것
-
-- `main.py` — FastAPI 앱 생성, 라우터 등록
-
-## 하위 폴더
-
-| 폴더 | 내용 |
-|------|------|
-| [api/](api/) | API 라우터 |
-| [core/](core/) | 설정과 LLM 추상화 |
-| [models/](models/) | Pydantic 스키마 |
-| [prompts/](prompts/) | 프롬프트 템플릿 |
-| [services/](services/) | AI 파이프라인 서비스 |
+FastAPI **애플리케이션 패키지**입니다. 기획서 §8.3 구조를 따릅니다. 이 README가 `api`, `core`, `models`를 함께 설명하고, `services`와 `prompts`는 자체 README가 있습니다.
 
 ## 의존 방향
 
 ```
 api/v1 → services → core/llm
-   └──────→ models (Pydantic)
+   └────→ models (Pydantic)
 services → prompts (템플릿)
 ```
 
+## 파일
+
+| 위치 | 내용 |
+|------|------|
+| `main.py` | FastAPI 앱, 라우터 등록, `/health`, `LLMError` → 502 |
+| `api/v1/__init__.py` | `/internal/generate` prefix로 라우터 묶음 |
+| `api/v1/bible.py`, `outline.py` | `POST /internal/generate/bible`, `/outline` |
+| `api/v1/chapter.py` | `POST /internal/generate/chapter` — SSE (`token` → `done` 또는 `error`) |
+| `core/config.py` | 환경 변수 설정 (`LLM_PROVIDER`, `LLM_MODEL`, `LLM_EFFORT` 등) |
+| `core/llm.py` | LLM 추상화. `MockLLM`, `AnthropicLLM`(refusal fallback, 프로젝트별 모델, 거절·잘림 감지) |
+| `models/schemas.py` | Pydantic 스키마. JSON은 camelCase이며 백엔드 `AiDtos.java`와 짝 |
+
+## 규칙
+
+- 라우터에는 로직을 넣지 않고 `services/`를 호출합니다.
+- 인증, 프로젝트 상태 관리, DB 저장은 하지 않습니다 (Spring Boot 담당). 인증이 없으므로 **외부에 노출하지 않습니다**.
+- 내부 API 계약을 바꾸면 `schemas.py`와 `AiDtos.java`를 같은 커밋에서 바꿉니다.
+- API 키를 코드에 넣지 않습니다.
+
 ## 관련 문서
 
-- [기획서 §8.3](../../StoryForge_기획서_v1.2.md)
-- 상위 폴더: [../README.md](../README.md)
+- [기획서 §7, §8.3](../../StoryForge_기획서_v1.2.md)
+- [docs/plan/api-v1.md](../../docs/plan/api-v1.md) — 내부 API 형식

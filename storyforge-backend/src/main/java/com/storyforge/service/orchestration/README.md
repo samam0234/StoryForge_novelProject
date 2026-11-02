@@ -27,4 +27,3 @@
 
 - [기획서 §7.2](../../../../../../../../StoryForge_기획서_v1.2.md)
 - [docs/Architecture/pipeline-state-machine.md](../../../../../../../../docs/Architecture/pipeline-state-machine.md)
-- 상위 폴더: [../README.md](../README.md)

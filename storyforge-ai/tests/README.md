@@ -20,4 +20,3 @@ AI 서비스 테스트입니다. `LLM_PROVIDER=mock`(기본값)으로 실행하�
 
 ## 관련 문서
 
-- 상위 폴더: [../README.md](../README.md)
