@@ -5,14 +5,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 
 /** 로그인 / 회원가입 (docs/plan/auth.md) */
 @Component({
   selector: 'sf-login-page',
-  imports: [FormsModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [FormsModule, RouterLink, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <div class="wrap">
       <mat-card appearance="outlined" class="card">
@@ -56,6 +56,7 @@ import { AuthService } from '../../core/auth/auth.service';
           </form>
         </mat-card-content>
         <mat-card-actions align="end">
+          <a mat-button routerLink="/issues">로그인 없이 둘러보기</a>
           <button mat-button type="button" (click)="toggle()">
             {{ mode() === 'login' ? '계정이 없나요? 회원가입' : '이미 계정이 있나요? 로그인' }}
           </button>

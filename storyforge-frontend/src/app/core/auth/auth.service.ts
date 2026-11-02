@@ -43,6 +43,17 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.base}/register`, body).pipe(tap((r) => this.store(r)));
   }
 
+  /** 프로필을 고친 뒤 세션의 이름 등을 맞춥니다. */
+  setUser(user: User): void {
+    const s = this.session();
+    if (!s) return;
+    this.persist({ ...s, user });
+  }
+
+  refreshUser(): Observable<User> {
+    return this.http.get<User>(`${this.base}/me`).pipe(tap((u) => this.setUser(u)));
+  }
+
   logout(): void {
     this.clear();
     this.router.navigate(['/login']);
@@ -55,7 +66,10 @@ export class AuthService {
   }
 
   private store(r: AuthResponse): void {
-    const s: Session = { token: r.accessToken, expiresAt: r.expiresAt, user: r.user };
+    this.persist({ token: r.accessToken, expiresAt: r.expiresAt, user: r.user });
+  }
+
+  private persist(s: Session): void {
     this.session.set(s);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));

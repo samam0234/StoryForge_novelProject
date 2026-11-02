@@ -28,12 +28,19 @@ export function stageLabel(status: ProjectStatus): string {
   return PIPELINE_STAGES[stageIndex(status)]?.label ?? status;
 }
 
-export type ExportFormat = 'md' | 'docx' | 'pdf';
+export type ExportFormat = 'md' | 'txt' | 'docx' | 'pdf' | 'html' | 'epub' | 'odt' | 'rtf';
+
+export type ProjectForm = 'LONG' | 'SHORT';
 
 export const EXPORT_FORMATS: { value: ExportFormat; label: string }[] = [
   { value: 'md', label: 'Markdown (.md)' },
   { value: 'docx', label: 'Word (.docx)' },
   { value: 'pdf', label: 'PDF (.pdf)' },
+  { value: 'txt', label: '텍스트 (.txt)' },
+  { value: 'html', label: '웹 문서 (.html)' },
+  { value: 'epub', label: '전자책 (.epub)' },
+  { value: 'odt', label: 'OpenDocument (.odt)' },
+  { value: 'rtf', label: '서식 있는 텍스트 (.rtf)' },
 ];
 
 /** 백엔드 UpdateProjectRequest가 허용하는 모델과 같게 유지합니다. */
@@ -47,6 +54,9 @@ export interface User {
   id: number;
   email: string;
   displayName: string;
+  bio?: string | null;
+  website?: string | null;
+  avatarColor?: string | null;
 }
 
 export interface AuthResponse {
@@ -66,6 +76,15 @@ export interface Project {
   exportFormat: ExportFormat;
   totalChapters: number;
   confirmedChapters: number;
+  form: ProjectForm;
+  /** 게시한 작품 */
+  workId: number | null;
+  /** Clone 출처. 원본이 지워지면 ID만 비고 제목은 남습니다. */
+  clonedFromWorkId: number | null;
+  clonedFromTitle: string | null;
+  cloneMode: string | null;
+  manualChars: number;
+  agentChars: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -141,7 +160,7 @@ export interface Chapter {
 
 export interface ChapterVersion {
   version: number;
-  source: 'GENERATED' | 'EDITED';
+  source: 'GENERATED' | 'EDITED' | 'CLONED';
   title: string | null;
   content: string | null;
   createdAt: string;

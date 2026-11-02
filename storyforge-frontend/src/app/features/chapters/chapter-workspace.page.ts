@@ -170,7 +170,11 @@ import { ProjectContext } from '../projects/project-context';
               }
             </ul>
           } @else {
-            <p class="sf-muted">챕터를 생성하면 검증 결과가 여기에 표시됩니다.</p>
+            @if (current()) {
+              <p class="sf-muted">Clone한 원고라 이 프로젝트 기준의 검증 결과가 없습니다. 승인 전에 직접 확인하거나, 재생성하면 검증합니다.</p>
+            } @else {
+              <p class="sf-muted">챕터를 생성하면 검증 결과가 여기에 표시됩니다.</p>
+            }
           }
 
           <h3>캐릭터</h3>
@@ -477,7 +481,7 @@ export class ChapterWorkspacePage {
           canRestore: this.editable(),
           versions: versions.map((v) => ({
             version: v.version,
-            label: v.source === 'GENERATED' ? 'AI 생성' : '직접 수정',
+            label: v.source === 'GENERATED' ? 'AI 생성' : v.source === 'CLONED' ? '원본에서 Clone' : '직접 수정',
             createdAt: v.createdAt,
             text: v.content ?? '',
             payload: v,
@@ -520,6 +524,8 @@ export class ChapterWorkspacePage {
     if (!c) return;
     const high = c.continuityReport?.issues.filter((i) => i.severity === 'high').length ?? 0;
     if (high && !confirm(`심각한 연속성 이슈가 ${high}건 있습니다. 그래도 승인할까요?`)) return;
+    // Clone한 원고에는 이 프로젝트 기준의 검증 결과가 없습니다. 조용히 통과시키지 않습니다.
+    if (!c.continuityReport && !confirm('Continuity 검증을 거치지 않은 Clone 원고입니다. 직접 확인했다면 승인하세요.')) return;
     this.busy.set(true);
     this.api.confirmChapter(c.id).subscribe({
       next: (confirmed) => {

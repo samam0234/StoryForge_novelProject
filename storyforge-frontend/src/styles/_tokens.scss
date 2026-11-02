@@ -19,6 +19,19 @@
   --sf-severity-medium: light-dark(#b26a00, #e8a838);
   --sf-severity-low: light-dark(#5f6368, #9aa0a6);
 
+  // 차트 색 (색약 검증: dataviz validate_palette). 수동·에이전트는 앱 전체에서 같은 색입니다.
+  --sf-series-manual: light-dark(#2a78d6, #3987e5);
+  --sf-series-agent: light-dark(#eb6834, #d95926);
+  // 범주 색. 순서를 바꾸지 않습니다 (공유 채널 등).
+  --sf-series-1: light-dark(#2a78d6, #3987e5);
+  --sf-series-2: light-dark(#eb6834, #d95926);
+  --sf-series-3: light-dark(#1baf7a, #199e70);
+  --sf-series-4: light-dark(#eda100, #c98500);
+  --sf-series-5: light-dark(#e87ba4, #d55181);
+  --sf-series-6: light-dark(#008300, #008300);
+  --sf-series-7: light-dark(#6250d6, #9085e9);
+  --sf-series-8: light-dark(#e34948, #e66767);
+
   --sf-font: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
   --sf-radius: 10px;
 }

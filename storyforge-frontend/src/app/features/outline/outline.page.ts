@@ -1,5 +1,5 @@
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -185,8 +185,17 @@ export class OutlinePage {
   protected readonly canGenerate = computed(() => this.ctx.is('BIBLE_CONFIRMED', 'OUTLINE_DRAFT'));
   protected readonly lines = lines;
   protected chapterCount = 10;
+  private countSetFor: number | null = null;
 
   constructor() {
+    effect(() => {
+      const project = this.ctx.project();
+      // 단편은 기본 3장으로 시작합니다. 프로젝트마다 한 번만 적용해 입력값을 덮어쓰지 않습니다.
+      if (project && untracked(() => this.countSetFor) !== project.id) {
+        this.countSetFor = project.id;
+        if (project.form === 'SHORT') this.chapterCount = 3;
+      }
+    });
     effect(() => {
       const id = this.ctx.projectId();
       if (id == null) return;

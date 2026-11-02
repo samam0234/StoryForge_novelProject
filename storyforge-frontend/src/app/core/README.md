@@ -1,5 +1,7 @@
 # storyforge-frontend/src/app/core/
 
+커뮤니티 API는 `api/community-api.service.ts`, 모델은 `models/community.ts`에 있습니다.
+
 앱 전체에서 한 번만 생성되는 **싱글톤 서비스, 인터셉터, 가드, 공통 타입**입니다. 특정 기능에서만 쓰는 서비스는 해당 `features/*`에 둡니다.
 
 ## 파일

@@ -11,6 +11,7 @@ import {
   Outline,
   OutlineChapter,
   Project,
+  ProjectForm,
   ProjectStatusInfo,
   StoryBible,
 } from '../models/models';
@@ -25,7 +26,7 @@ export class StoryforgeApi {
   listProjects(): Observable<Project[]> {
     return this.http.get<Project[]>(`${this.base}/projects`);
   }
-  createProject(body: { title: string; genre: string | null }): Observable<Project> {
+  createProject(body: { title: string; genre: string | null; form?: ProjectForm }): Observable<Project> {
     return this.http.post<Project>(`${this.base}/projects`, body);
   }
   getProject(id: number): Observable<Project> {
