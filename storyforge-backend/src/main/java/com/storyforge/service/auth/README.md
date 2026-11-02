@@ -1,6 +1,6 @@
 # storyforge-backend/src/main/java/com/storyforge/service/auth/
 
-가입, 로그인, JWT 발급, 현재 사용자 조회입니다. 기획서 §8.2에는 없고 인증 구현을 위해 추가했습니다 ([auth.md](../../../../../../../../../docs/plan/auth.md)).
+가입, 로그인, JWT 발급, 현재 사용자 조회입니다. 기획서 §8.2에는 없고 인증 구현을 위해 추가했습니다 ([auth.md](../../../../../../../../docs/plan/auth.md)).
 
 ## 현재 파일
 

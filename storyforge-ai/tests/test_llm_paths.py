@@ -48,10 +48,12 @@ class FakeLLM:
 
     def __init__(self, *, stream_error: Exception | None = None, issues: list[ContinuityIssue] | None = None):
         self.prompts: list[str] = []
+        self.models: list[str | None] = []
         self.stream_error = stream_error
         self.issues = issues or []
 
-    async def structured(self, *, system, prompt, schema):
+    async def structured(self, *, system, prompt, schema, model=None):
+        self.models.append(model)
         self.prompts.append(prompt)
         if schema is ContinuityIssues:
             return ContinuityIssues(issues=self.issues)
@@ -63,11 +65,13 @@ class FakeLLM:
             return OutlineGenerateResponse(chapters=[chapter, chapter.model_copy(update={"order": 7})])
         raise AssertionError(schema)
 
-    async def text(self, *, system, prompt, max_tokens=4000):
+    async def text(self, *, system, prompt, max_tokens=4000, model=None):
+        self.models.append(model)
         self.prompts.append(prompt)
         return " 요약입니다 "
 
-    async def stream(self, *, system, prompt) -> AsyncIterator[str]:
+    async def stream(self, *, system, prompt, model=None) -> AsyncIterator[str]:
+        self.models.append(model)
         self.prompts.append(prompt)
         yield "본문 "
         if self.stream_error:
@@ -134,6 +138,31 @@ def test_unexpected_failure_hides_internal_message(use_llm):
     assert "secret" not in body
 
 
+def test_project_model_is_used_for_every_llm_call(use_llm):
+    llm = FakeLLM()
+    context = {**CONTEXT, "project": {**PROJECT, "model": "claude-sonnet-5-5"}}
+    with use_llm(llm).stream("POST", "/internal/generate/chapter", json=context) as res:
+        res.read()
+    assert llm.models == ["claude-sonnet-5-5"] * 3  # 본문, 요약, Continuity
+
+
+def test_default_tone_reaches_bible_prompt(use_llm):
+    llm = FakeLLM()
+    project = {**PROJECT, "defaultTone": "건조한 하드보일드"}
+    use_llm(llm).post("/internal/generate/bible", json={"project": project, "prompt": "p"})
+    assert "건조한 하드보일드" in llm.prompts[0]
+
+
+def test_haiku_omits_server_side_fallback():
+    from app.core.config import Settings
+    from app.core.llm import AnthropicLLM
+
+    llm = AnthropicLLM(Settings(llm_provider="anthropic", anthropic_api_key="test"))
+    assert "fallbacks" not in llm._params("claude-haiku-5-5")
+    assert llm._params(None)["fallbacks"] == "default"
+    assert llm._params("claude-sonnet-5-5")["model"] == "claude-sonnet-5-5"
+
+
 def test_outline_is_renumbered(use_llm):
     res = use_llm(FakeLLM()).post(
         "/internal/generate/outline", json={"project": PROJECT, "bible": BIBLE, "chapterCount": 2}
@@ -143,7 +172,7 @@ def test_outline_is_renumbered(use_llm):
 
 def test_llm_error_on_sync_call_gives_502(use_llm):
     class Failing(FakeLLM):
-        async def structured(self, *, system, prompt, schema):
+        async def structured(self, *, system, prompt, schema, model=None):
             raise LLMError("실패")
 
     res = use_llm(Failing()).post("/internal/generate/bible", json={"project": PROJECT, "prompt": "p"})

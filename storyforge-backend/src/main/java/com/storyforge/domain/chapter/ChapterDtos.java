@@ -28,6 +28,14 @@ public final class ChapterDtos {
         }
     }
 
+    public record ChapterVersionResponse(int version, ChapterVersion.Source source, String title, String content,
+                                         Instant createdAt) {
+
+        public static ChapterVersionResponse from(ChapterVersion v) {
+            return new ChapterVersionResponse(v.getVersion(), v.getSource(), v.getTitle(), v.getContent(), v.getCreatedAt());
+        }
+    }
+
     /** PUT /api/v1/chapters/{id} — 검토 중 사용자 수정 */
     public record UpdateChapterRequest(String title, String content) {
     }

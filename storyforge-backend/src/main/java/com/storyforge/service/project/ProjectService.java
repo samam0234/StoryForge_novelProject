@@ -7,6 +7,7 @@ import com.storyforge.domain.project.Project;
 import com.storyforge.domain.project.ProjectDtos.CreateProjectRequest;
 import com.storyforge.domain.project.ProjectDtos.ProjectResponse;
 import com.storyforge.domain.project.ProjectDtos.ProjectStatusResponse;
+import com.storyforge.domain.project.ProjectDtos.UpdateProjectRequest;
 import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.domain.project.ProjectStatus;
 import com.storyforge.exception.NotFoundException;
@@ -55,6 +56,14 @@ public class ProjectService {
     }
 
     @Transactional
+    public ProjectResponse update(Long id, UpdateProjectRequest request) {
+        Project project = load(id);
+        project.updateSettings(request.title().trim(), request.genre(), request.model(), request.defaultTone(),
+                request.exportFormat());
+        return toResponse(project);
+    }
+
+    @Transactional
     public void delete(Long id) {
         projects.delete(Objects.requireNonNull(load(id)));
     }
@@ -69,6 +78,7 @@ public class ProjectService {
 
     private ProjectResponse toResponse(Project p) {
         return new ProjectResponse(p.getId(), p.getTitle(), p.getGenre(), p.getStatus(),
+                p.getModel(), p.getDefaultTone(), p.getExportFormat(),
                 totalChapters(p.getId()), chapters.countByProjectIdAndStatus(p.getId(), ChapterStatus.CONFIRMED),
                 p.getCreatedAt(), p.getUpdatedAt());
     }

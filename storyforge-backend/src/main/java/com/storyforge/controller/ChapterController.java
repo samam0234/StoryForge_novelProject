@@ -1,6 +1,7 @@
 package com.storyforge.controller;
 
 import com.storyforge.domain.chapter.ChapterDtos.ChapterResponse;
+import com.storyforge.domain.chapter.ChapterDtos.ChapterVersionResponse;
 import com.storyforge.domain.chapter.ChapterDtos.UpdateChapterRequest;
 import com.storyforge.service.chapter.ChapterService;
 import com.storyforge.service.orchestration.PipelineOrchestrator;
@@ -38,6 +39,11 @@ public class ChapterController {
     @GetMapping("/chapters/{chapterId}")
     public ChapterResponse get(@PathVariable Long chapterId) {
         return chapterService.get(chapterId);
+    }
+
+    @GetMapping("/chapters/{chapterId}/versions")
+    public List<ChapterVersionResponse> versions(@PathVariable Long chapterId) {
+        return chapterService.versions(chapterId);
     }
 
     @PutMapping("/chapters/{chapterId}")

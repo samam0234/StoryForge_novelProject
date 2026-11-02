@@ -23,11 +23,11 @@ class LLMError(Exception):
 class LLMClient(Protocol):
     is_mock: bool
 
-    async def structured(self, *, system: str, prompt: str, schema: type[T]) -> T: ...
+    async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T: ...
 
-    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000) -> str: ...
+    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str: ...
 
-    def stream(self, *, system: str, prompt: str) -> AsyncIterator[str]: ...
+    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]: ...
 
 
 class MockLLM:
@@ -35,13 +35,13 @@ class MockLLM:
 
     is_mock = True
 
-    async def structured(self, *, system: str, prompt: str, schema: type[T]) -> T:
+    async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T:
         raise NotImplementedError("mock 모드에서는 mock_writer를 사용합니다.")
 
-    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000) -> str:
+    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
         raise NotImplementedError("mock 모드에서는 mock_writer를 사용합니다.")
 
-    def stream(self, *, system: str, prompt: str) -> AsyncIterator[str]:
+    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
         raise NotImplementedError("mock 모드에서는 mock_writer를 사용합니다.")
 
 
@@ -50,21 +50,25 @@ class AnthropicLLM:
 
     def __init__(self, settings: Settings) -> None:
         self._client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key or None)
-        self._common = {
-            "model": settings.llm_model,
-            "betas": [FALLBACK_BETA],
-            "fallbacks": "default",
-            "output_config": {"effort": settings.llm_effort},
-        }
+        self._default_model = settings.llm_model
+        self._effort = settings.llm_effort
 
-    async def structured(self, *, system: str, prompt: str, schema: type[T]) -> T:
+    def _params(self, model: str | None) -> dict:
+        name = model or self._default_model
+        params: dict = {"model": name, "output_config": {"effort": self._effort}}
+        # Haiku에는 서버 측 refusal fallback이 없습니다.
+        if not name.startswith("claude-haiku"):
+            params |= {"betas": [FALLBACK_BETA], "fallbacks": "default"}
+        return params
+
+    async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T:
         try:
             response = await self._client.beta.messages.parse(
                 max_tokens=16000,
                 system=system,
                 messages=[{"role": "user", "content": prompt}],
                 output_format=schema,
-                **self._common,
+                **self._params(model),
             )
         except anthropic.APIError as e:
             raise LLMError(f"Claude API 호출 실패: {e}") from e
@@ -73,26 +77,26 @@ class AnthropicLLM:
             raise LLMError("구조화 응답을 해석하지 못했습니다.")
         return response.parsed_output
 
-    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000) -> str:
+    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
         try:
             response = await self._client.beta.messages.create(
                 max_tokens=max_tokens,
                 system=system,
                 messages=[{"role": "user", "content": prompt}],
-                **self._common,
+                **self._params(model),
             )
         except anthropic.APIError as e:
             raise LLMError(f"Claude API 호출 실패: {e}") from e
         _check_stop(response.stop_reason)
         return "".join(b.text for b in response.content if b.type == "text")
 
-    async def stream(self, *, system: str, prompt: str) -> AsyncIterator[str]:
+    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
         try:
             async with self._client.beta.messages.stream(
                 max_tokens=64000,
                 system=system,
                 messages=[{"role": "user", "content": prompt}],
-                **self._common,
+                **self._params(model),
             ) as s:
                 async for chunk in s.text_stream:
                     yield chunk

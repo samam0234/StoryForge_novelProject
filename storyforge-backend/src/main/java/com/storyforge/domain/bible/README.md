@@ -8,6 +8,7 @@
 |------|------|
 | `StoryBible.java` | 엔티티 (캐릭터 목록 포함) |
 | `Character.java` | 엔티티 (`currentState` JSONB) |
+| `StoryBibleVersion.java`, `StoryBibleVersionRepository.java` | 버전 이력 (스냅샷) |
 | `StoryBibleRepository.java` | 리포지토리 |
 | `BibleDtos.java` | 요청·응답 record |
 

@@ -18,6 +18,7 @@
 | Database | PostgreSQL 16+ | PostgreSQL 16 (Docker 이미지 `postgres:16`) | pgvector는 Phase 3 |
 | 인프라 | Docker Compose (개발), 향후 Kubernetes | Docker Compose (DB만) | 서비스 3개는 로컬 프로세스로 실행 |
 | 안정성 | Circuit Breaker, Rate Limiting | Resilience4j 2.4.0, 자체 필터 | [stability.md](stability.md) |
+| 내보내기 | Markdown, DOCX, PDF | commonmark 0.32, Apache POI 6.0, OpenPDF 3.0, 나눔고딕 내장 | [should-features.md](should-features.md) |
 | 관측성 | Spring Actuator, Prometheus, 구조화 로깅 | Actuator `health`, `info`만 노출 | Prometheus 미도입 |
 
 ## 2. 포트 (로컬 개발)

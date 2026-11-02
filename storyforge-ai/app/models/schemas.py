@@ -14,6 +14,9 @@ class Schema(BaseModel):
 class ProjectInfo(Schema):
     title: str
     genre: str | None = None
+    # 프로젝트 설정 (기획서 §9.6-5). 비어 있으면 서비스 기본값을 씁니다.
+    model: str | None = None
+    default_tone: str | None = None
 
 
 class CharacterInfo(Schema):

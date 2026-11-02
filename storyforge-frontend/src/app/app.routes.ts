@@ -28,6 +28,10 @@ export const routes: Routes = [
         loadComponent: () => import('./features/outline/outline.page').then((m) => m.OutlinePage),
       },
       {
+        path: 'settings',
+        loadComponent: () => import('./features/projects/project-settings.page').then((m) => m.ProjectSettingsPage),
+      },
+      {
         path: 'chapters',
         loadComponent: () => import('./features/chapters/chapter-workspace.page').then((m) => m.ChapterWorkspacePage),
       },

@@ -86,6 +86,10 @@ sequenceDiagram
 
 `/api/v1/**`는 JWT가 필요합니다. 토큰 검증은 Spring Security가, 프로젝트·챕터 소유자 검사는 `OwnershipInterceptor`가 합니다. FastAPI는 기존대로 내부 전용이라 인증을 하지 않습니다. 자세한 내용은 [../plan/auth.md](../plan/auth.md)를 보세요.
 
+## 안정성·Should 기능 (2026-11-02)
+
+AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용됩니다 ([stability.md](../plan/stability.md)). 내보내기와 버전 이력은 Spring Boot 안에서 처리하며 AI 서비스를 호출하지 않습니다 ([should-features.md](../plan/should-features.md)).
+
 ## 구현 메모 (2026-10-22)
 
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)

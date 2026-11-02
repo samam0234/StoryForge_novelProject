@@ -271,7 +271,7 @@ public class PipelineOrchestrator {
     }
 
     private static ProjectInfo projectInfo(Project p) {
-        return new ProjectInfo(p.getTitle(), p.getGenre());
+        return new ProjectInfo(p.getTitle(), p.getGenre(), p.getModel(), p.getDefaultTone());
     }
 
     private static BibleInfo bibleInfo(StoryBible b) {

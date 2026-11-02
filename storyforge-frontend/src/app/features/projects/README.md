@@ -6,7 +6,8 @@
 
 | 파일 | 내용 |
 |------|------|
-| `project-shell.page.ts` | 프로젝트 상단(제목, 파이프라인 단계) + Bible/Outline/챕터 탭 |
+| `project-shell.page.ts` | 프로젝트 상단(제목, 파이프라인 단계, 내보내기) + Bible/Outline/챕터/설정 탭 |
+| `project-settings.page.ts` | 프로젝트 설정, 삭제 (§9.6-5) |
 | `project-context.ts` | 프로젝트·상태 신호를 하위 화면과 공유 (화면 단위 provider) |
 | `project-create.dialog.ts` | 새 프로젝트 입력 다이얼로그 |
 

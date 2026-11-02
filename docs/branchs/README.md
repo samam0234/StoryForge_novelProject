@@ -30,7 +30,7 @@
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
 | `feature/diagnostics-readme` | VS Code 경고 정리, README 실행 가이드 개편 | `develop` | 2026-10-23 | develop 병합 |
-| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능 | `develop` | 2026-11-02 | 진행 중 |
+| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능 | `develop` | 2026-11-02 | develop 병합 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 

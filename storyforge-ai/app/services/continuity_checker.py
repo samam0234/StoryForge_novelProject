@@ -65,6 +65,7 @@ async def check_continuity(llm: LLMClient, ctx: ChapterContext, content: str) ->
                 content=content,
             ),
             schema=ContinuityIssues,
+            model=ctx.project.model,
         )
         issues.extend(found.issues)
     return ContinuityResult(issues=issues, score=score(issues))

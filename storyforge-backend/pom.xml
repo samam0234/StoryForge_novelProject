@@ -77,6 +77,22 @@
             <artifactId>resilience4j-reactor</artifactId>
             <version>${resilience4j.version}</version>
         </dependency>
+        <!-- 내보내기 (기획서 §6.4) -->
+        <dependency>
+            <groupId>org.commonmark</groupId>
+            <artifactId>commonmark</artifactId>
+            <version>0.32.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>6.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>3.0.5</version>
+        </dependency>
         <!-- OpenAPI 명세 (기획서 §11) -->
         <dependency>
             <groupId>org.springdoc</groupId>

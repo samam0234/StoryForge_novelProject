@@ -56,6 +56,7 @@ def _stream_body(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator[str]:
             previous_chapters=ctx.previous_chapters,
             outline=ctx.outline_chapter,
         ),
+        model=ctx.project.model,
     )
 
 
@@ -63,4 +64,7 @@ async def _summarize(llm: LLMClient, ctx: ChapterContext, content: str) -> str:
     """다음 챕터 컨텍스트로 쓰일 요약"""
     if llm.is_mock:
         return mock_writer.summary(ctx)
-    return (await llm.text(system=render("system"), prompt=render("summary", content=content), max_tokens=2000)).strip()
+    text = await llm.text(
+        system=render("system"), prompt=render("summary", content=content), max_tokens=2000, model=ctx.project.model
+    )
+    return text.strip()

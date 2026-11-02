@@ -86,6 +86,9 @@ cd storyforge-backend
 | Outline 생성 / 저장 / 확정 | `POST .../outline/generate`, `PUT .../outline`, `PUT .../outline/confirm` | `BIBLE_CONFIRMED`, `OUTLINE_DRAFT` |
 | 챕터 생성 (SSE) | `POST .../chapters/{num}/generate` | `OUTLINE_CONFIRMED`, `CHAPTER_REVIEW` |
 | 챕터 승인 | `PUT /api/v1/chapters/{id}/confirm` | `CHAPTER_REVIEW` |
+| 내보내기 | `GET /api/v1/projects/{id}/export?format=md\|docx\|pdf` | 승인된 챕터가 있을 때 |
+| 이력 | `GET .../bible/versions`, `GET /api/v1/chapters/{id}/versions` | — |
+| 설정 | `PUT /api/v1/projects/{id}` | — |
 
 - 나머지 API는 모두 `Authorization: Bearer <토큰>`이 필요합니다. 없으면 **401**, 다른 사용자의 리소스는 **404**입니다 ([auth.md](../docs/plan/auth.md)).
 - 허용되지 않는 상태에서 요청하면 **409**, AI 서비스 장애는 **502**입니다.
@@ -126,6 +129,10 @@ storyforge-backend/
 
 ## 아직 없는 것
 
+- 리프레시 토큰 (토큰이 만료되면 다시 로그인)
+- Bible·Outline 확정 취소 (기획서에 정의 없음)
+- Prometheus 지표 (기획서 §12)
+- 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))
 
 ## 관련 문서
 

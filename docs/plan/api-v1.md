@@ -42,6 +42,15 @@
 | GET | `/projects/{id}/chapters` | 챕터 목록 | |
 | GET / PUT | `/chapters/{id}` | 챕터 조회 / 검토 중 수정 | §6.3 "사용자 승인/수정" |
 
+### Should 기능 ([should-features.md](should-features.md))
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| PUT | `/projects/{id}` | 프로젝트 설정 저장 |
+| GET | `/projects/{id}/export?format=md\|docx\|pdf` | 승인된 챕터 내보내기 |
+| GET | `/projects/{id}/bible/versions` | Bible 버전 이력 (최신순) |
+| GET | `/chapters/{id}/versions` | 챕터 생성·수정 이력 (최신순) |
+
 ### 챕터 생성 규칙
 
 - 생성할 수 있는 챕터는 **확정된 챕터 수 + 1**뿐입니다. 이전 챕터를 승인하지 않으면 다음 챕터를 만들 수 없습니다.

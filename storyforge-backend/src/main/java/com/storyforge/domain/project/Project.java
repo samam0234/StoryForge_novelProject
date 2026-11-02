@@ -24,6 +24,16 @@ public class Project {
     /** 소유자. 인증 도입 전 데이터만 비어 있습니다. */
     private Long ownerId;
 
+    /** 생성에 쓸 모델. 비어 있으면 AI 서비스 기본값 (기획서 §9.6-5) */
+    private String model;
+
+    /** Bible 생성 때 반영할 기본 톤 */
+    @Column(columnDefinition = "text")
+    private String defaultTone;
+
+    @Column(nullable = false)
+    private String exportFormat = "md";
+
     /** 동시 요청 방지 (낙관적 락) */
     @Version
     private long version;
@@ -52,6 +62,15 @@ public class Project {
         touch();
     }
 
+    public void updateSettings(String title, String genre, String model, String defaultTone, String exportFormat) {
+        this.title = title;
+        this.genre = genre;
+        this.model = model;
+        this.defaultTone = defaultTone;
+        this.exportFormat = exportFormat;
+        touch();
+    }
+
     public void touch() {
         this.updatedAt = Instant.now();
     }
@@ -61,6 +80,9 @@ public class Project {
     public String getGenre() { return genre; }
     public ProjectStatus getStatus() { return status; }
     public Long getOwnerId() { return ownerId; }
+    public String getModel() { return model; }
+    public String getDefaultTone() { return defaultTone; }
+    public String getExportFormat() { return exportFormat; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 }
