@@ -9,6 +9,8 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * FastAPI 내부 API를 흉내 내는 테스트 서버. 실제 HTTP/SSE로 응답합니다.
@@ -18,17 +20,35 @@ public class StubAiServer {
     public enum ChapterMode { OK, SSE_ERROR, HTTP_500 }
 
     private HttpServer server;
+    private int boundPort = 0;
     private volatile ChapterMode chapterMode = ChapterMode.OK;
     private volatile boolean failSync = false;
+    private volatile long chapterDelayMillis = 0;
+    private final AtomicInteger syncCalls = new AtomicInteger();
     /** 받은 챕터 요청 본문 (컨텍스트 주입 검증용) */
     public final List<String> chapterRequests = new CopyOnWriteArrayList<>();
 
+    /** 연결 실패 재현: 같은 포트로 다시 열 수 있게 멈춥니다. */
+    public void stop() {
+        boundPort = server.getAddress().getPort();
+        server.stop(0);
+    }
+
+    public void restart() {
+        start();
+    }
+
     void start() {
         try {
-            server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+            server = HttpServer.create(new InetSocketAddress("127.0.0.1", boundPort), 0);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+        server.setExecutor(Executors.newCachedThreadPool(r -> {
+            Thread t = new Thread(r);
+            t.setDaemon(true);
+            return t;
+        }));
         server.createContext("/internal/generate/bible", ex -> respondSync(ex, """
                 {"worldSetting":"세계","theme":"테마","tone":"톤","characters":[
                   {"name":"한서윤","description":"설명","personality":"성격","relationships":"관계"}]}"""));
@@ -44,11 +64,21 @@ public class StubAiServer {
     void reset() {
         chapterMode = ChapterMode.OK;
         failSync = false;
+        chapterDelayMillis = 0;
+        syncCalls.set(0);
         chapterRequests.clear();
     }
 
     public void chapterMode(ChapterMode mode) {
         this.chapterMode = mode;
+    }
+
+    public int syncCalls() {
+        return syncCalls.get();
+    }
+
+    public void chapterDelayMillis(long millis) {
+        this.chapterDelayMillis = millis;
     }
 
     public void failSync(boolean fail) {
@@ -73,6 +103,13 @@ public class StubAiServer {
     private void chapter(HttpExchange ex) throws IOException {
         String body = read(ex);
         chapterRequests.add(body);
+        if (chapterDelayMillis > 0) {
+            try {
+                Thread.sleep(chapterDelayMillis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
         if (chapterMode == ChapterMode.HTTP_500) {
             ex.sendResponseHeaders(500, -1);
             ex.close();
@@ -94,6 +131,7 @@ public class StubAiServer {
 
     private void respondSync(HttpExchange ex, String json) throws IOException {
         read(ex);
+        syncCalls.incrementAndGet();
         if (failSync) {
             ex.sendResponseHeaders(500, -1);
             ex.close();

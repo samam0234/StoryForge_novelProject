@@ -12,6 +12,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -19,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.util.List;
 
 /**
@@ -28,7 +30,8 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint,
+                                            RateLimitProperties rateLimit, ObjectMapper objectMapper) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -44,6 +47,9 @@ public class SecurityConfig {
                         .jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(problemEntryPoint))
                 .exceptionHandling(e -> e.authenticationEntryPoint(problemEntryPoint))
+                // 사용자별로 세므로 토큰 인증 뒤에 둡니다. 빈으로 등록하면 서블릿 필터로 한 번 더 걸립니다.
+                .addFilterAfter(new RateLimitFilter(rateLimit, objectMapper, Clock.systemUTC()),
+                        BearerTokenAuthenticationFilter.class)
                 .build();
     }
 

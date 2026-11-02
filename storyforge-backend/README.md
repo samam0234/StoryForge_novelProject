@@ -67,6 +67,8 @@ cd storyforge-backend
 | `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
 | `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | `12h` | 토큰 유효 기간 |
+| `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
+| `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` | 사용자당 AI 생성 요청 |
 
 예: `DB_PASSWORD=secret BACKEND_PORT=9090 ./mvnw spring-boot:run`
 
@@ -118,13 +120,12 @@ storyforge-backend/
 |------|-------------|
 | `Connection to localhost:5433 refused` | DB가 꺼져 있습니다. 루트에서 `docker compose up -d` 후 `docker compose ps`로 healthy 확인 |
 | `Port 8080 was already in use` | 이전에 띄운 백엔드 JVM이 남아 있는 경우가 많습니다 (셸만 닫으면 JVM이 남음). [local-port-conflicts.md](../docs/repeater/local-port-conflicts.md)의 확인 명령으로 PID를 찾아 종료하거나 `BACKEND_PORT`를 바꿉니다 |
-| 생성 요청이 502 | AI 서비스(8001)가 꺼져 있습니다. `storyforge-ai`를 실행합니다 |
+| 생성 요청이 502 | AI 서비스(8001)가 꺼져 있습니다. `storyforge-ai`를 실행합니다. 실패가 반복되면 Circuit Breaker가 30초간 호출을 막습니다 |
+| 429 응답 | 요청 한도 초과입니다 ([stability.md](../docs/plan/stability.md)). 1분 뒤 풀립니다 |
 | 시작 로그에 `sun.misc.Unsafe` 경고 | JDK 26에서 Netty가 내는 경고로, 동작에는 영향이 없습니다 |
 
 ## 아직 없는 것
 
-- Rate Limiting, Circuit Breaker (기획서 §13, §15)
-- 생성 도중 서버가 종료됐을 때 `CHAPTER_GENERATING` 상태 복구
 
 ## 관련 문서
 

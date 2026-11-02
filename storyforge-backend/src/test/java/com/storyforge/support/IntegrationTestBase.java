@@ -1,6 +1,8 @@
 package com.storyforge.support;
 
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -45,14 +47,21 @@ public abstract class IntegrationTestBase {
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
         registry.add("storyforge.ai.base-url", AI::baseUrl);
+        // 테스트는 같은 IP에서 많이 호출합니다. 제한 동작은 RateLimitFilterTest에서 검증합니다.
+        registry.add("storyforge.rate-limit.auth-per-minute", () -> 100_000);
+        registry.add("storyforge.rate-limit.generate-per-minute", () -> 100_000);
     }
 
     @LocalServerPort
     protected int port;
 
+    @Autowired
+    protected CircuitBreaker aiCircuitBreaker;
+
     @BeforeEach
     void resetAi() {
         AI.reset();
+        aiCircuitBreaker.reset();
     }
 
     protected Response call(String method, String path, Object body, String token) throws Exception {

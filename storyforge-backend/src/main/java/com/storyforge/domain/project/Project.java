@@ -24,6 +24,10 @@ public class Project {
     /** 소유자. 인증 도입 전 데이터만 비어 있습니다. */
     private Long ownerId;
 
+    /** 동시 요청 방지 (낙관적 락) */
+    @Version
+    private long version;
+
     @Column(nullable = false)
     private Instant createdAt;
 

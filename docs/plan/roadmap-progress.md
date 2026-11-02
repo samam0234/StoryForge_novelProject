@@ -12,7 +12,7 @@
 | 2 | TipTap 에디터 | 완료 | [저장 형식 결정](../trainings/2026-11-02_chapter-content-markdown.md) |
 | 3 | 실제 Claude API 연동 검증 | **보류** (사용자 결정) | mock 공급자로 진행 |
 | 4 | 테스트 보강 | 완료 | 백엔드 19건(통합 16건은 실제 PostgreSQL), AI 13건, 프론트 23건 |
-| 5 | 안정성 | 진행 예정 | |
+| 5 | 안정성 | 완료 | [stability.md](stability.md) |
 | 6 | Should 기능 (내보내기, 버전 히스토리·Diff, 프로젝트 설정) | 진행 예정 | |
 
 ## 2026-11-02 결정 사항

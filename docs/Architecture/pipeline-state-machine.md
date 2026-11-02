@@ -45,6 +45,10 @@ stateDiagram-v2
 프로젝트 상태와 별개로, 각 Chapter 엔티티는 `DRAFT` / `CONFIRMED` 상태를 가집니다.
 §7.2 6단계에 따라 사용자가 승인하면 Chapter가 `CONFIRMED`로 바뀌고 프로젝트 상태 머신이 갱신됩니다.
 
+## 서버 재시작 시 복구
+
+생성 도중 서버가 꺼져 `CHAPTER_GENERATING`에 남은 프로젝트는 시작할 때 v1.3 복귀 전이로 되돌립니다 ([stability.md](../plan/stability.md)).
+
 ## 미정 사항 (기획서에 정의 없음)
 
 - 확정 후 되돌리기 (예: `BIBLE_CONFIRMED` → `BIBLE_DRAFT`) 허용 여부. 현재는 구현하지 않았고, 확정 후에는 Bible·Outline을 수정할 수 없습니다.
