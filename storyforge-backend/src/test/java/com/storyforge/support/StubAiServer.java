@@ -53,6 +53,9 @@ public class StubAiServer {
                 {"worldSetting":"세계","theme":"테마","tone":"톤","characters":[
                   {"name":"한서윤","description":"설명","personality":"성격","relationships":"관계"}]}"""));
         server.createContext("/internal/generate/outline", this::outline);
+        server.createContext("/internal/guide/chat", ex -> respondSync(ex, """
+                {"reply":"안내입니다.","actions":[{"label":"Codicomperchat으로 이동","kind":"collab","target":"codicomperchat"},
+                  {"label":"이슈 보기","kind":"route","target":"/issues"}]}"""));
         server.createContext("/internal/generate/chapter", this::chapter);
         server.start();
     }

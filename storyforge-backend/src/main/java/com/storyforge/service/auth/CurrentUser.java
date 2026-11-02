@@ -12,6 +12,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class CurrentUser {
 
+    /** 공개 화면용: 익명이면 null입니다. */
+    public Long idOrNull() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getPrincipal() instanceof Jwt jwt ? Long.valueOf(jwt.getSubject()) : null;
+    }
+
     public Long id() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {

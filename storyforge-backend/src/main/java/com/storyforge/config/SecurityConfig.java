@@ -41,6 +41,13 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        // 커뮤니티 읽기는 공개입니다 (공유 링크를 로그인 없이 열 수 있어야 합니다). 내려받기는 로그인이 필요합니다.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/works", "/api/v1/works/*", "/api/v1/works/*/chapters/*",
+                                "/api/v1/works/*/comments", "/api/v1/works/*/activity", "/api/v1/works/*/shares",
+                                "/api/v1/works/*/network", "/api/v1/posts", "/api/v1/posts/*", "/api/v1/posts/*/comments",
+                                "/api/v1/users/*", "/api/v1/users/*/works", "/api/v1/users/*/contributions",
+                                "/api/v1/users/*/activity", "/api/v1/users/*/achievements", "/api/v1/issues").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/shares/*/visit").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().denyAll())
                 .oauth2ResourceServer(o -> o

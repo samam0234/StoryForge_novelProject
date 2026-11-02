@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RateLimitFilterTest {
 
     private Clock clock = Clock.fixed(Instant.parse("2026-11-02T00:00:00Z"), ZoneOffset.UTC);
-    private final RateLimitFilter filter = new RateLimitFilter(new RateLimitProperties(2, 1), JsonMapper.builder().build(),
+    private final RateLimitFilter filter = new RateLimitFilter(new RateLimitProperties(2, 1, 1), JsonMapper.builder().build(),
             new Clock() {
                 @Override
                 public java.time.ZoneId getZone() {
@@ -63,5 +63,22 @@ class RateLimitFilterTest {
             assertThat(request("GET", "/api/v1/projects", "3.3.3.3")).isEqualTo(200);
             assertThat(request("PUT", "/api/v1/projects/1/bible", "3.3.3.3")).isEqualTo(200);
         }
+    }
+
+    @Test
+    void guideChatSharesGenerateLimitAndCommunityWritesHaveTheirOwn() throws Exception {
+        assertThat(request("POST", "/api/v1/guide/chat", "9.9.9.1")).isEqualTo(200);
+        assertThat(request("POST", "/api/v1/guide/chat", "9.9.9.1")).isEqualTo(429);
+
+        assertThat(request("POST", "/api/v1/works/1/comments", "9.9.9.2")).isEqualTo(200);
+        assertThat(request("POST", "/api/v1/posts", "9.9.9.2")).isEqualTo(429);
+        assertThat(request("POST", "/api/v1/works/1/clone", "9.9.9.2")).isEqualTo(429);
+        assertThat(request("POST", "/api/v1/works/1/shares", "9.9.9.2")).isEqualTo(429);
+
+        assertThat(request("POST", "/api/v1/shares/abc/visit", "9.9.9.3")).isEqualTo(200);
+        assertThat(request("POST", "/api/v1/shares/abc/visit", "9.9.9.3")).isEqualTo(429);
+
+        // 읽기는 제한하지 않습니다.
+        assertThat(request("GET", "/api/v1/works/1/comments", "9.9.9.2")).isEqualTo(200);
     }
 }

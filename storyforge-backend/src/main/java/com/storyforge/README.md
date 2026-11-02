@@ -22,11 +22,18 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 | `BibleController` | Bible 조회·저장·생성·확정, 버전 이력 |
 | `OutlineController` | Outline 조회·저장·생성·확정 |
 | `ChapterController` | 챕터 목록, 생성(SSE), 조회·수정·승인, 이력 |
+| `ProjectCommunityController` | 프로젝트 게시, 작업 기록, 원본 비교 |
+| `WorkController` | 게시판, 작품 읽기·수정·삭제, 내려받기, 작업 그래프, 추천, 댓글, Clone, 공유 |
+| `PackageController` | 패키지포지 편집, 편입 요청 |
+| `PostController` | 창작 라운지 |
+| `UserController` | 프로필, 활동 잔디, 업적, 이슈, 계정 설정 |
+| `GuideController` | AI 가이드챗 |
 
 ## service/ — 비즈니스 로직
 
 | 패키지 | 파일 | 내용 |
 |--------|------|------|
+| `community/` | `WorkService`, `CloneService`, `ShareService`, `PackageService`, `EngagementService`, `PostService`, `IssueService`, `ActivityService`, `AchievementService`, `ProfileService`, `GuideService` | 커뮤니티 ([community.md](../../../../../../docs/plan/community.md)) |
 | `orchestration/` | `PipelineStateMachine`, `PipelineOrchestrator`, `PipelineRecovery` | 상태 머신, 단계 실행, 시작 시 복구 ([README](service/orchestration/README.md)) |
 | `project/` | `ProjectService`, `OutlineService`, `ExportService` | 프로젝트·Outline, 내보내기. `ManuscriptBlocks`·`ManuscriptDocxWriter`·`ManuscriptPdfWriter`가 Markdown을 DOCX·PDF로 변환 |
 | `bible/` | `BibleService` | Bible 전체 교체 저장, 버전 증가, 이력 |

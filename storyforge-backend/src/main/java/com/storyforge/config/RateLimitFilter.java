@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 1분 고정 창 Rate Limiting (기획서 §13). 메모리 기반이라 서버 한 대 기준입니다.
- * 로그인·가입은 IP별, AI 생성은 사용자별로 셉니다. 다른 요청은 제한하지 않습니다.
+ * 로그인·가입은 IP별, AI 생성·가이드챗과 커뮤니티 작성은 사용자별로 셉니다. 공유 방문은 IP별로 셉니다.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -51,9 +51,16 @@ public class RateLimitFilter extends OncePerRequestFilter {
             if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/register")) {
                 key = "auth:" + request.getRemoteAddr();
                 limit = properties.authPerMinute();
-            } else if (path.startsWith("/api/v1/") && path.endsWith("/generate")) {
+            } else if (path.startsWith("/api/v1/") && (path.endsWith("/generate") || path.equals("/api/v1/guide/chat"))) {
                 key = "generate:" + principal(request);
                 limit = properties.generatePerMinute();
+            } else if (path.matches("/api/v1/shares/[^/]+/visit")) {
+                key = "visit:" + request.getRemoteAddr();
+                limit = properties.communityPerMinute();
+            } else if (path.equals("/api/v1/posts") || path.matches("/api/v1/(works|posts)/[^/]+/comments")
+                    || path.matches("/api/v1/works/[^/]+/(shares|clone)")) {
+                key = "community:" + principal(request);
+                limit = properties.communityPerMinute();
             }
         }
         if (key != null && !tryAcquire(key, limit)) {

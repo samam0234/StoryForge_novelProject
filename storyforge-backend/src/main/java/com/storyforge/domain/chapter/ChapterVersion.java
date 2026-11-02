@@ -9,7 +9,7 @@ import java.time.Instant;
 @Table(name = "chapter_version")
 public class ChapterVersion {
 
-    public enum Source { GENERATED, EDITED }
+    public enum Source { GENERATED, EDITED, CLONED }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
