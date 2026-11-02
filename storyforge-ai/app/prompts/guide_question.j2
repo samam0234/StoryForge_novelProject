@@ -1,0 +1,14 @@
+<user_context>
+이름: {{ context.display_name }}
+프로젝트 수: {{ context.project_count }}
+공개 작품 수: {{ context.published_works }}
+{% if context.project_title %}최근 프로젝트: {{ context.project_title }} ({{ context.project_status }})
+{% endif %}</user_context>
+{% if reference %}
+<reference>
+{{ reference }}
+</reference>
+{% endif %}
+<question>
+{{ question }}
+</question>
