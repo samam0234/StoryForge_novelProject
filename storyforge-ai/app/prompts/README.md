@@ -29,4 +29,3 @@
 
 - [기획서 §8.3](../../../StoryForge_기획서_v1.2.md)
 - [docs/novel/](../../../docs/novel) (프롬프트 작성 규칙)
-- 상위 폴더: [../README.md](../README.md)

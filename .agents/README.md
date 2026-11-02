@@ -22,7 +22,7 @@
 | Grok | `.grok/rules.md` |
 | Antigravity | `.antigravity/rules.md` |
 
-어댑터 폴더마다 `README.md`가 있어 그 폴더에 무엇이 있는지 설명합니다.
+어댑터 폴더에는 따로 README를 두지 않습니다. 이 표가 설명을 대신합니다.
 
 ## 수정 순서
 

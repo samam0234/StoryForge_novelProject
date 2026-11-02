@@ -1,11 +1,27 @@
 # storyforge-backend/src/test/
 
-백엔드 테스트 소스 루트입니다. `./mvnw test`로 실행합니다.
+백엔드 테스트입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
 
-## 들어갈 것
+**통합 테스트는 Docker로 실제 PostgreSQL을 띄웁니다.** Docker가 꺼져 있으면 통합 테스트는 실패가 아니라 **건너뜀**으로 처리되므로, 결과의 "Skipped"를 확인하세요.
 
-- `java/` — 단위·통합 테스트 (패키지 구조는 `src/main/java`와 같게)
+## 파일
+
+| 위치 (`java/com/storyforge/`) | 내용 |
+|-------------------------------|------|
+| `support/IntegrationTestBase` | Testcontainers PostgreSQL 한 개를 공유, 실제 HTTP 호출·상태 준비 도우미. 요청 제한은 테스트에서 사실상 해제 |
+| `support/StubAiServer` | FastAPI 내부 API를 흉내 내는 서버(실제 HTTP/SSE). 실패·지연·중단 모드 전환 |
+| `controller/AuthIntegrationTest` | 가입·로그인, 이메일 대소문자, 401, 다른 사용자의 리소스 404 |
+| `service/orchestration/PipelineIntegrationTest` | 전체 파이프라인, 컨텍스트 주입, 단계·검토 건너뛰기 차단, 재생성, 실패 시 상태 복귀 |
+| `service/orchestration/StabilityIntegrationTest` | 멈춘 상태 복구, Circuit Breaker, 동시 생성 차단, 연결 실패 502 |
+| `service/orchestration/PipelineStateMachineTest` | 전이 표 단위 테스트 |
+| `service/project/ShouldFeaturesIntegrationTest` | 내보내기(MD·DOCX·PDF), 생성·수정 이력, Bible 버전, 프로젝트 설정 |
+| `config/RateLimitFilterTest` | 요청 제한과 시간 창 초기화 |
+
+## 규칙
+
+- 실제 Claude API를 호출하는 테스트는 넣지 않습니다. AI는 `StubAiServer`로 대신합니다.
+- 새 엔드포인트를 추가하면 소유자 검사(다른 사용자 404) 케이스도 함께 추가합니다.
 
 ## 관련 문서
 
-- 상위 폴더: [../README.md](../README.md)
+- [docs/plan/stability.md](../../../docs/plan/stability.md), [docs/plan/auth.md](../../../docs/plan/auth.md)

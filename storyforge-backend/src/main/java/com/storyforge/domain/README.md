@@ -1,27 +1,27 @@
 # storyforge-backend/src/main/java/com/storyforge/domain/
 
-도메인별 **Entity, DTO, Repository**를 둡니다. 기획서 §10 데이터 모델 초안을 기준으로 합니다.
-
-## 들어갈 것
-
-- JPA Entity, 요청/응답 DTO, Repository 인터페이스
+도메인별 **Entity, DTO, Repository**를 둡니다. 기획서 §10 데이터 모델 초안이 기준이고, 스키마는 `src/main/resources/db/migration/`이 정합니다.
 
 ## 들어가지 않을 것
 
 - 비즈니스 로직 → `service/`
 
-## 하위 폴더
+## 패키지
 
-| 폴더 | 내용 |
-|------|------|
-| [user/](user/) | 사용자 도메인 |
-| [bible/](bible/) | Story Bible 도메인 |
-| [chapter/](chapter/) | Chapter 도메인 |
-| [outline/](outline/) | Outline 도메인 |
-| [project/](project/) | Project 도메인 |
+| 패키지 | 파일 | 내용 |
+|--------|------|------|
+| `user/` | `AppUser`, `AppUserRepository`, `AuthDtos` | 사용자(이메일, 비밀번호 해시). 기획서 §8.2에는 없고 인증을 위해 추가 ([auth.md](../../../../../../../docs/plan/auth.md)) |
+| `project/` | `Project`, `ProjectStatus`, `ProjectRepository`, `ProjectDtos` | 프로젝트, 파이프라인 상태, 설정(모델·기본 톤·내보내기 형식), 낙관적 락 |
+| `bible/` | `StoryBible`, `Character`, `StoryBibleVersion`, 각 Repository, `BibleDtos` | Bible과 캐릭터(`currentState` JSONB), 버전 이력 스냅샷 |
+| `outline/` | `Outline`, `OutlineChapter`, `OutlineRepository`, `OutlineDtos` | Outline(`chapters` JSONB) |
+| `chapter/` | `Chapter`, `ChapterStatus`, `ChapterVersion`, `ContinuityReport`, `ContinuityIssue`, 각 Repository, `ChapterDtos` | 챕터(DRAFT/CONFIRMED), 생성·수정 이력, Continuity 리포트 |
+
+## 규칙
+
+- `ProjectStatus`의 이름과 순서는 기획서 §7.2 그대로입니다. 바꾸지 않습니다.
+- JSON 컬럼(`currentState`, `chapters`, `issues`, `generationContext`)은 `@JdbcTypeCode(SqlTypes.JSON)`을 씁니다.
 
 ## 관련 문서
 
 - [기획서 §8.2, §10](../../../../../../../StoryForge_기획서_v1.2.md)
-- db/migration (스키마)
-- 상위 폴더: [../README.md](../README.md)
+- [should-features.md](../../../../../../../docs/plan/should-features.md) — 이력과 설정
