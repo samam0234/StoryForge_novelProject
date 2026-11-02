@@ -4,7 +4,7 @@
 
 ## 내보내기
 
-`GET /api/v1/projects/{id}/export?format=md|docx|pdf` — `format`을 생략하면 프로젝트 설정값을 씁니다.
+`GET /api/v1/projects/{id}/export?format=md|txt|docx|pdf|html|epub|odt|rtf` — `format`을 생략하면 프로젝트 설정값을 씁니다.
 
 | 항목 | 결정 | 이유 |
 |------|------|------|

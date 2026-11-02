@@ -18,7 +18,7 @@
 | Database | PostgreSQL 16+ | PostgreSQL 16 (Docker 이미지 `postgres:16`) | pgvector는 Phase 3 |
 | 인프라 | Docker Compose (개발), 향후 Kubernetes | Docker Compose (DB만) | 서비스 3개는 로컬 프로세스로 실행 |
 | 안정성 | Circuit Breaker, Rate Limiting | Resilience4j 2.4.0, 자체 필터 | [stability.md](stability.md) |
-| 내보내기 | Markdown, DOCX, PDF | commonmark 0.32, Apache POI 6.0, OpenPDF 3.0, 나눔고딕 내장 | [should-features.md](should-features.md) |
+| 내보내기 | Markdown, DOCX, PDF | commonmark 0.32, Apache POI 6.0, OpenPDF 3.0, 나눔고딕 내장. TXT, HTML, EPUB, ODT, RTF는 라이브러리 없이 생성 | [should-features.md](should-features.md), [community.md](community.md) |
 | 관측성 | Spring Actuator, Prometheus, 구조화 로깅 | Actuator `health`, `info`만 노출 | Prometheus 미도입 |
 
 ## 2. 포트 (로컬 개발)
@@ -47,7 +47,10 @@
 | `JWT_SECRET` | backend | (없음) | 32바이트 이상. 비우면 시작할 때 무작위 생성(재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | backend | `20` | IP당 로그인·가입 |
-| `RATE_LIMIT_GENERATE_PER_MINUTE` | backend | `30` | 사용자당 AI 생성 |
+| `RATE_LIMIT_GENERATE_PER_MINUTE` | backend | `30` | 사용자당 AI 생성, 가이드챗 |
+| `RATE_LIMIT_COMMUNITY_PER_MINUTE` | backend | `60` | 사용자당 글·댓글·공유·Clone, IP당 공유 방문 |
+| `COMMUNITY_ZONE` | backend | `Asia/Seoul` | 작업 그래프와 활동 잔디의 날짜 기준 |
+| `CODICOMPERCHAT_URL` | backend | (없음) | 가이드챗 콜라보 이동 주소. 비우면 이동 버튼을 표시하지 않음 |
 | `LLM_PROVIDER` | ai | `mock` | `mock` / `anthropic` |
 | `LLM_MODEL` | ai | `claude-opus-5-5` | |
 | `LLM_EFFORT` | ai | `medium` | Claude Opus 5.5 기본값과 같게 명시 |

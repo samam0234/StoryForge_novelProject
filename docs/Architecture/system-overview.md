@@ -90,6 +90,10 @@ sequenceDiagram
 
 AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용됩니다 ([stability.md](../plan/stability.md)). 내보내기와 버전 이력은 Spring Boot 안에서 처리하며 AI 서비스를 호출하지 않습니다 ([should-features.md](../plan/should-features.md)).
 
+## 커뮤니티 (2026-11-03)
+
+프로젝트(비공개 작업실)와 작품(공개 스냅샷)을 나눕니다. 게시는 승인된 챕터를 복사하며 파이프라인 상태를 바꾸지 않습니다. 작업 기록(`activity_event`)이 작업 그래프와 활동 잔디의 원본이고, 업적은 커밋 뒤에 계산합니다. 커뮤니티 읽기 API만 로그인 없이 열려 있습니다. 가이드챗의 LLM 호출도 FastAPI에서만 합니다. [community.md](../plan/community.md)
+
 ## 구현 메모 (2026-10-22)
 
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)
