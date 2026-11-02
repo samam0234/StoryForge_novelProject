@@ -108,9 +108,9 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 | 서비스 | 명령 (각 서비스 폴더에서) |
 |--------|---------------------------|
-| 백엔드 | `./mvnw test` |
+| 백엔드 | `./mvnw test` (통합 테스트에 Docker 필요) |
 | AI 서비스 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` 후 `.venv/Scripts/python -m pytest -q` |
-| 프론트엔드 | `npx ng build` (빌드·타입 검사) |
+| 프론트엔드 | `npx ng test --watch=false`, `npx ng build` |
 
 ## 현재 구현 범위
 

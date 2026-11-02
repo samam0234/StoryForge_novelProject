@@ -4,6 +4,8 @@
 
 | 폴더 | 내용 |
 |------|------|
+| [support/](support/) | 통합 테스트 기반, AI 스텁 |
+| [controller/](controller/) | 인증·소유자 통합 테스트 |
 | [service/](service/) | 서비스 계층 테스트 |
 
 ## 관련 문서

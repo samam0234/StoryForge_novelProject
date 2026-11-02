@@ -42,7 +42,7 @@ npx ng serve          # 또는 npm start
 | 다른 포트로 실행 | `npx ng serve --port 4300` | 백엔드 `FRONTEND_ORIGIN`도 맞춰야 합니다 (CORS) |
 | 운영 빌드 | `npx ng build` | `dist/storyforge-frontend/browser/` |
 | 빌드 감시 | `npm run watch` | 변경 시 개발 빌드 |
-| 단위 테스트 | `npx ng test` | Vitest (아직 테스트 파일 없음) |
+| 단위 테스트 | `npx ng test --watch=false` | Vitest (SSE 파서, 인증, 가드, 공통 컴포넌트) |
 
 ### 백엔드 주소를 바꾸려면
 

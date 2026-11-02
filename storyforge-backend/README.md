@@ -49,7 +49,7 @@ cd storyforge-backend
 | 하려는 일 | 명령 | 결과 |
 |-----------|------|------|
 | 개발 실행 | `./mvnw spring-boot:run` | 8080 |
-| 테스트 | `./mvnw test` | 상태 머신 단위 테스트 |
+| 테스트 | `./mvnw test` | 단위 + 통합 테스트. 통합 테스트는 **Docker로 PostgreSQL을 띄웁니다** (Docker가 꺼져 있으면 건너뜀) |
 | JAR 빌드 | `./mvnw package` | `target/storyforge-backend-0.0.1-SNAPSHOT.jar` |
 | JAR 실행 | `java -jar target/storyforge-backend-0.0.1-SNAPSHOT.jar` | 8080 |
 | DB 초기화 | 루트에서 `docker compose down -v && docker compose up -d` | 데이터 삭제 후 재시작 시 스키마 재생성 |

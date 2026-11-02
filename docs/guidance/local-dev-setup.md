@@ -61,7 +61,7 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 ```bash
 cd storyforge-backend && ./mvnw test
 cd storyforge-ai && .venv/Scripts/python -m pip install -r requirements-dev.txt && .venv/Scripts/python -m pytest -q
-cd storyforge-frontend && npx ng build
+cd storyforge-frontend && npx ng test --watch=false && npx ng build
 ```
 
 ## 실패하면
