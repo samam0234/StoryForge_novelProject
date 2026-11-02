@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -11,7 +12,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
-import { Character, StoryBible } from '../../core/models/models';
+import { BibleSnapshot, BibleVersion, Character, StoryBible } from '../../core/models/models';
+import { VersionHistoryData, VersionHistoryDialog } from '../../shared/components/version-history/version-history.dialog';
 import { ProjectContext } from '../projects/project-context';
 
 interface BibleDraft {
@@ -19,6 +21,14 @@ interface BibleDraft {
   theme: string;
   tone: string;
   characters: Character[];
+}
+
+/** Diff로 비교할 수 있도록 스냅샷을 읽기 쉬운 텍스트로 바꿉니다. */
+function snapshotText(s: BibleSnapshot): string {
+  const characters = s.characters
+    .map((c) => `- ${c.name}\n  설명: ${c.description ?? ''}\n  성격: ${c.personality ?? ''}\n  관계: ${c.relationships ?? ''}`)
+    .join('\n');
+  return `[세계관]\n${s.worldSetting ?? ''}\n\n[테마]\n${s.theme ?? ''}\n\n[톤]\n${s.tone ?? ''}\n\n[캐릭터]\n${characters}`;
 }
 
 /** Story Bible 에디터 (기획서 §6.1, §9.6 2번) */
@@ -69,6 +79,7 @@ interface BibleDraft {
             <span class="sf-muted">저장됨</span>
           }
           <span class="sf-spacer"></span>
+          <button mat-button (click)="openHistory()"><mat-icon>history</mat-icon> 이력</button>
           @if (editable()) {
             <button mat-stroked-button [disabled]="busy() || !dirty()" (click)="save()">
               <mat-icon>save</mat-icon> 저장
@@ -90,7 +101,7 @@ interface BibleDraft {
               </mat-form-field>
               @if (editable()) {
                 <div class="regen">
-                  <mat-form-field appearance="outline">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
                     <mat-label>다시 생성할 아이디어</mat-label>
                     <textarea matInput rows="3" [(ngModel)]="prompt" maxlength="4000"></textarea>
                     <mat-hint>다시 생성하면 현재 내용을 덮어쓰고 버전이 올라갑니다.</mat-hint>
@@ -234,6 +245,7 @@ export class StoryBiblePage {
   private readonly api = inject(StoryforgeApi);
   private readonly snack = inject(MatSnackBar);
   private readonly router = inject(Router);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly bible = signal<StoryBible | null>(null);
   protected readonly draft = signal<BibleDraft | null>(null);
@@ -297,6 +309,41 @@ export class StoryBiblePage {
     this.run(this.api.confirmBible(id), () => {
       this.ctx.refresh();
       this.snack.open('Story Bible을 확정했습니다.', undefined, { duration: 2500 });
+    });
+  }
+
+  /** 버전 이력 비교 (기획서 §6.1). 불러오면 편집 중인 내용에 채우기만 하고 저장은 사용자가 합니다. */
+  protected openHistory(): void {
+    const id = this.ctx.projectId();
+    if (id == null) return;
+    this.api.bibleVersions(id).subscribe({
+      next: (versions) => {
+        const data: VersionHistoryData<BibleVersion> = {
+          title: 'Story Bible 이력',
+          canRestore: this.editable(),
+          versions: versions.map((v) => ({
+            version: v.version,
+            createdAt: v.createdAt,
+            text: snapshotText(v.snapshot),
+            payload: v,
+          })),
+        };
+        this.dialog
+          .open(VersionHistoryDialog, { data, width: '900px', maxWidth: '95vw' })
+          .afterClosed()
+          .subscribe((restored?: BibleVersion) => {
+            if (!restored) return;
+            const s = restored.snapshot;
+            this.draft.set({
+              worldSetting: s.worldSetting ?? '',
+              theme: s.theme ?? '',
+              tone: s.tone ?? '',
+              characters: s.characters.map((c) => ({ ...c })),
+            });
+            this.touch();
+          });
+      },
+      error: (e) => this.toast(e),
     });
   }
 

@@ -7,6 +7,9 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 | 파일 | 내용 |
 |------|------|
 | `V1__init_schema.sql` | 기획서 §10 테이블 6개 |
+| `V2__users_and_ownership.sql` | `app_user`, 프로젝트 소유자 FK |
+| `V3__project_version.sql` | 프로젝트 낙관적 락 |
+| `V4__project_settings_and_versions.sql` | 프로젝트 설정 컬럼, Bible·챕터 이력 테이블 |
 
 ## 들어갈 것
 

@@ -3,8 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  BibleVersion,
   Chapter,
+  ChapterVersion,
   Character,
+  ExportFormat,
   Outline,
   OutlineChapter,
   Project,
@@ -31,6 +34,15 @@ export class StoryforgeApi {
   getStatus(id: number): Observable<ProjectStatusInfo> {
     return this.http.get<ProjectStatusInfo>(`${this.base}/projects/${id}/status`);
   }
+  updateProject(
+    id: number,
+    body: { title: string; genre: string | null; model: string | null; defaultTone: string | null; exportFormat: ExportFormat },
+  ): Observable<Project> {
+    return this.http.put<Project>(`${this.base}/projects/${id}`, body);
+  }
+  exportProject(id: number, format: ExportFormat): Observable<Blob> {
+    return this.http.get(`${this.base}/projects/${id}/export`, { params: { format }, responseType: 'blob' });
+  }
   deleteProject(id: number): Observable<void> {
     return this.http.delete<void>(`${this.base}/projects/${id}`);
   }
@@ -47,6 +59,9 @@ export class StoryforgeApi {
   }
   generateBible(projectId: number, prompt: string): Observable<StoryBible> {
     return this.http.post<StoryBible>(`${this.base}/projects/${projectId}/bible/generate`, { prompt });
+  }
+  bibleVersions(projectId: number): Observable<BibleVersion[]> {
+    return this.http.get<BibleVersion[]>(`${this.base}/projects/${projectId}/bible/versions`);
   }
   confirmBible(projectId: number): Observable<void> {
     return this.http.put<void>(`${this.base}/projects/${projectId}/bible/confirm`, null);
@@ -72,6 +87,9 @@ export class StoryforgeApi {
   }
   updateChapter(id: number, body: { title: string | null; content: string | null }): Observable<Chapter> {
     return this.http.put<Chapter>(`${this.base}/chapters/${id}`, body);
+  }
+  chapterVersions(id: number): Observable<ChapterVersion[]> {
+    return this.http.get<ChapterVersion[]>(`${this.base}/chapters/${id}/versions`);
   }
   confirmChapter(id: number): Observable<Chapter> {
     return this.http.put<Chapter>(`${this.base}/chapters/${id}/confirm`, null);

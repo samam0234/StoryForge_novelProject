@@ -7,6 +7,7 @@
 | 파일 | 내용 |
 |------|------|
 | `GlobalExceptionHandler.java` | 예외 → ProblemDetail (404, 409, 400, 502) |
+| `AuthenticationFailedException.java` | 401 (로그인 실패) |
 | `NotFoundException.java` | 404 |
 | `InvalidStateException.java` | 409 (현재 상태에서 불가) |
 | `AiServiceException.java` | 502 (AI 서비스 장애) |

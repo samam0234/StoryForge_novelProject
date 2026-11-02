@@ -19,6 +19,7 @@ async def generate_outline(llm: LLMClient, request: OutlineGenerateRequest) -> O
             chapter_count=request.chapter_count,
         ),
         schema=OutlineGenerateResponse,
+        model=request.project.model,
     )
     if not result.chapters:
         raise LLMError("Outline 챕터가 비어 있습니다.")

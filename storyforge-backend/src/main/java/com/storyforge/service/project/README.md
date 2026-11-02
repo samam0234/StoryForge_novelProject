@@ -7,6 +7,8 @@
 | 파일 | 내용 |
 |------|------|
 | `ProjectService.java` | 프로젝트 CRUD, 진행률·다음 챕터 번호 계산 |
+| `ExportService.java` | 승인된 챕터 내보내기 (형식 선택, 파일명) |
+| `ManuscriptBlocks.java`, `ManuscriptDocxWriter.java`, `ManuscriptPdfWriter.java` | Markdown 파싱, DOCX·PDF 생성 |
 | `OutlineService.java` | Outline 저장·조회 (order 재번호) |
 
 ## 들어갈 것

@@ -2,7 +2,15 @@
 
 로그인 상태와 JWT 처리를 맡습니다. Spring Boot가 발급한 토큰을 저장하고 요청에 붙입니다.
 
-> **아직 구현 전입니다.** 백엔드 JWT 인증이 도입되면 이 폴더에 서비스·인터셉터·가드를 추가합니다.
+## 현재 파일
+
+| 파일 | 내용 |
+|------|------|
+| `auth.service.ts` | 세션 보관(localStorage), 로그인·가입·로그아웃, 401 처리 |
+| `auth.interceptor.ts` | `/api/v1` 요청에 Bearer 토큰 첨부, 401이면 로그인으로 |
+| `auth.guard.ts` | `authGuard`(로그인 필요), `guestGuard`(로그인 화면용) |
+
+챕터 SSE는 `fetch`를 쓰므로 인터셉터 대신 `core/api/chapter-stream.service.ts`에서 토큰을 직접 붙입니다.
 
 ## 들어갈 것
 

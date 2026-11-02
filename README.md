@@ -31,11 +31,11 @@ Maven과 Angular CLI는 따로 설치하지 않아도 됩니다 (Maven Wrapper, 
 # ① DB — PostgreSQL 16 (호스트 포트 5433)
 docker compose up -d
 
-# ② AI 서비스 — http://127.0.0.1:8000 (처음 한 번만 venv 생성·설치)
+# ② AI 서비스 — http://127.0.0.1:8001 (처음 한 번만 venv 생성·설치)
 cd storyforge-ai
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 
 # ③ 백엔드 — http://localhost:8080 (Flyway가 스키마를 자동 생성)
 cd storyforge-backend
@@ -54,14 +54,14 @@ npx ng serve
 
 | 확인 | 명령 / 주소 | 기대 결과 |
 |------|-------------|-----------|
-| AI 서비스 | `curl http://127.0.0.1:8000/health` | `{"status":"ok","provider":"mock",...}` |
+| AI 서비스 | `curl http://127.0.0.1:8001/health` | `{"status":"ok","provider":"mock",...}` |
 | 백엔드 | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | API 문서 | http://localhost:8080/swagger-ui.html | Swagger UI |
-| 웹 화면 | http://localhost:4200 | 다크 테마 대시보드 |
+| 웹 화면 | http://localhost:4200 | 로그인 화면 (회원가입 후 대시보드) |
 
 `health`가 JSON이 아니거나 포트 사용 중 오류가 나면 [local-port-conflicts.md](docs/repeater/local-port-conflicts.md)를 보세요.
 
-화면에서 **새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
+화면에서 **회원가입 → 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
 
 ### 4. 실제 Claude로 생성하기
 
@@ -69,7 +69,7 @@ npx ng serve
 
 ```bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
-  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-ant-..."`를 먼저 실행합니다.
@@ -89,12 +89,12 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | 서비스 | 기술 | 포트 | 실행 안내 |
 |--------|------|------|-----------|
 | 프론트엔드 | Angular 21 + Angular Material | 4200 | [storyforge-frontend/README.md](storyforge-frontend/README.md) |
-| 백엔드 (Orchestrator) | Spring Boot 3.5 + PostgreSQL | 8080 | [storyforge-backend/README.md](storyforge-backend/README.md) |
-| AI 서비스 | FastAPI + anthropic SDK | 8000 (내부 전용) | [storyforge-ai/README.md](storyforge-ai/README.md) |
+| 백엔드 (Orchestrator) | Spring Boot 4.1 + PostgreSQL | 8080 | [storyforge-backend/README.md](storyforge-backend/README.md) |
+| AI 서비스 | FastAPI + anthropic SDK | 8001 (내부 전용) | [storyforge-ai/README.md](storyforge-ai/README.md) |
 | DB | PostgreSQL 16 (Docker) | 5433 | [docker-compose.yml](docker-compose.yml) |
 
 ```
-브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP──▶ FastAPI(8000) ──▶ LLM
+브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP──▶ FastAPI(8001) ──▶ LLM
                                               │
                                               ▼
                                        PostgreSQL(5433)
@@ -108,23 +108,22 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 | 서비스 | 명령 (각 서비스 폴더에서) |
 |--------|---------------------------|
-| 백엔드 | `./mvnw test` |
+| 백엔드 | `./mvnw test` (통합 테스트에 Docker 필요) |
 | AI 서비스 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` 후 `.venv/Scripts/python -m pytest -q` |
-| 프론트엔드 | `npx ng build` (빌드·타입 검사) |
+| 프론트엔드 | `npx ng test --watch=false`, `npx ng build` |
 
 ## 현재 구현 범위
 
 | 상태 | 항목 |
 |------|------|
-| ✅ 동작 | 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), Continuity 리포트, 사용자 승인, 다크/라이트 테마 |
-| ⏳ 미구현 | 인증(JWT — 현재 API 개방), TipTap 에디터(현재 textarea), 내보내기, 버전 히스토리·Diff |
-| ❓ 확인 대기 | 상태 머신 임시 전이 2개 — [pipeline-state-machine.md](docs/Architecture/pipeline-state-machine.md) "구현 임시안" |
+| ✅ 동작 | JWT 인증(가입·로그인·소유자 검사), 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), TipTap 에디터, Continuity 리포트, 사용자 승인, 내보내기(MD·DOCX·PDF), 버전 이력·Diff, 프로젝트 설정, Rate Limiting·Circuit Breaker, 다크/라이트 테마 |
+| ⏸ 보류 | 실제 Claude API 연동 검증 (현재 mock 공급자로 동작) |
 
 ## 저장소 구조
 
 ```
 StoryForge/
-├── StoryForge_기획서_v1.2.md   # 기획 원본 (이동·이름 변경 금지, .docx는 같은 내용의 배포본)
+├── StoryForge_기획서_v1.2.md   # 기획 원본 (이동·이름 변경 금지, 문서 버전 1.3, .docx는 요약본)
 ├── AGENTS.md                   # 작업 규칙 요약
 ├── .agents/                    # 규칙 정본 (skills/storyforge/SKILL.md)
 ├── .claude/ .cursor/ .codex/ .grok/ .antigravity/   # 도구별 규칙 어댑터
@@ -151,9 +150,9 @@ StoryForge/
 
 ## 기여 규칙 요약
 
-1. `develop`에서 `feature/*`, `bugfix/*`, `experimental/*` 브랜치를 만들어 작업합니다.
+1. 지정된 작업 브랜치(현재 `feature/auth`)에서 작업합니다. 브랜치를 임의로 추가하지 않습니다.
 2. 커밋 메시지는 `type(scope): 한국어 요약` 형식입니다.
-3. 커밋마다 [docs/branchs/commits/](docs/branchs/commits/)에 기록 파일을 남깁니다.
-4. 병합은 `git merge --no-ff`로만 하고, 흐름은 `feature → develop → main`입니다. `main`이 기본 브랜치입니다.
+3. 커밋 기록([docs/branchs/commits/](docs/branchs/commits/))은 필요할 때만 남깁니다.
+4. 병합은 `git merge --no-ff`로만 하고, 흐름은 `feature → develop → main`입니다. `main`이 기본 브랜치이며, `main` 반영은 사용자의 직접 명령이 있을 때만 합니다.
 
 세부 규칙은 [AGENTS.md](AGENTS.md)를 보세요.

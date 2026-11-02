@@ -14,6 +14,10 @@
 | 문서 | 내용 | 상태 |
 |------|------|------|
 | [CURRENT_STACK.md](CURRENT_STACK.md) | 확정 기술 스택, 버전, 포트, 환경 변수 | 확정 (첫 구현 기준) |
+| [roadmap-progress.md](roadmap-progress.md) | 작업 순서, 결정 사항, 진행 방식 변경 이력 | 진행 중 |
+| [auth.md](auth.md) | JWT 인증 흐름, 결정 사항, 기획서 §8에 추가한 폴더 | 첫 구현 기준 |
+| [stability.md](stability.md) | Rate Limiting, Circuit Breaker, 복구, 동시 요청 | 첫 구현 기준 |
+| [should-features.md](should-features.md) | 내보내기, 버전 이력·Diff, 프로젝트 설정 | 첫 구현 기준 |
 | [api-v1.md](api-v1.md) | 외부 API, 내부 API, SSE 이벤트, Continuity 리포트 형식 | 첫 구현 기준 |
 
 ## 작성 예정 (기획서 §16 "즉시 다음 단계" 기준)

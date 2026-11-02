@@ -4,7 +4,8 @@
 
 | 폴더 | 내용 |
 |------|------|
-| [orchestration/](orchestration/) | 파이프라인 상태 머신 테스트 |
+| [orchestration/](orchestration/) | 파이프라인, 상태 머신, 안정성 테스트 |
+| [project/](project/) | 내보내기, 이력, 설정 테스트 |
 
 ## 관련 문서
 

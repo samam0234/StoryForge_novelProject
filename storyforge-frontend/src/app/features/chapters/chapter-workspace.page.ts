@@ -1,6 +1,7 @@
 import { Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,13 +12,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription, forkJoin } from 'rxjs';
 import { ChapterStream } from '../../core/api/chapter-stream.service';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
-import { Chapter, OutlineChapter, StoryBible } from '../../core/models/models';
+import { Chapter, ChapterVersion, OutlineChapter, StoryBible } from '../../core/models/models';
+import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
+import { VersionHistoryData, VersionHistoryDialog } from '../../shared/components/version-history/version-history.dialog';
 import { ProjectContext } from '../projects/project-context';
 
 /**
  * 챕터 워크스페이스 (기획서 §9.6 4번)
  * 좌: Outline + Bible 컨텍스트 / 중앙: 에디터(스트리밍) / 우: Continuity 리포트, 캐릭터 상태 / 하단: 승인·재생성
- * TODO(editor): 기획서 §9.2의 TipTap 에디터로 교체
  */
 @Component({
   selector: 'sf-chapter-workspace-page',
@@ -30,6 +32,7 @@ import { ProjectContext } from '../projects/project-context';
     MatInputModule,
     MatProgressBarModule,
     MatTooltipModule,
+    RichTextEditorComponent,
   ],
   template: `
     @if (!ready()) {
@@ -105,9 +108,9 @@ import { ProjectContext } from '../projects/project-context';
                 <mat-label>제목</mat-label>
                 <input matInput [(ngModel)]="editTitle" (ngModelChange)="dirty.set(true)" />
               </mat-form-field>
-              <textarea class="editor" [(ngModel)]="editContent" (ngModelChange)="dirty.set(true)"></textarea>
+              <sf-rich-text-editor [value]="editContent" (valueChange)="onContentChange($event)" />
             } @else {
-              <article class="stream">{{ c.content }}</article>
+              <sf-rich-text-editor [value]="c.content ?? ''" [editable]="false" />
             }
           } @else {
             <div class="sf-empty">
@@ -124,6 +127,9 @@ import { ProjectContext } from '../projects/project-context';
               <span class="sf-muted">다른 곳에서 생성 중입니다. 잠시 후 새로고침하세요.</span>
             }
             <span class="sf-spacer"></span>
+            @if (current() && !streaming()) {
+              <button mat-button (click)="openHistory()"><mat-icon>history</mat-icon> 이력</button>
+            }
             @if (editable() && dirty()) {
               <button mat-stroked-button (click)="saveEdit()" [disabled]="busy()"><mat-icon>save</mat-icon> 수정 저장</button>
             }
@@ -184,8 +190,8 @@ import { ProjectContext } from '../projects/project-context';
     .workspace {
       display: grid;
       grid-template-columns: 280px minmax(0, 1fr) 300px;
-      height: calc(100vh - 64px - 150px);
-      min-height: 520px;
+      height: 100%;
+      min-height: 420px;
     }
     .col {
       overflow-y: auto;
@@ -290,8 +296,7 @@ import { ProjectContext } from '../projects/project-context';
         opacity: 0.2;
       }
     }
-    .stream,
-    .editor {
+    .stream {
       flex: 1;
       white-space: pre-wrap;
       line-height: 1.85;
@@ -302,14 +307,6 @@ import { ProjectContext } from '../projects/project-context';
       border: 1px solid var(--sf-border);
       color: var(--sf-text);
       overflow-y: auto;
-    }
-    .editor {
-      font-family: inherit;
-      resize: none;
-      outline: none;
-    }
-    .editor:focus {
-      border-color: var(--sf-secondary);
     }
     .actions {
       padding-top: 4px;
@@ -377,6 +374,7 @@ export class ChapterWorkspacePage {
   private readonly api = inject(StoryforgeApi);
   private readonly stream = inject(ChapterStream);
   private readonly snack = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly outline = signal<OutlineChapter[]>([]);
   protected readonly bible = signal<StoryBible | null>(null);
@@ -468,6 +466,37 @@ export class ChapterWorkspacePage {
     this.endStream();
   }
 
+  /** 생성·수정 이력 비교 (기획서 §6.4). 불러오면 편집기에 채우기만 하고 저장은 사용자가 합니다. */
+  protected openHistory(): void {
+    const c = this.current();
+    if (!c) return;
+    this.api.chapterVersions(c.id).subscribe({
+      next: (versions) => {
+        const data: VersionHistoryData<ChapterVersion> = {
+          title: `${c.number}장 이력`,
+          canRestore: this.editable(),
+          versions: versions.map((v) => ({
+            version: v.version,
+            label: v.source === 'GENERATED' ? 'AI 생성' : '직접 수정',
+            createdAt: v.createdAt,
+            text: v.content ?? '',
+            payload: v,
+          })),
+        };
+        this.dialog
+          .open(VersionHistoryDialog, { data, width: '900px', maxWidth: '95vw' })
+          .afterClosed()
+          .subscribe((restored?: ChapterVersion) => {
+            if (!restored) return;
+            this.editTitle = restored.title ?? '';
+            this.editContent = restored.content ?? '';
+            this.dirty.set(true);
+          });
+      },
+      error: (e) => this.toast(e),
+    });
+  }
+
   protected saveEdit(): void {
     const c = this.current();
     if (!c) return;
@@ -516,6 +545,11 @@ export class ChapterWorkspacePage {
   private replace(c: Chapter): void {
     this.chapters.update((l) => l.map((x) => (x.id === c.id ? c : x)));
     this.resetEdit();
+  }
+
+  protected onContentChange(markdown: string): void {
+    this.editContent = markdown;
+    this.dirty.set(true);
   }
 
   private resetEdit(): void {

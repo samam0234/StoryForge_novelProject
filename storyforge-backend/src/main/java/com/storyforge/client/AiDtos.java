@@ -14,7 +14,7 @@ public final class AiDtos {
     private AiDtos() {
     }
 
-    public record ProjectInfo(String title, String genre) {
+    public record ProjectInfo(String title, String genre, String model, String defaultTone) {
     }
 
     public record CharacterInfo(String name, String description, String personality, String relationships,

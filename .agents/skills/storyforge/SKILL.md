@@ -50,9 +50,10 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - 병합 메시지는 다음 형식을 따릅니다.  
   `merge: feature/xxx into develop (no-ff)`
 
-### 커밋 기록 (생략 금지)
+### 커밋 기록 (필요할 때만)
 
-- 커밋마다 `docs/branchs/commits/`에 기록 파일을 만들고,  
+- **평소에는 작성하지 않습니다.** 사용자가 요청하거나 따로 남길 필요가 있을 때만 작성합니다. (v1.2 변경)
+- 작성할 때는 `docs/branchs/commits/`에 기록 파일을 만들고,  
   `docs/branchs/README.md` 목록 표에도 링크를 추가합니다.  
   **둘 다 같은 브랜치에 커밋**합니다.
 - 파일명 형식:  
@@ -61,7 +62,6 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - `HHMM`은 한 덩어리로 쓰고, 브랜치의 `/`는 `-`로 바꿉니다.
 - 본문은 `TEMPLATE.md`를 따릅니다.  
   섹션: **제목/커밋번호**, **주 내용**, **상세**, **결과**
-- `merge`나 작은 수정도 **예외가 아닙니다**.
 
 ---
 
@@ -70,6 +70,9 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - 작업과 커밋은 `feature/*`, `bugfix/*`, `experimental/*`에서만 합니다.
 - `develop`과 `main`은 **통합용**입니다.
 - 병합은 `git merge --no-ff`만 사용합니다.
+- **브랜치를 임의로 만들지 않습니다.** 사용자가 정해 준 브랜치만 씁니다. `feature/*` 형식이라도 새로 만들려면 먼저 확인합니다. (v1.2 추가)
+  - 현재 지정 브랜치: `main`, `develop`, 작업 브랜치 `feature/auth` **1개**
+- **`main` 병합·반영은 사용자의 직접 명령이 있을 때만** 합니다. 임의 반영이나 일방적인 반영은 금지합니다. (v1.2 추가)
 
 ### 금지 사항
 
@@ -87,7 +90,7 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 | 영역 | 기술 | 역할 |
 |------|------|------|
 | Frontend | Angular 18+ (`storyforge-frontend/`) | SPA, Material UI, TipTap, RxJS |
-| Orchestrator | Spring Boot 3.x (`storyforge-backend/`) | 인증, CRUD, 상태 머신, WebClient, Flyway |
+| Orchestrator | Spring Boot 4.x (`storyforge-backend/`) | 인증, CRUD, 상태 머신, WebClient, Flyway |
 | AI Service | FastAPI (`storyforge-ai/`) | 프롬프트 조립, LLM 스트리밍, Continuity 검증 |
 | Database | PostgreSQL 16+ | 영속화 (pgvector 확장 검토) |
 
@@ -105,6 +108,8 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED
 → CHAPTER_GENERATING → CHAPTER_REVIEW → COMPLETED
 ```
+
+기획서 v1.3 추가 전이: `CHAPTER_REVIEW → CHAPTER_GENERATING`(다음 챕터·재생성), `CHAPTER_GENERATING → OUTLINE_CONFIRMED`(첫 챕터 실패·중단 복귀)
 
 ### v1 / MVP 범위 준수
 
@@ -172,10 +177,14 @@ app/
 ### docs에서 하지 말 것
 
 - `docs/commits/`에 기록하지 않습니다. `docs/branchs/commits/`만 사용합니다.
-- 커밋 기록을 생략하지 않습니다.
 - 구현을 바꾸면서 `Architecture/`나 `CURRENT_STACK.md`를 갱신하지 않는 일이 없게 합니다.
 - 기획 원본을 `docs/` 안으로 옮기거나 이름을 바꾸지 않습니다.
 - 새 하위 폴더가 필요하면 **정본의 표에 용도를 추가한 뒤** 만듭니다.
+
+### 변경 사유 문서화 (v1.2 추가)
+
+- 기능이 바뀌거나, 문제가 생겨 진행 방식을 바꾸면 **사유와 바뀐 방식을 문서에 남깁니다.**
+- 위치: 구조·흐름은 `Architecture/`, 스펙과 진행 현황은 `plan/`, 선택 이유는 `trainings/`, 문제 원인은 `find_debug/`.
 
 ### 폴더 README 규칙 (v1.1 추가)
 
@@ -215,9 +224,9 @@ app/
 
 ---
 
-**문서 버전**: 1.1 (1.0 → 1.1: 폴더 README 규칙 추가)  
-**최종 갱신**: 2026-10-22  
+**문서 버전**: 1.2 (1.1 → 1.2: 커밋 기록은 필요할 때만, 브랜치·main 병합 제한, 변경 사유 문서화, 기획서 v1.3 반영)  
+**최종 갱신**: 2026-11-02  
 **상태**: 정본 (Canonical)  
 **프로젝트**: StoryForge  
-**기준 문서**: StoryForge_기획서_v1.2.md  
+**기준 문서**: StoryForge_기획서_v1.2.md (문서 버전 1.3, 파일명은 유지)  
 **스택**: Angular + Spring Boot + FastAPI + PostgreSQL

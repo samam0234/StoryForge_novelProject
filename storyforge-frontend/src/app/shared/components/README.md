@@ -17,6 +17,8 @@
 | 폴더 | 내용 |
 |------|------|
 | [pipeline-stepper/](pipeline-stepper/) | 파이프라인 7단계 표시 |
+| [version-history/](version-history/) | 버전 비교 다이얼로그 (Diff) |
+| [rich-text-editor/](rich-text-editor/) | TipTap 에디터 (Markdown 입출력) |
 
 ## 관련 문서
 

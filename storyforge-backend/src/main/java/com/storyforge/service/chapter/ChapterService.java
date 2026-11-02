@@ -2,6 +2,7 @@ package com.storyforge.service.chapter;
 
 import com.storyforge.domain.chapter.*;
 import com.storyforge.domain.chapter.ChapterDtos.ChapterResponse;
+import com.storyforge.domain.chapter.ChapterDtos.ChapterVersionResponse;
 import com.storyforge.domain.project.Project;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
@@ -18,10 +19,12 @@ public class ChapterService {
 
     private final ChapterRepository chapters;
     private final ContinuityReportRepository reports;
+    private final ChapterVersionRepository versions;
 
-    public ChapterService(ChapterRepository chapters, ContinuityReportRepository reports) {
+    public ChapterService(ChapterRepository chapters, ContinuityReportRepository reports, ChapterVersionRepository versions) {
         this.chapters = chapters;
         this.reports = reports;
+        this.versions = versions;
     }
 
     public List<ChapterResponse> list(Long projectId) {
@@ -59,6 +62,7 @@ public class ChapterService {
         chapter.applyDraft(title, content, summary, generationContext);
         chapter = chapters.save(chapter);
         reports.save(new ContinuityReport(chapter, issues, score));
+        saveVersion(chapter, ChapterVersion.Source.GENERATED);
         return chapter;
     }
 
@@ -68,8 +72,21 @@ public class ChapterService {
         if (chapter.getStatus() == ChapterStatus.CONFIRMED) {
             throw new InvalidStateException("확정된 챕터는 수정할 수 없습니다.");
         }
+        boolean changed = !Objects.equals(chapter.getTitle(), title) || !Objects.equals(chapter.getContent(), content);
         chapter.edit(title, content);
+        if (changed) {
+            saveVersion(chapter, ChapterVersion.Source.EDITED);
+        }
         return toResponse(chapter);
+    }
+
+    /** 생성·수정 이력 (기획서 §6.4), 최신순 */
+    public List<ChapterVersionResponse> versions(Long chapterId) {
+        return versions.findByChapterIdOrderByVersionDesc(chapterId).stream().map(ChapterVersionResponse::from).toList();
+    }
+
+    private void saveVersion(Chapter chapter, ChapterVersion.Source source) {
+        versions.save(new ChapterVersion(chapter, versions.countByChapterId(chapter.getId()) + 1, source));
     }
 
     public ChapterResponse toResponse(Chapter c) {

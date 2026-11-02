@@ -10,6 +10,7 @@
 | `ChapterStatus.java` | DRAFT / CONFIRMED |
 | `ContinuityReport.java` | 엔티티 (`issues` JSONB) |
 | `ContinuityIssue.java` | 이슈 record |
+| `ChapterVersion.java`, `ChapterVersionRepository.java` | 생성·수정 이력 |
 | `ChapterRepository.java` | 리포지토리 |
 | `ContinuityReportRepository.java` | 리포지토리 |
 | `ChapterDtos.java` | 요청·응답 record |

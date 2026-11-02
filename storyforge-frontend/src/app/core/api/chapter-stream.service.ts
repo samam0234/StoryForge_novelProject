@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../auth/auth.service';
 import { Chapter } from '../models/models';
 
 export type ChapterStreamEvent =
@@ -14,6 +15,8 @@ export type ChapterStreamEvent =
  */
 @Injectable({ providedIn: 'root' })
 export class ChapterStream {
+  private readonly auth = inject(AuthService);
+
   generate(projectId: number, chapterNumber: number): Observable<ChapterStreamEvent> {
     const url = `${environment.apiBaseUrl}/projects/${projectId}/chapters/${chapterNumber}/generate`;
     return new Observable<ChapterStreamEvent>((sub) => {
@@ -21,9 +24,18 @@ export class ChapterStream {
       (async () => {
         const res = await fetch(url, {
           method: 'POST',
-          headers: { Accept: 'text/event-stream, application/problem+json' },
+          // fetch는 HttpClient 인터셉터를 거치지 않으므로 토큰을 직접 붙입니다.
+          headers: {
+            Accept: 'text/event-stream, application/problem+json',
+            Authorization: `Bearer ${this.auth.token() ?? ''}`,
+          },
           signal: ctrl.signal,
         });
+        if (res.status === 401) {
+          this.auth.expire();
+          sub.complete();
+          return;
+        }
         if (!res.ok || !res.body) {
           const body = await res.json().catch(() => null);
           sub.next({ type: 'error', message: body?.detail ?? `요청에 실패했습니다 (${res.status})` });

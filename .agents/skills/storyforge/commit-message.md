@@ -49,7 +49,9 @@ docs(docs): 상태 머신 다이어그램 추가
 merge: feature/ai-chapter into develop (no-ff)
 ```
 
-## 커밋 기록 (생략 금지)
+## 커밋 기록 (필요할 때만)
+
+평소에는 작성하지 않습니다. 사용자가 요청하거나 따로 남길 필요가 있을 때만 작성합니다.
 
 1. 커밋 후 커밋 ID(짧은 해시)를 확인합니다.
 2. `docs/branchs/commits/`에 기록 파일을 만듭니다.
@@ -59,5 +61,3 @@ merge: feature/ai-chapter into develop (no-ff)
 3. 본문은 [docs/branchs/TEMPLATE.md](../../../docs/branchs/TEMPLATE.md)를 따릅니다.
 4. [docs/branchs/README.md](../../../docs/branchs/README.md) 목록 표에 링크를 추가합니다.
 5. 기록 파일과 목록 갱신을 **같은 브랜치에** 커밋합니다.
-
-merge나 작은 수정도 예외가 아닙니다.

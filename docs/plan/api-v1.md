@@ -2,9 +2,18 @@
 
 > 기준: 기획서 v1.2 §7.2, §10, §11
 > 실행 중인 백엔드의 OpenAPI 문서: `http://localhost:8080/swagger-ui.html`
+> **`/auth/register`, `/auth/login`을 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404입니다.
 > 오류 응답은 모두 RFC 9457 ProblemDetail(`application/problem+json`)이며, 사용자 메시지는 `detail`에 있습니다.
 
 ## 외부 API (Spring Boot, `/api/v1`)
+
+### 인증
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| POST | `/auth/register` | 가입 → 토큰 |
+| POST | `/auth/login` | 로그인 → 토큰 |
+| GET | `/auth/me` | 내 정보 |
 
 ### 기획서 §11에 있는 엔드포인트
 
@@ -24,7 +33,7 @@
 
 | 메서드 | 경로 | 설명 | 이유 |
 |--------|------|------|------|
-| GET | `/projects` | 목록 (최근 수정순) | 대시보드 (§9.6) |
+| GET | `/projects` | 내 프로젝트 목록 (최근 수정순) | 대시보드 (§9.6) |
 | GET / DELETE | `/projects/{id}` | 조회 / 삭제 | |
 | GET | `/projects/{id}/bible` | Bible 조회 (없으면 404) | |
 | PUT | `/projects/{id}/bible/confirm` | `BIBLE_DRAFT → BIBLE_CONFIRMED` | §7.2 상태 전이에 대응하는 요청이 §11에 없음 |
@@ -32,6 +41,15 @@
 | PUT | `/projects/{id}/outline/confirm` | `OUTLINE_DRAFT → OUTLINE_CONFIRMED` | 위와 같음 |
 | GET | `/projects/{id}/chapters` | 챕터 목록 | |
 | GET / PUT | `/chapters/{id}` | 챕터 조회 / 검토 중 수정 | §6.3 "사용자 승인/수정" |
+
+### Should 기능 ([should-features.md](should-features.md))
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| PUT | `/projects/{id}` | 프로젝트 설정 저장 |
+| GET | `/projects/{id}/export?format=md\|docx\|pdf` | 승인된 챕터 내보내기 |
+| GET | `/projects/{id}/bible/versions` | Bible 버전 이력 (최신순) |
+| GET | `/chapters/{id}/versions` | 챕터 생성·수정 이력 (최신순) |
 
 ### 챕터 생성 규칙
 

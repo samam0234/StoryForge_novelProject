@@ -1,6 +1,6 @@
 # storyforge-backend/
 
-StoryForge의 **Spring Boot Orchestrator**입니다. 외부에 노출되는 단일 API(`/api/v1`)이며, 파이프라인 상태 머신과 데이터 저장을 맡습니다.
+StoryForge의 **Spring Boot 4 Orchestrator**입니다. 외부에 노출되는 단일 API(`/api/v1`)이며, 파이프라인 상태 머신과 데이터 저장을 맡습니다.
 AI가 필요한 단계만 내부망의 FastAPI(`storyforge-ai`)에 맡깁니다.
 
 ---
@@ -14,7 +14,7 @@ AI가 필요한 단계만 내부망의 FastAPI(`storyforge-ai`)에 맡깁니다.
 | JDK | 21 이상 | 소스·타깃 21. 현재 개발 PC는 JDK 26으로 실행 중 (아래 참고) |
 | Docker | 실행 중 | PostgreSQL 16 컨테이너 |
 | Maven | 설치 불필요 | Maven Wrapper(`mvnw`)가 Maven 3.10을 자동으로 내려받습니다 |
-| AI 서비스 | `http://localhost:8000` | 없어도 서버는 뜹니다. 생성 요청만 502로 실패합니다 |
+| AI 서비스 | `http://localhost:8001` | 없어도 서버는 뜹니다. 생성 요청만 502로 실패합니다 |
 
 ### 1. DB 실행 (저장소 루트에서)
 
@@ -42,14 +42,14 @@ cd storyforge-backend
 |------|-------------|-----------|
 | 상태 | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | API 문서 | http://localhost:8080/swagger-ui.html | Swagger UI |
-| 프로젝트 목록 | `curl http://localhost:8080/api/v1/projects` | `[]` 또는 프로젝트 배열 |
+| 인증 확인 | `curl -i http://localhost:8080/api/v1/projects` | 토큰이 없으면 `401` |
 
 ### 명령어
 
 | 하려는 일 | 명령 | 결과 |
 |-----------|------|------|
 | 개발 실행 | `./mvnw spring-boot:run` | 8080 |
-| 테스트 | `./mvnw test` | 상태 머신 단위 테스트 |
+| 테스트 | `./mvnw test` | 단위 + 통합 테스트. 통합 테스트는 **Docker로 PostgreSQL을 띄웁니다** (Docker가 꺼져 있으면 건너뜀) |
 | JAR 빌드 | `./mvnw package` | `target/storyforge-backend-0.0.1-SNAPSHOT.jar` |
 | JAR 실행 | `java -jar target/storyforge-backend-0.0.1-SNAPSHOT.jar` | 8080 |
 | DB 초기화 | 루트에서 `docker compose down -v && docker compose up -d` | 데이터 삭제 후 재시작 시 스키마 재생성 |
@@ -63,8 +63,12 @@ cd storyforge-backend
 | `BACKEND_PORT` | `8080` | 서버 포트 |
 | `DB_URL` | `jdbc:postgresql://localhost:5433/storyforge` | JDBC URL |
 | `DB_USER` / `DB_PASSWORD` | `storyforge` / `storyforge` | 개발용. 운영에서는 반드시 바꿉니다 |
-| `AI_SERVICE_URL` | `http://localhost:8000` | FastAPI 주소 (내부망) |
+| `AI_SERVICE_URL` | `http://localhost:8001` | FastAPI 주소 (내부망) |
 | `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
+| `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
+| `JWT_TTL` | `12h` | 토큰 유효 기간 |
+| `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
+| `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` | 사용자당 AI 생성 요청 |
 
 예: `DB_PASSWORD=secret BACKEND_PORT=9090 ./mvnw spring-boot:run`
 
@@ -76,12 +80,17 @@ cd storyforge-backend
 
 | 단계 | 요청 | 허용 상태 |
 |------|------|-----------|
+| 가입 / 로그인 | `POST /api/v1/auth/register`, `POST /api/v1/auth/login` | 토큰 불필요 |
 | 프로젝트 생성 | `POST /api/v1/projects` | — |
 | Bible 생성 / 저장 / 확정 | `POST .../bible/generate`, `PUT .../bible`, `PUT .../bible/confirm` | `BIBLE_DRAFT` |
 | Outline 생성 / 저장 / 확정 | `POST .../outline/generate`, `PUT .../outline`, `PUT .../outline/confirm` | `BIBLE_CONFIRMED`, `OUTLINE_DRAFT` |
 | 챕터 생성 (SSE) | `POST .../chapters/{num}/generate` | `OUTLINE_CONFIRMED`, `CHAPTER_REVIEW` |
 | 챕터 승인 | `PUT /api/v1/chapters/{id}/confirm` | `CHAPTER_REVIEW` |
+| 내보내기 | `GET /api/v1/projects/{id}/export?format=md\|docx\|pdf` | 승인된 챕터가 있을 때 |
+| 이력 | `GET .../bible/versions`, `GET /api/v1/chapters/{id}/versions` | — |
+| 설정 | `PUT /api/v1/projects/{id}` | — |
 
+- 나머지 API는 모두 `Authorization: Bearer <토큰>`이 필요합니다. 없으면 **401**, 다른 사용자의 리소스는 **404**입니다 ([auth.md](../docs/plan/auth.md)).
 - 허용되지 않는 상태에서 요청하면 **409**, AI 서비스 장애는 **502**입니다.
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
@@ -90,17 +99,17 @@ cd storyforge-backend
 
 ```
 storyforge-backend/
-├── pom.xml                       # Spring Boot 3.5.16, springdoc
+├── pom.xml                       # Spring Boot 4.1.2, springdoc
 ├── mvnw, mvnw.cmd, .mvn/         # Maven Wrapper
 └── src/
     ├── main/java/com/storyforge/
     │   ├── controller/           # REST (/api/v1)
     │   ├── service/
     │   │   ├── orchestration/    # 상태 머신, 파이프라인 실행
-    │   │   ├── project/ bible/ chapter/
-    │   ├── domain/               # Entity, DTO, Repository (project, bible, outline, chapter)
+    │   │   ├── auth/ project/ bible/ chapter/
+    │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter)
     │   ├── client/               # FastAPI WebClient + 내부 계약(AiDtos)
-    │   ├── config/               # Security, WebClient, OpenAPI
+    │   ├── config/               # Security, JWT, 소유자 검사, WebClient, OpenAPI
     │   └── exception/            # ProblemDetail 변환
     ├── main/resources/
     │   ├── application.yml
@@ -114,17 +123,16 @@ storyforge-backend/
 |------|-------------|
 | `Connection to localhost:5433 refused` | DB가 꺼져 있습니다. 루트에서 `docker compose up -d` 후 `docker compose ps`로 healthy 확인 |
 | `Port 8080 was already in use` | 이전에 띄운 백엔드 JVM이 남아 있는 경우가 많습니다 (셸만 닫으면 JVM이 남음). [local-port-conflicts.md](../docs/repeater/local-port-conflicts.md)의 확인 명령으로 PID를 찾아 종료하거나 `BACKEND_PORT`를 바꿉니다 |
-| 생성 요청이 502 | AI 서비스(8000)가 꺼져 있습니다. `storyforge-ai`를 실행합니다 |
+| 생성 요청이 502 | AI 서비스(8001)가 꺼져 있습니다. `storyforge-ai`를 실행합니다. 실패가 반복되면 Circuit Breaker가 30초간 호출을 막습니다 |
+| 429 응답 | 요청 한도 초과입니다 ([stability.md](../docs/plan/stability.md)). 1분 뒤 풀립니다 |
 | 시작 로그에 `sun.misc.Unsafe` 경고 | JDK 26에서 Netty가 내는 경고로, 동작에는 영향이 없습니다 |
-| VS Code에 "OSS support for Spring Boot 3.5.x ended" 경고 | 기획서 §12가 3.x를 지정해 유지 중입니다. 4.x로 올릴지는 결정 대기입니다 |
-
-> JDK 26은 Spring Boot 3.5의 공식 지원 범위 밖입니다. 문제가 생기면 JDK 21 또는 25 설치를 권장합니다.
 
 ## 아직 없는 것
 
-- JWT 인증 — 현재 `/api/v1/**`가 열려 있습니다 ([SecurityConfig](src/main/java/com/storyforge/config/SecurityConfig.java)의 TODO)
-- Rate Limiting, Circuit Breaker (기획서 §13, §15)
-- 생성 도중 서버가 종료됐을 때 `CHAPTER_GENERATING` 상태 복구
+- 리프레시 토큰 (토큰이 만료되면 다시 로그인)
+- Bible·Outline 확정 취소 (기획서에 정의 없음)
+- Prometheus 지표 (기획서 §12)
+- 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))
 
 ## 관련 문서
 

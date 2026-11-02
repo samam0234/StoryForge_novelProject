@@ -42,7 +42,7 @@ npx ng serve          # 또는 npm start
 | 다른 포트로 실행 | `npx ng serve --port 4300` | 백엔드 `FRONTEND_ORIGIN`도 맞춰야 합니다 (CORS) |
 | 운영 빌드 | `npx ng build` | `dist/storyforge-frontend/browser/` |
 | 빌드 감시 | `npm run watch` | 변경 시 개발 빌드 |
-| 단위 테스트 | `npx ng test` | Vitest (아직 테스트 파일 없음) |
+| 단위 테스트 | `npx ng test --watch=false` | Vitest (SSE 파서, 인증, 가드, 공통 컴포넌트) |
 
 ### 백엔드 주소를 바꾸려면
 
@@ -58,10 +58,14 @@ npx ng serve          # 또는 npm start
 
 | 화면 | 경로 | 주요 기능 | 기획서 |
 |------|------|-----------|--------|
+| 로그인·가입 | `/login` | 이메일·비밀번호, 성공하면 원래 가려던 화면으로 | 기획서 §7.1 |
 | 대시보드 | `/` | 프로젝트 카드 그리드, 진행률, 새 프로젝트 | §9.6-1 |
 | Story Bible | `/projects/:id/bible` | AI 생성, Overview/Characters/World/Themes 탭 편집, 확정 | §6.1, §9.6-2 |
 | Outline | `/projects/:id/outline` | AI 생성, 드래그 앤 드롭 재배치, Beats 편집, 확정 | §6.2, §9.6-3 |
-| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, Continuity 리포트, 수정·승인·재생성 | §6.3, §9.6-4 |
+| 설정 | `/projects/:id/settings` | 제목, 장르, 모델, 기본 톤, 내보내기 형식, 삭제 | §9.6-5 |
+| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, TipTap 편집, Continuity 리포트, 승인·재생성 | §6.3, §9.6-4 |
+
+프로젝트 화면 위쪽의 **내보내기** 메뉴는 승인된 챕터를 MD·DOCX·PDF로 내려받고, Bible·챕터 화면의 **이력** 버튼은 버전을 Diff로 비교합니다.
 
 화면 위쪽의 파이프라인 표시는 백엔드가 알려 준 상태를 그대로 보여줍니다. 버튼 활성화도 그 상태를 따릅니다. 실제 상태 판단은 백엔드가 합니다.
 
@@ -83,9 +87,9 @@ storyforge-frontend/
     ├── environments/      # apiBaseUrl
     ├── styles/            # 디자인 토큰, Material 테마
     └── app/
-        ├── core/          # api(REST·SSE 래퍼), models(타입), auth(예정)
-        ├── shared/        # 공통 컴포넌트 (pipeline-stepper)
-        ├── features/      # dashboard, projects, story-bible, outline, chapters
+        ├── core/          # api(REST·SSE 래퍼), models(타입), auth(세션·인터셉터·가드)
+        ├── shared/        # 공통 컴포넌트 (pipeline-stepper, rich-text-editor, version-history)
+        ├── features/      # auth, dashboard, projects, story-bible, outline, chapters
         └── layout/        # 셸, 테마 서비스
 ```
 
@@ -94,15 +98,13 @@ storyforge-frontend/
 | 증상 | 원인 / 해결 |
 |------|-------------|
 | 화면에 "서버에 연결할 수 없습니다" | 백엔드(8080)가 꺼져 있습니다. `storyforge-backend`에서 `./mvnw spring-boot:run` |
-| 챕터 생성 시 "챕터 생성에 실패했습니다" | AI 서비스(8000)가 꺼져 있습니다. 실패해도 프로젝트 상태는 생성 전으로 돌아갑니다 |
+| 챕터 생성 시 "챕터 생성에 실패했습니다" | AI 서비스(8001)가 꺼져 있습니다. 실패해도 프로젝트 상태는 생성 전으로 돌아갑니다 |
 | `ng` 실행 시 Node 버전 오류 | Node 24.14 이상인지 확인합니다 (`node -v`) |
 | 4200 포트 사용 중 | `npx ng serve --port 4300`으로 바꾸고 백엔드 `FRONTEND_ORIGIN`도 맞춥니다 |
 
 ## 아직 없는 것
 
-- 인증(JWT) 화면 — 백엔드 인증 도입과 함께 `core/auth/`에 추가
-- TipTap 에디터 (기획서 §9.2) — 현재 챕터 본문은 textarea
-- 내보내기, 프로젝트 설정 화면 (§9.6-5)
+- 실제 Claude 연동 검증 (보류). 캐릭터 상태 자동 갱신 (Phase 2)
 
 ## 규칙
 
