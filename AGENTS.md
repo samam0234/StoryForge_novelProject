@@ -11,7 +11,7 @@
 4. [commit-message.md](.agents/skills/storyforge/commit-message.md)
 5. [branch-merge.md](.agents/skills/storyforge/branch-merge.md)
 6. [TEMPLATE.md](docs/branchs/TEMPLATE.md)
-7. 도구별 어댑터 (`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`)
+7. 도구별 어댑터 (`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`, `.Manus/`, `.Gemini/`, `.Kimi/`, `.Ollama/`, `.Qwen/`, `.Opencode/`, `.Windsurf/`)
 
 ## 작업 전 체크리스트
 
