@@ -1,8 +1,5 @@
 package com.storyforge.service.orchestration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.storyforge.client.AiDtos.*;
 import com.storyforge.client.AiServiceClient;
 import com.storyforge.domain.bible.BibleDtos.BibleResponse;
@@ -32,6 +29,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -214,7 +213,7 @@ public class PipelineOrchestrator {
         return new Prepared(projectId, number, previousStatus, context);
     }
 
-    private ChapterResponse completeChapter(Prepared prepared, String doneJson) throws JsonProcessingException {
+    private ChapterResponse completeChapter(Prepared prepared, String doneJson) {
         ChapterGenerateResult result = objectMapper.readValue(doneJson, ChapterGenerateResult.class);
         Map<String, Object> contextMap = objectMapper.convertValue(prepared.context(), new TypeReference<>() {
         });

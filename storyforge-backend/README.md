@@ -1,6 +1,6 @@
 # storyforge-backend/
 
-StoryForge의 **Spring Boot Orchestrator**입니다. 외부에 노출되는 단일 API(`/api/v1`)이며, 파이프라인 상태 머신과 데이터 저장을 맡습니다.
+StoryForge의 **Spring Boot 4 Orchestrator**입니다. 외부에 노출되는 단일 API(`/api/v1`)이며, 파이프라인 상태 머신과 데이터 저장을 맡습니다.
 AI가 필요한 단계만 내부망의 FastAPI(`storyforge-ai`)에 맡깁니다.
 
 ---
@@ -14,7 +14,7 @@ AI가 필요한 단계만 내부망의 FastAPI(`storyforge-ai`)에 맡깁니다.
 | JDK | 21 이상 | 소스·타깃 21. 현재 개발 PC는 JDK 26으로 실행 중 (아래 참고) |
 | Docker | 실행 중 | PostgreSQL 16 컨테이너 |
 | Maven | 설치 불필요 | Maven Wrapper(`mvnw`)가 Maven 3.10을 자동으로 내려받습니다 |
-| AI 서비스 | `http://localhost:8000` | 없어도 서버는 뜹니다. 생성 요청만 502로 실패합니다 |
+| AI 서비스 | `http://localhost:8001` | 없어도 서버는 뜹니다. 생성 요청만 502로 실패합니다 |
 
 ### 1. DB 실행 (저장소 루트에서)
 
@@ -63,7 +63,7 @@ cd storyforge-backend
 | `BACKEND_PORT` | `8080` | 서버 포트 |
 | `DB_URL` | `jdbc:postgresql://localhost:5433/storyforge` | JDBC URL |
 | `DB_USER` / `DB_PASSWORD` | `storyforge` / `storyforge` | 개발용. 운영에서는 반드시 바꿉니다 |
-| `AI_SERVICE_URL` | `http://localhost:8000` | FastAPI 주소 (내부망) |
+| `AI_SERVICE_URL` | `http://localhost:8001` | FastAPI 주소 (내부망) |
 | `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
 
 예: `DB_PASSWORD=secret BACKEND_PORT=9090 ./mvnw spring-boot:run`
@@ -90,7 +90,7 @@ cd storyforge-backend
 
 ```
 storyforge-backend/
-├── pom.xml                       # Spring Boot 3.5.16, springdoc
+├── pom.xml                       # Spring Boot 4.1.2, springdoc
 ├── mvnw, mvnw.cmd, .mvn/         # Maven Wrapper
 └── src/
     ├── main/java/com/storyforge/
@@ -114,11 +114,8 @@ storyforge-backend/
 |------|-------------|
 | `Connection to localhost:5433 refused` | DB가 꺼져 있습니다. 루트에서 `docker compose up -d` 후 `docker compose ps`로 healthy 확인 |
 | `Port 8080 was already in use` | 이전에 띄운 백엔드 JVM이 남아 있는 경우가 많습니다 (셸만 닫으면 JVM이 남음). [local-port-conflicts.md](../docs/repeater/local-port-conflicts.md)의 확인 명령으로 PID를 찾아 종료하거나 `BACKEND_PORT`를 바꿉니다 |
-| 생성 요청이 502 | AI 서비스(8000)가 꺼져 있습니다. `storyforge-ai`를 실행합니다 |
+| 생성 요청이 502 | AI 서비스(8001)가 꺼져 있습니다. `storyforge-ai`를 실행합니다 |
 | 시작 로그에 `sun.misc.Unsafe` 경고 | JDK 26에서 Netty가 내는 경고로, 동작에는 영향이 없습니다 |
-| VS Code에 "OSS support for Spring Boot 3.5.x ended" 경고 | 기획서 §12가 3.x를 지정해 유지 중입니다. 4.x로 올릴지는 결정 대기입니다 |
-
-> JDK 26은 Spring Boot 3.5의 공식 지원 범위 밖입니다. 문제가 생기면 JDK 21 또는 25 설치를 권장합니다.
 
 ## 아직 없는 것
 

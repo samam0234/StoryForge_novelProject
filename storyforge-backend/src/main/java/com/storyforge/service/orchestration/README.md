@@ -6,7 +6,7 @@
 
 | 파일 | 내용 |
 |------|------|
-| `PipelineStateMachine.java` | 상태 전이 표 (기획서 전이 `DEFINED` / 임시 전이 `PROVISIONAL`) |
+| `PipelineStateMachine.java` | 상태 전이 표 (기획서 §7.2, v1.3 추가 전이 포함) |
 | `PipelineOrchestrator.java` | Bible·Outline·챕터 단계 실행, 컨텍스트 조립, 실패 시 상태 복귀 |
 
 ## 들어갈 것

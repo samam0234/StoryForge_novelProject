@@ -1,8 +1,8 @@
 # StoryForge AI 기반 소설 생성 플랫폼 제품 기획서
 
-**문서 버전:** 1.2  
+**문서 버전:** 1.3  
 **작성일:** 2026-10-22  
-**최종 수정일:** 2026-10-22  
+**최종 수정일:** 2026-11-02  
 **작성 부서:** 제품 기획팀 / 기술 아키텍처팀 / 디자인팀  
 **기밀 등급:** 내부 배포용  
 **플랫폼명:** StoryForge  
@@ -14,7 +14,7 @@
 | 항목 | 내용 |
 |------|------|
 | 문서명 | StoryForge 제품 기획서 (Product Requirements Document) |
-| 버전 | 1.2 |
+| 버전 | 1.3 |
 | 작성자 | 제품 기획팀 |
 | 검토자 | 기술 리드, 디자인 리드 |
 | 승인자 | 프로젝트 오너 |
@@ -27,6 +27,7 @@
 | 1.0 | 2026-10-22 | 기획팀 | 기본 기획서 초안 |
 | 1.1 | 2026-10-22 | 기획팀 | 오케스트레이션, 폴더 구조, 디자인 방향 보강 |
 | 1.2 | 2026-10-22 | 기획팀 | 디자인 목업 예시 추가, 전체 내용 대폭 상세화, DOCX 품질 개선 |
+| 1.3 | 2026-11-02 | 프로젝트 오너 승인 | 상태 머신 추가 전이 2개 정식 반영(§7.2), Spring Boot 4.x로 변경(§12). 파일명은 규칙에 따라 유지 |
 
 ---
 
@@ -166,6 +167,10 @@ Spring Boot가 전체 워크플로우를 오케스트레이션하고, AI 처리�
 
 **상태 머신 (프로젝트 단위)**:
 - `BIBLE_DRAFT` → `BIBLE_CONFIRMED` → `OUTLINE_DRAFT` → `OUTLINE_CONFIRMED` → `CHAPTER_GENERATING` → `CHAPTER_REVIEW` → `COMPLETED`
+
+**상태 머신 추가 전이 (v1.3)**:
+- `CHAPTER_REVIEW` → `CHAPTER_GENERATING`: 승인 후 다음 챕터 생성, 또는 검토 중인 챕터 재생성
+- `CHAPTER_GENERATING` → `OUTLINE_CONFIRMED`: 첫 챕터 생성이 실패하거나 중단되었을 때 생성 전 상태로 복귀 (둘째 챕터부터는 `CHAPTER_REVIEW`로 복귀)
 
 ### 7.3 서비스 책임 분리
 
@@ -362,7 +367,7 @@ app/
 | 레이어 | 기술 | 비고 |
 |--------|------|------|
 | Frontend | Angular 18+, Angular Material, RxJS, TipTap | Standalone components 권장 |
-| Main Backend | Spring Boot 3.x, Spring Security, Spring WebFlux (WebClient), Flyway, PostgreSQL | |
+| Main Backend | Spring Boot 4.x, Spring Security, Spring WebFlux (WebClient), Flyway, PostgreSQL | |
 | AI Service | FastAPI, Pydantic v2, httpx / OpenAI SDK | LangChain 선택적 도입 |
 | Database | PostgreSQL 16+ (pgvector 확장 검토) | |
 | 인프라 | Docker Compose (개발), 향후 Kubernetes | |

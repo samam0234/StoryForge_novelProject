@@ -1,6 +1,6 @@
 # docs/branchs/
 
-브랜치와 커밋 기록을 남기는 폴더입니다. **커밋마다 기록합니다. merge나 작은 수정도 예외가 아닙니다.**
+브랜치 목록과 커밋 기록을 두는 폴더입니다. 커밋 기록은 **평소에는 작성하지 않고 필요할 때만** 작성합니다.
 
 ## 구성
 
@@ -10,7 +10,7 @@
 | [commits/](commits/) | 커밋 기록 파일 |
 | `README.md` (이 문서) | 브랜치 목록, 커밋 기록 목록 |
 
-## 기록 절차
+## 기록 절차 (필요할 때만)
 
 1. 작업 브랜치에서 커밋하고 커밋 ID(짧은 해시)를 확인합니다.
 2. `commits/`에 `YYMMDD_HHMM_[커밋ID]_[커밋이름]_[브랜치].md` 파일을 [TEMPLATE.md](TEMPLATE.md) 형식으로 만듭니다.
@@ -29,12 +29,12 @@
 | `develop` | 개발 통합 | `main` | 2026-10-22 | main 병합 |
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
-| `feature/merge-records` | 병합 커밋 기록 | `develop` | 2026-10-22 | develop 병합 |
-| `feature/merge-records-main` | main 병합 기록 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/diagnostics-readme` | VS Code 경고 정리, README 실행 가이드 개편 | `develop` | 2026-10-23 | develop 병합 |
-| `feature/merge-records-diagnostics` | diagnostics-readme 병합 기록 | `develop` | 2026-10-23 | develop 병합 |
+| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능 | `develop` | 2026-11-02 | 진행 중 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
+
+**브랜치를 임의로 만들지 않습니다.** 기록 전용으로 만들었던 `feature/merge-records*` 3개는 2026-11-02에 삭제했습니다.
 
 ## 커밋 기록 목록
 

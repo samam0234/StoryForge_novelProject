@@ -1,6 +1,6 @@
 # CURRENT_STACK — 확정 스택과 인프라 값
 
-> 기준: 기획서 v1.2 §7, §12, §13
+> 기준: 기획서 v1.3 §7, §12, §13
 > 포트와 인프라 확정값은 코드에서 정하지 않고 **이 문서에서** 관리합니다. (정본 "스택과 범위")
 > 코드는 아래 값을 환경 변수 기본값으로만 씁니다. 값이 바뀌면 이 문서를 먼저 고칩니다.
 
@@ -10,8 +10,8 @@
 |--------|-------------|-----------|------|
 | Frontend | Angular 18+, Angular Material, RxJS, TipTap | Angular 21.2, Angular Material 21.2, RxJS 7.8, TypeScript 5.9 | Standalone + signals, zoneless. Angular 22는 Node 24.15+가 필요해 보류. TipTap은 아직 미도입 |
 | Node.js (개발) | — | 24.14 | |
-| Main Backend | Spring Boot 3.x, Spring Security, WebFlux (WebClient), Flyway | Spring Boot 3.5.16, springdoc-openapi 2.8.17 | 빌드 도구: Maven Wrapper (Maven 3.10.0) |
-| Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행. Spring Boot 3.5는 공식 지원 범위 밖이므로 JDK 21/25 설치 권장 |
+| Main Backend | Spring Boot 4.x, Spring Security, WebClient, Flyway | Spring Boot 4.1.2 (Spring Framework 7, Jackson 3, Hibernate 7), springdoc-openapi 3.2.0 | 빌드 도구: Maven Wrapper (Maven 3.10.0) |
+| Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행 |
 | AI Service | FastAPI, Pydantic v2, httpx / OpenAI SDK | FastAPI 0.158.1, Pydantic 2, anthropic SDK 2.0.0, Jinja2 3 | 패키지 관리: venv + `requirements.txt` |
 | Python | — | 3.10 | |
 | LLM | OpenAI, Anthropic 등 | 기본 `mock`, 선택 `anthropic` (`claude-opus-5-5`) | 서버 측 refusal fallback(`fallbacks: "default"`) 사용 |
@@ -25,7 +25,7 @@
 |--------|-----------|-----------|------|
 | storyforge-frontend | 4200 | 예 | `ng serve`. `/api`는 `proxy.conf.json`으로 8080에 전달 |
 | storyforge-backend | 8080 | 예 | 외부에 노출하는 단일 API 표면 |
-| storyforge-ai | 8000 | **아니오** | `127.0.0.1`에만 바인딩. 내부망 전용 |
+| storyforge-ai | 8001 | **아니오** | `127.0.0.1`에만 바인딩. 내부망 전용. 8000은 같은 PC의 다른 프로젝트(Django)와 겹쳐 2026-11-02에 변경 |
 | PostgreSQL | 5433 → 컨테이너 5432 | 아니오 | 로컬에 이미 5432를 쓰는 PostgreSQL이 있어 5433 사용 |
 
 배포 환경별 포트 인벤토리는 [../web_management/](../web_management/)에서 관리합니다.
@@ -40,7 +40,7 @@
 | `DB_PORT` | compose | `5433` | 호스트 포트 |
 | `DB_URL` | backend | `jdbc:postgresql://localhost:5433/storyforge` | |
 | `BACKEND_PORT` | backend | `8080` | |
-| `AI_SERVICE_URL` | backend | `http://localhost:8000` | 백엔드만 사용. 프론트에 넣지 않음 |
+| `AI_SERVICE_URL` | backend | `http://localhost:8001` | 백엔드만 사용. 프론트에 넣지 않음 |
 | `FRONTEND_ORIGIN` | backend | `http://localhost:4200` | CORS 허용 출처 |
 | `LLM_PROVIDER` | ai | `mock` | `mock` / `anthropic` |
 | `LLM_MODEL` | ai | `claude-opus-5-5` | |
@@ -66,3 +66,4 @@
 |------|------|-----------|
 | 2026-10-22 | 초안 작성 (기획서 기준값만 기록, 확정값 미정) | — |
 | 2026-10-22 | 첫 구현에 맞춰 버전·포트·환경 변수 확정 | `feature/web-foundation` 커밋 기록 참고 |
+| 2026-11-02 | Spring Boot 4.1.2 전환, AI 기본 포트 8001 | [roadmap-progress.md](roadmap-progress.md) |

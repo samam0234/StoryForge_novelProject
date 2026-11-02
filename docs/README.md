@@ -9,7 +9,7 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 |------|------|-----------|
 | [plan/](plan/) | 기획서에서 파생된 개발 스펙, 확정 스택 | 기능을 구현하기 전에 스펙을 정리할 때 |
 | [Architecture/](Architecture/) | 시스템 구조, 오케스트레이션 흐름, 상태 머신 | 구조가 바뀔 때 (구현보다 먼저 갱신) |
-| [branchs/](branchs/) | 브랜치·커밋 기록 | **커밋할 때마다** |
+| [branchs/](branchs/) | 브랜치 목록, 커밋 기록 | 브랜치가 바뀔 때, 기록이 필요할 때 |
 | [guidance/](guidance/) | 실행·기능 가이드 | 다른 사람이 따라 할 절차가 생겼을 때 |
 | [find_debug/](find_debug/) | 날짜별 디버그 일지 | 문제를 조사하고 해결했을 때 |
 | [repeater/](repeater/) | 재발 가능한 인프라 이슈 | 같은 환경 문제가 다시 생길 수 있을 때 |
@@ -25,7 +25,7 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 ```
 기획서 내용을 개발 스펙으로 풀어 쓴다        → plan/
 서비스 구조나 상태 전이가 바뀐다             → Architecture/
-커밋을 했다                                → branchs/commits/
+커밋을 따로 기록할 필요가 있다              → branchs/commits/
 "이렇게 실행하세요" 절차를 적는다            → guidance/
 오늘 버그를 잡았다                          → find_debug/
 환경 문제가 또 생길 것 같다                  → repeater/

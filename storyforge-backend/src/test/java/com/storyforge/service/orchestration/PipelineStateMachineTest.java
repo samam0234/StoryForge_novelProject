@@ -31,7 +31,7 @@ class PipelineStateMachineTest {
     }
 
     @Test
-    void allowsProvisionalChapterLoopAndRevert() {
+    void allowsChapterLoopAndRevertAddedInV13() {
         assertThat(sm.canTransition(CHAPTER_REVIEW, CHAPTER_GENERATING)).isTrue();
         assertThat(sm.canTransition(CHAPTER_GENERATING, OUTLINE_CONFIRMED)).isTrue();
         assertThat(sm.canTransition(COMPLETED, CHAPTER_GENERATING)).isFalse();

@@ -1,4 +1,4 @@
-# 로컬 포트 충돌 (5432, 8000, 8080)
+# 로컬 포트 충돌 (5432, 8000/8001, 8080)
 
 ## 환경
 
@@ -28,7 +28,7 @@
 2. **StoryForge 프로세스면** 종료합니다 (`taskkill /PID <PID> /F`). 다른 프로젝트 프로세스면 건드리지 않습니다.
 3. 다른 프로젝트가 포트를 쓰고 있으면 StoryForge 쪽 포트를 바꿉니다.
    - DB: 이미 `DB_PORT=5433`으로 피했습니다.
-   - AI: `--port 8001`로 실행하고, 백엔드를 `AI_SERVICE_URL=http://localhost:8001`로 실행합니다.
+   - AI: 2026-11-02부터 기본 포트를 8001로 바꿔 8000 충돌을 피했습니다. 8001도 겹치면 `--port`로 바꾸고 백엔드 `AI_SERVICE_URL`을 맞춥니다.
    - 백엔드: `BACKEND_PORT`를 바꾸고 `storyforge-frontend/proxy.conf.json`의 `target`도 맞춥니다.
 4. 포트를 계속 바꿔 쓸 거라면 `.env`에 적고, 기준값 변경이면 `docs/plan/CURRENT_STACK.md`를 먼저 고칩니다.
 
