@@ -225,7 +225,7 @@ README를 두지 않는 곳: 파일이 한두 개뿐인 폴더, 패키지 경로
 
 ## 어댑터 규칙
 
-`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/` 등의 파일은 이 정본을 가리키는 복제본입니다.
+`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`, `.Manus/`, `.Gemini/`, `.Kimi/`, `.Ollama/`, `.Qwen/`, `.Opencode/`, `.Windsurf/` 등의 파일은 이 정본을 가리키는 복제본입니다.
 
 - 정본을 수정한 후 어댑터를 동기화합니다.
 - 어댑터만 수정하고 정본을 그대로 두지 않습니다.

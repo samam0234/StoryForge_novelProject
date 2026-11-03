@@ -32,7 +32,7 @@ public final class ProjectDtos {
             int totalChapters, int confirmedChapters,
             Project.Form form, Long workId, Long clonedFromWorkId, String clonedFromTitle, String cloneMode,
             long manualChars, long agentChars,
-            Instant createdAt, Instant updatedAt) {
+            Instant createdAt, Instant updatedAt, String role) {
     }
 
     /** GET /api/v1/projects/{id}/status 응답 */

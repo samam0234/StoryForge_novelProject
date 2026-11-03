@@ -87,6 +87,8 @@ export interface Project {
   agentChars: number;
   createdAt: string;
   updatedAt: string;
+  /** OWNER 또는 함께 쓰는 COLLABORATOR */
+  role?: 'OWNER' | 'COLLABORATOR';
 }
 
 export interface ProjectStatusInfo {

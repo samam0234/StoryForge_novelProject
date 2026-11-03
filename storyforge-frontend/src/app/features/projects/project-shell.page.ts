@@ -11,12 +11,13 @@ import { safeFilename, saveBlob } from '../../core/api/community-api.service';
 import { StoryforgeApi } from '../../core/api/storyforge-api.service';
 import { EXPORT_FORMATS, ExportFormat } from '../../core/models/models';
 import { PipelineStepperComponent } from '../../shared/components/pipeline-stepper/pipeline-stepper.component';
+import { CommitFocusBanner } from './commit-focus.banner';
 import { ProjectContext } from './project-context';
 
 /** 프로젝트 상단(제목, 파이프라인 단계) + Bible / Outline / 챕터 탭 */
 @Component({
   selector: 'sf-project-shell-page',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatTabsModule, MatIconModule, MatButtonModule, MatMenuModule, MatTooltipModule, PipelineStepperComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, MatTabsModule, MatIconModule, MatButtonModule, MatMenuModule, MatTooltipModule, PipelineStepperComponent, CommitFocusBanner],
   providers: [ProjectContext],
   template: `
     @if (ctx.project(); as p) {
@@ -28,6 +29,9 @@ import { ProjectContext } from './project-context';
             <span class="sf-muted">{{ p.genre || '장르 미정' }}</span>
             @if (p.clonedFromTitle) {
               <span class="sf-muted origin"> · Clone 원본: {{ p.clonedFromTitle }}</span>
+            }
+            @if (p.role === 'COLLABORATOR') {
+              <span class="sf-badge">함께 쓰는 중</span>
             }
           </div>
           <span class="sf-spacer"></span>
@@ -51,8 +55,9 @@ import { ProjectContext } from './project-context';
               {{ tab.label }}
             </a>
           }
-        </nav>
-      </div>
+      </nav>
+      <sf-commit-focus [projectId]="projectId()" />
+    </div>
       <mat-tab-nav-panel #panel>
         <router-outlet />
       </mat-tab-nav-panel>

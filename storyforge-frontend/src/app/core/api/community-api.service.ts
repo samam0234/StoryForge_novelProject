@@ -32,9 +32,12 @@ import {
   Visibility,
   WorkCard,
   WorkChapter,
+  WorkCommit,
   WorkDetail,
   WorkGraph,
   WorkKind,
+  Collaborator,
+  CommitTarget,
 } from '../models/community';
 import { ExportFormat, User } from '../models/models';
 
@@ -223,6 +226,41 @@ export class CommunityApi {
   // 가이드챗
   guide(message: string): Observable<GuideReply> {
     return this.http.post<GuideReply>(`${this.base}/guide/chat`, { message });
+  }
+
+  invitations(): Observable<Collaborator[]> {
+    return this.http.get<Collaborator[]>(`${this.base}/me/invitations`);
+  }
+  acceptInvitation(id: number): Observable<Collaborator> {
+    return this.http.post<Collaborator>(`${this.base}/me/invitations/${id}/accept`, null);
+  }
+  declineInvitation(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/me/invitations/${id}`);
+  }
+  collaborators(projectId: number): Observable<Collaborator[]> {
+    return this.http.get<Collaborator[]>(`${this.base}/projects/${projectId}/collaborators`);
+  }
+  invite(projectId: number, email: string): Observable<Collaborator> {
+    return this.http.post<Collaborator>(`${this.base}/projects/${projectId}/collaborators`, { email });
+  }
+  removeCollaborator(projectId: number, userId: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/projects/${projectId}/collaborators/${userId}`);
+  }
+  commits(projectId: number): Observable<WorkCommit[]> {
+    return this.http.get<WorkCommit[]>(`${this.base}/projects/${projectId}/commits`);
+  }
+  commit(projectId: number, commitId: number): Observable<WorkCommit> {
+    return this.http.get<WorkCommit>(`${this.base}/projects/${projectId}/commits/${commitId}`);
+  }
+  addCommit(projectId: number, body: {
+    message: string;
+    target: CommitTarget;
+    chapterNumber?: number | null;
+    startOffset?: number | null;
+    endOffset?: number | null;
+    quote?: string | null;
+  }): Observable<WorkCommit> {
+    return this.http.post<WorkCommit>(`${this.base}/projects/${projectId}/commits`, body);
   }
 }
 

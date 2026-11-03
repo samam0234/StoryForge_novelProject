@@ -1,7 +1,6 @@
 package com.storyforge.config;
 
 import com.storyforge.domain.chapter.ChapterRepository;
-import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.exception.NotFoundException;
 import com.storyforge.service.auth.CurrentUser;
 import jakarta.servlet.DispatcherType;
@@ -14,20 +13,20 @@ import org.springframework.web.servlet.HandlerMapping;
 import java.util.Map;
 
 /**
- * 경로 변수 {projectId}, {chapterId}의 소유자를 일괄 검사합니다. 다른 사용자의 리소스는 404입니다.
- * 새 엔드포인트도 이 변수 이름을 쓰면 자동으로 검사됩니다.
+ * 경로 변수 {projectId}, {chapterId}를 검사합니다. 주인과 초대를 수락한 공동 창작자만 통과하고,
+ * 그 외에는 404입니다. 삭제·설정·게시·초대처럼 주인만 하는 일은 각 서비스가 거절합니다.
  */
 @Component
 public class OwnershipInterceptor implements HandlerInterceptor {
 
-    private final ProjectRepository projects;
     private final ChapterRepository chapters;
     private final CurrentUser currentUser;
+    private final ProjectAccess access;
 
-    public OwnershipInterceptor(ProjectRepository projects, ChapterRepository chapters, CurrentUser currentUser) {
-        this.projects = projects;
+    public OwnershipInterceptor(ChapterRepository chapters, CurrentUser currentUser, ProjectAccess access) {
         this.chapters = chapters;
         this.currentUser = currentUser;
+        this.access = access;
     }
 
     @Override
@@ -41,12 +40,19 @@ public class OwnershipInterceptor implements HandlerInterceptor {
             return true;
         }
         String projectId = vars.get("projectId");
-        if (projectId != null && !projects.existsByIdAndOwnerId(parse(projectId), currentUser.id())) {
-            throw new NotFoundException("프로젝트를 찾을 수 없습니다: " + projectId);
+        if (projectId != null) {
+            if (!access.canRead(parse(projectId), currentUser.id())) {
+                throw new NotFoundException("프로젝트를 찾을 수 없습니다: " + projectId);
+            }
         }
         String chapterId = vars.get("chapterId");
-        if (chapterId != null && !chapters.existsByIdAndProjectOwnerId(parse(chapterId), currentUser.id())) {
-            throw new NotFoundException("챕터를 찾을 수 없습니다: " + chapterId);
+        if (chapterId != null) {
+            long id = parse(chapterId);
+            Long ownerProject = chapters.findProjectIdById(id)
+                    .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + chapterId));
+            if (!access.canRead(ownerProject, currentUser.id())) {
+                throw new NotFoundException("챕터를 찾을 수 없습니다: " + chapterId);
+            }
         }
         return true;
     }

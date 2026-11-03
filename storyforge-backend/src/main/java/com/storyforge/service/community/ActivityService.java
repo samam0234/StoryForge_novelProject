@@ -62,8 +62,17 @@ public class ActivityService {
         if (owner == null) {
             return;
         }
+        recordFor(owner, project, type, summary, changedChars);
+    }
+
+    /** 작업을 한 사람 기준으로 남깁니다. 공동 창작자의 잔디에 집계하려면 이 메서드를 씁니다. */
+    @Transactional
+    public void recordFor(Long userId, Project project, ActivityType type, String summary, int changedChars) {
+        if (userId == null) {
+            return;
+        }
         Work work = works.findByProjectId(project.getId()).orElse(null);
-        save(new ActivityEvent(owner, project.getId(), work, null, type, summary, changedChars));
+        save(new ActivityEvent(userId, project.getId(), work, null, type, summary, changedChars));
     }
 
     @Transactional

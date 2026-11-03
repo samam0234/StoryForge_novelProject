@@ -146,6 +146,35 @@ const DAY_MS = 86_400_000;
         </tbody>
       </table>
     </div>
+
+    <section class="git" aria-label="작업 기록표">
+      <h4>작업 기록표</h4>
+      <p class="sf-muted git-hint">점은 위가 최근입니다. 점을 누르면 그 기록 문단이 열립니다.</p>
+      @if (!rows().length) {
+        <div class="sf-empty">표시할 작업 기록이 없습니다.</div>
+      } @else {
+        <ol class="git-log">
+          @for (e of rows(); track e.id) {
+            <li>
+              <button type="button" class="node" [class.selected]="selectedEvent() === e.id" (click)="toggleEvent(e.id)">
+                <span class="rail" aria-hidden="true"></span>
+                <span class="dot" [class.agent]="e.actor === 'AGENT'"></span>
+                <span class="msg">{{ e.summary }}</span>
+                <span class="sf-muted when">{{ e.createdAt | date: 'MM-dd HH:mm' }}</span>
+              </button>
+              @if (selectedEvent() === e.id) {
+                <p class="paragraph">
+                  {{ e.createdAt | date: 'yyyy-MM-dd HH:mm' }} · {{ e.actor === 'AGENT' ? '에이전트' : '수동' }} · {{ e.summary }}
+                  @if (e.changedChars) {
+                    <span class="sf-muted"> ({{ e.changedChars | number }}자)</span>
+                  }
+                </p>
+              }
+            </li>
+          }
+        </ol>
+      }
+    </section>
   `,
   styles: `
     :host {
@@ -310,6 +339,68 @@ const DAY_MS = 86_400_000;
       text-align: right;
       white-space: nowrap;
     }
+    .git {
+      margin-top: 20px;
+    }
+    .git h4 {
+      margin: 0 0 4px;
+      font-size: 14px;
+    }
+    .git-hint {
+      margin: 0 0 8px;
+      font-size: 13px;
+    }
+    .git-log {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .node {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 4px 0;
+      border: 0;
+      background: transparent;
+      color: var(--sf-text);
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .node.selected .msg {
+      font-weight: 650;
+    }
+    .rail {
+      width: 2px;
+      align-self: stretch;
+      min-height: 18px;
+      background: var(--sf-border);
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      margin-left: -15px;
+      border-radius: 50%;
+      background: var(--sf-series-manual);
+      box-shadow: 0 0 0 2px var(--sf-surface);
+    }
+    .dot.agent {
+      background: var(--sf-series-agent);
+    }
+    .msg {
+      flex: 1;
+      min-width: 0;
+    }
+    .paragraph {
+      margin: 0 0 8px 22px;
+      padding: 8px 10px;
+      border: 1px solid var(--sf-border);
+      border-radius: 6px;
+      background: var(--sf-surface-2);
+      font-size: 13px;
+      line-height: 1.5;
+    }
   `,
 })
 export class WorkGraphComponent {
@@ -318,6 +409,7 @@ export class WorkGraphComponent {
   protected readonly range = signal<Range>('all');
   protected readonly selectedDay = signal<string | null>(null);
   protected readonly hovered = signal<GraphDay | null>(null);
+  protected readonly selectedEvent = signal<number | null>(null);
 
   protected readonly eventShare = computed(() => share(this.graph().manual.events, this.graph().agent.events));
   protected readonly charShare = computed(() => share(this.graph().manual.chars, this.graph().agent.chars));
@@ -355,6 +447,10 @@ export class WorkGraphComponent {
 
   protected toggleDay(date: string): void {
     this.selectedDay.update((d) => (d === date ? null : date));
+  }
+
+  protected toggleEvent(id: number): void {
+    this.selectedEvent.update((current) => (current === id ? null : id));
   }
 }
 

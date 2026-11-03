@@ -67,6 +67,22 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
           }
         </section>
 
+        @if (day()) {
+          <section class="day-note" aria-label="선택한 날짜의 기록">
+            <h2>{{ day() }} 기록</h2>
+            @if (!feed().length) {
+              <p class="sf-muted">이 날짜에 펼쳐 볼 기록 문단이 없습니다. 비공개 프로젝트 활동은 잔디의 건수만 집계됩니다.</p>
+            } @else {
+              @for (e of feed(); track e.id) {
+                <article>
+                  <p>{{ e.summary }}</p>
+                  <span class="sf-muted">{{ e.createdAt | date: 'HH:mm' }} · {{ e.actor === 'AGENT' ? '에이전트' : '수동' }}</span>
+                </article>
+              }
+            }
+          </section>
+        }
+
         <mat-tab-group [preserveContent]="true">
           <mat-tab [label]="'작품 ' + works().length">
             <div class="tab">
@@ -201,6 +217,24 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
       border-radius: var(--sf-radius);
       background: var(--sf-surface);
       margin-bottom: 16px;
+    }
+    .day-note {
+      margin: 0 0 16px;
+      padding: 12px;
+      border: 1px solid var(--sf-border);
+      border-radius: var(--sf-radius);
+      background: var(--sf-surface);
+    }
+    .day-note h2 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+    .day-note article {
+      margin: 0 0 8px;
+    }
+    .day-note p {
+      margin: 0;
+      line-height: 1.5;
     }
     .tab {
       padding: 16px 0;

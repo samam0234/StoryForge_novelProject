@@ -1,4 +1,4 @@
-# StoryForge 규칙 (Antigravity 어댑터)
+# StoryForge 규칙 (에이전트 어댑터)
 
 > 이 파일은 **어댑터**입니다. 규칙 정본은 `.agents/skills/storyforge/SKILL.md`이며, 내용이 어긋나면 정본이 이깁니다.
 > 이 파일만 고치지 말고, 정본 → 루트 `AGENTS.md` → 어댑터 순서로 동기화합니다.
