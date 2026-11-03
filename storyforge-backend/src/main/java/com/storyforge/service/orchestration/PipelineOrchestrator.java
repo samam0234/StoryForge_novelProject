@@ -1,11 +1,10 @@
 package com.storyforge.service.orchestration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.storyforge.client.AiDtos.*;
 import com.storyforge.client.AiServiceClient;
+import com.storyforge.domain.activity.ActivityType;
 import com.storyforge.domain.bible.BibleDtos.BibleResponse;
+import com.storyforge.domain.bible.BibleDtos.BibleSnapshot;
 import com.storyforge.domain.bible.BibleDtos.UpdateBibleRequest;
 import com.storyforge.domain.bible.Character;
 import com.storyforge.domain.bible.StoryBible;
@@ -21,6 +20,7 @@ import com.storyforge.exception.AiServiceException;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.service.bible.BibleService;
 import com.storyforge.service.chapter.ChapterService;
+import com.storyforge.service.community.ActivityService;
 import com.storyforge.service.project.OutlineService;
 import com.storyforge.service.project.ProjectService;
 import org.slf4j.Logger;
@@ -32,6 +32,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -57,11 +59,13 @@ public class PipelineOrchestrator {
     private final AiServiceClient ai;
     private final TransactionTemplate tx;
     private final ObjectMapper objectMapper;
+    private final ActivityService activity;
 
     public PipelineOrchestrator(PipelineStateMachine stateMachine, ProjectService projectService,
                                 BibleService bibleService, OutlineService outlineService,
                                 ChapterService chapterService, AiServiceClient ai,
-                                TransactionTemplate tx, ObjectMapper objectMapper) {
+                                TransactionTemplate tx, ObjectMapper objectMapper, ActivityService activity) {
+        this.activity = activity;
         this.stateMachine = stateMachine;
         this.projectService = projectService;
         this.bibleService = bibleService;
@@ -88,8 +92,11 @@ public class PipelineOrchestrator {
                     .map(c -> new Character(c.name(), c.description(), c.personality(), c.relationships(),
                             c.currentState()))
                     .toList();
-            return BibleResponse.from(bibleService.replace(p, generated.worldSetting(), generated.theme(),
-                    generated.tone(), characters));
+            StoryBible bible = bibleService.replace(p, generated.worldSetting(), generated.theme(),
+                    generated.tone(), characters);
+            activity.recordProject(p, ActivityType.BIBLE_GENERATED, "Story Bible AI 생성 (v" + bible.getVersion() + ")",
+                    ActivityService.length(bibleText(bible)));
+            return BibleResponse.from(bible);
         });
     }
 
@@ -99,8 +106,13 @@ public class PipelineOrchestrator {
             stateMachine.requireIn(p, BIBLE_DRAFT);
             List<Character> characters = request.characters() == null ? List.of()
                     : request.characters().stream().map(c -> c.toEntity()).toList();
-            return BibleResponse.from(bibleService.replace(p, request.worldSetting(), request.theme(),
-                    request.tone(), characters));
+            String before = bibleService.find(projectId).map(PipelineOrchestrator::bibleText).orElse("");
+            StoryBible bible = bibleService.replace(p, request.worldSetting(), request.theme(), request.tone(), characters);
+            int changed = ActivityService.changedChars(before, bibleText(bible));
+            if (changed > 0) {
+                activity.recordProject(p, ActivityType.BIBLE_EDITED, "Story Bible 직접 수정 (v" + bible.getVersion() + ")", changed);
+            }
+            return BibleResponse.from(bible);
         });
     }
 
@@ -109,6 +121,7 @@ public class PipelineOrchestrator {
             Project p = projectService.load(projectId);
             bibleService.get(projectId);
             stateMachine.transition(p, BIBLE_CONFIRMED);
+            activity.recordProject(p, ActivityType.BIBLE_CONFIRMED, "Story Bible 확정", 0);
         });
     }
 
@@ -128,6 +141,8 @@ public class PipelineOrchestrator {
             if (p.getStatus() == BIBLE_CONFIRMED) {
                 stateMachine.transition(p, OUTLINE_DRAFT);
             }
+            activity.recordProject(p, ActivityType.OUTLINE_GENERATED, "Outline AI 생성 (" + generated.chapters().size() + "장)",
+                    ActivityService.length(generated.chapters().toString()));
             return OutlineResponse.from(outline);
         });
     }
@@ -137,7 +152,13 @@ public class PipelineOrchestrator {
             Project p = projectService.load(projectId);
             stateMachine.requireIn(p, OUTLINE_DRAFT);
             p.touch();
-            return OutlineResponse.from(outlineService.replace(p, chapters));
+            String before = outlineService.get(projectId).getChapters().toString();
+            Outline outline = outlineService.replace(p, chapters);
+            int changed = ActivityService.changedChars(before, outline.getChapters().toString());
+            if (changed > 0) {
+                activity.recordProject(p, ActivityType.OUTLINE_EDITED, "Outline 직접 수정", changed);
+            }
+            return OutlineResponse.from(outline);
         });
     }
 
@@ -148,6 +169,7 @@ public class PipelineOrchestrator {
                 throw new InvalidStateException("챕터가 없는 Outline은 확정할 수 없습니다.");
             }
             stateMachine.transition(p, OUTLINE_CONFIRMED);
+            activity.recordProject(p, ActivityType.OUTLINE_CONFIRMED, "Outline 확정", 0);
         });
     }
 
@@ -214,7 +236,7 @@ public class PipelineOrchestrator {
         return new Prepared(projectId, number, previousStatus, context);
     }
 
-    private ChapterResponse completeChapter(Prepared prepared, String doneJson) throws JsonProcessingException {
+    private ChapterResponse completeChapter(Prepared prepared, String doneJson) {
         ChapterGenerateResult result = objectMapper.readValue(doneJson, ChapterGenerateResult.class);
         Map<String, Object> contextMap = objectMapper.convertValue(prepared.context(), new TypeReference<>() {
         });
@@ -257,6 +279,7 @@ public class PipelineOrchestrator {
             }
             chapter.confirm();
             p.touch();
+            activity.recordProject(p, ActivityType.CHAPTER_CONFIRMED, chapter.getNumber() + "장 승인", 0);
             if (confirmed + 1 == outlineService.get(p.getId()).getChapters().size()) {
                 stateMachine.transition(p, COMPLETED);
             }
@@ -271,8 +294,13 @@ public class PipelineOrchestrator {
         return Objects.requireNonNull(tx.execute(Objects.requireNonNull(action)), "트랜잭션 결과가 비어 있습니다.");
     }
 
+    /** 작업 기록의 변경 글자 수 계산용 */
+    private static String bibleText(StoryBible b) {
+        return String.valueOf(BibleSnapshot.from(b));
+    }
+
     private static ProjectInfo projectInfo(Project p) {
-        return new ProjectInfo(p.getTitle(), p.getGenre());
+        return new ProjectInfo(p.getTitle(), p.getGenre(), p.getModel(), p.getDefaultTone());
     }
 
     private static BibleInfo bibleInfo(StoryBible b) {

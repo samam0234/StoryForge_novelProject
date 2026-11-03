@@ -3,6 +3,9 @@
 <project>
 제목: {{ project.title }}
 장르: {{ project.genre or "미정" }}
+{% if project.default_tone %}
+작가가 정한 기본 톤: {{ project.default_tone }}
+{% endif %}
 </project>
 
 <idea>

@@ -14,7 +14,7 @@ public final class AiDtos {
     private AiDtos() {
     }
 
-    public record ProjectInfo(String title, String genre) {
+    public record ProjectInfo(String title, String genre, String model, String defaultTone) {
     }
 
     public record CharacterInfo(String name, String description, String personality, String relationships,
@@ -49,6 +49,21 @@ public final class AiDtos {
     }
 
     public record ContinuityResult(List<ContinuityIssue> issues, int score) {
+    }
+
+    // POST /internal/guide/chat
+    public record GuideContext(String displayName, int projectCount, long publishedWorks, Long projectId,
+                               String projectTitle, String projectStatus, Integer nextChapter) {
+    }
+
+    public record GuideChatRequest(String message, GuideContext context) {
+    }
+
+    /** kind: route(앱 안 이동), collab(외부 연결, 백엔드가 external로 바꿈), external */
+    public record GuideAction(String label, String kind, String target) {
+    }
+
+    public record GuideChatResponse(String reply, List<GuideAction> actions) {
     }
 
     /** 스트림 마지막 "done" 이벤트 본문 */

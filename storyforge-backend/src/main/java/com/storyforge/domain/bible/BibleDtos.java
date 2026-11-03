@@ -40,6 +40,23 @@ public final class BibleDtos {
         }
     }
 
+    /** 버전 이력에 저장하는 스냅샷 */
+    public record BibleSnapshot(String worldSetting, String theme, String tone, List<CharacterSnapshot> characters) {
+
+        public static BibleSnapshot from(StoryBible b) {
+            return new BibleSnapshot(b.getWorldSetting(), b.getTheme(), b.getTone(),
+                    b.getCharacters().stream()
+                            .map(c -> new CharacterSnapshot(c.getName(), c.getDescription(), c.getPersonality(), c.getRelationships()))
+                            .toList());
+        }
+    }
+
+    public record CharacterSnapshot(String name, String description, String personality, String relationships) {
+    }
+
+    public record BibleVersionResponse(int version, Instant createdAt, BibleSnapshot snapshot) {
+    }
+
     /** PUT /api/v1/projects/{id}/bible */
     public record UpdateBibleRequest(
             String worldSetting, String theme, String tone,

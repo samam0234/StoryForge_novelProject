@@ -1,7 +1,10 @@
 package com.storyforge.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,9 +13,13 @@ public class OpenApiConfig {
 
     @Bean
     OpenAPI storyforgeOpenApi() {
-        return new OpenAPI().info(new Info()
-                .title("StoryForge API")
-                .version("v1")
-                .description("StoryForge Orchestrator 외부 API (기획서 §11)"));
+        return new OpenAPI()
+                .info(new Info()
+                        .title("StoryForge API")
+                        .version("v1")
+                        .description("StoryForge Orchestrator 외부 API (기획서 §11)"))
+                .components(new Components().addSecuritySchemes("bearer",
+                        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList("bearer"));
     }
 }

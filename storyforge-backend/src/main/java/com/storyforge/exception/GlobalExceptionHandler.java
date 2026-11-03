@@ -3,6 +3,8 @@ package com.storyforge.exception;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,9 +20,27 @@ public class GlobalExceptionHandler {
         return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
+    @ExceptionHandler(AuthenticationFailedException.class)
+    public ProblemDetail authenticationFailed(AuthenticationFailedException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
     @ExceptionHandler(InvalidStateException.class)
     public ProblemDetail invalidState(InvalidStateException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    /** 같은 프로젝트에 동시 요청이 들어와 먼저 처리된 쪽이 상태를 바꾼 경우 */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ProblemDetail concurrentUpdate(OptimisticLockingFailureException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "다른 요청이 먼저 처리되었습니다. 다시 시도해 주세요.");
+    }
+
+    /** 동시에 같은 값을 만든 경우 (예: 프로젝트 하나를 두 번 게시) */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail conflict(DataIntegrityViolationException e) {
+        log.warn("data integrity violation", e);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "다른 요청과 충돌했습니다. 다시 시도해 주세요.");
     }
 
     @ExceptionHandler(AiServiceException.class)

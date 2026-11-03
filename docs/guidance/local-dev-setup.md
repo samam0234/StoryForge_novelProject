@@ -12,8 +12,8 @@
 | 서비스 | 포트 | 주요 환경 변수 (기본값 있음) |
 |--------|------|------------------------------|
 | PostgreSQL | 5433 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` |
-| storyforge-ai | 8000 (127.0.0.1) | `LLM_PROVIDER=mock`, `LLM_MODEL`, `LLM_EFFORT`, `ANTHROPIC_API_KEY` |
-| storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN` |
+| storyforge-ai | 8001 (127.0.0.1) | `LLM_PROVIDER=mock`, `LLM_MODEL`, `LLM_EFFORT`, `ANTHROPIC_API_KEY` |
+| storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN`, `JWT_SECRET`, `JWT_TTL` |
 | storyforge-frontend | 4200 | (없음. `/api`는 프록시) |
 
 기본값으로 바로 실행됩니다. 바꾸려면 `.env.example`을 `.env`로 복사해 고칩니다.
@@ -30,7 +30,7 @@ docker compose up -d
 cd storyforge-ai
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt     # macOS/Linux: .venv/bin/python
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 
 # 3. 백엔드 (Flyway가 스키마를 자동 생성)
 cd storyforge-backend
@@ -45,14 +45,14 @@ npx ng serve
 실제 Claude로 생성하려면 2번을 이렇게 실행합니다.
 
 ```bash
-LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 ## 기대결과
 
-- `curl localhost:8000/health` → `{"status":"ok","provider":"mock",...}`
+- `curl localhost:8001/health` → `{"status":"ok","provider":"mock",...}`
 - `curl localhost:8080/actuator/health` → `{"status":"UP"}`
-- 브라우저 `http://localhost:4200` → 다크 테마 대시보드
+- 브라우저 `http://localhost:4200` → 로그인 화면. 회원가입하면 다크 테마 대시보드로 이동
 - 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 탭에서 생성 시 "AI writing..."과 함께 본문이 흘러나오고, 우측에 Continuity 점수가 표시됩니다
 - mock 모드 생성물에는 "※ 개발용 mock 생성기 출력입니다" 표시가 붙습니다
 
@@ -61,12 +61,12 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 ```bash
 cd storyforge-backend && ./mvnw test
 cd storyforge-ai && .venv/Scripts/python -m pip install -r requirements-dev.txt && .venv/Scripts/python -m pytest -q
-cd storyforge-frontend && npx ng build
+cd storyforge-frontend && npx ng test --watch=false && npx ng build
 ```
 
 ## 실패하면
 
 - 백엔드가 `Connection refused ... 5433`으로 멈춤 → `docker compose ps`로 DB가 `healthy`인지 확인
-- 챕터 생성 시 "챕터 생성에 실패했습니다" → AI 서비스(8000)가 떠 있는지 확인. 실패하면 상태는 생성 전으로 되돌아갑니다
+- 챕터 생성 시 "챕터 생성에 실패했습니다" → AI 서비스(8001)가 떠 있는지 확인. 실패하면 상태는 생성 전으로 되돌아갑니다
 - `health`가 JSON 대신 HTML을 돌려주거나 `Port ... already in use` → 다른 프로그램이 포트를 쓰고 있습니다. [../repeater/local-port-conflicts.md](../repeater/local-port-conflicts.md)
 - 그 밖의 문제는 [../find_debug/](../find_debug/), 환경 문제는 [../repeater/](../repeater/)에 기록합니다

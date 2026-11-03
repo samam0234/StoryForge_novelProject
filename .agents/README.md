@@ -16,13 +16,22 @@
 
 | 도구 | 어댑터 파일 |
 |------|-------------|
-| Claude Code | `.claude/CLAUDE.md`, `.claude/skills/storyforge/SKILL.md` |
-| Cursor | `.cursor/rules/storyforge.mdc` |
-| Codex | 루트 `AGENTS.md`(자동 인식), `.codex/instructions.md` |
-| Grok | `.grok/rules.md` |
-| Antigravity | `.antigravity/rules.md` |
+| Claude Code | `.claude/CLAUDE.md`, `.claude/rules.md`, `.claude/skills/storyforge/SKILL.md` |
+| Cursor | `.cursor/rules/storyforge.mdc`, `.cursor/rules.md`, `.cursor/skills/storyforge/SKILL.md` |
+| Codex | 루트 `AGENTS.md`(자동 인식), `.codex/instructions.md`, `.codex/rules.md`, `.codex/skills/storyforge/SKILL.md` |
+| Grok | `.grok/rules.md`, `.grok/skills/storyforge/SKILL.md` |
+| Antigravity | `.antigravity/rules.md`, `.antigravity/skills/storyforge/SKILL.md` |
+| Manus | `.Manus/rules.md`, `.Manus/skills/storyforge/SKILL.md` |
+| Gemini | `.Gemini/rules.md`, `.Gemini/skills/storyforge/SKILL.md` |
+| Kimi | `.Kimi/rules.md`, `.Kimi/skills/storyforge/SKILL.md` |
+| Ollama | `.Ollama/rules.md`, `.Ollama/skills/storyforge/SKILL.md` |
+| Qwen | `.Qwen/rules.md`, `.Qwen/skills/storyforge/SKILL.md` |
+| OpenCode | `.Opencode/rules.md`, `.Opencode/skills/storyforge/SKILL.md` |
+| Windsurf | `.Windsurf/rules.md`, `.Windsurf/skills/storyforge/SKILL.md` |
 
-어댑터 폴더마다 `README.md`가 있어 그 폴더에 무엇이 있는지 설명합니다.
+공통 구조는 `rules.md`와 `skills/storyforge/SKILL.md`입니다. 도구가 정해 둔 진입 파일(`CLAUDE.md`, `storyforge.mdc`, `instructions.md`)은 그 도구가 읽는 자리에 그대로 둡니다.
+
+어댑터 폴더에는 따로 README를 두지 않습니다. 이 표가 설명을 대신합니다.
 
 ## 수정 순서
 

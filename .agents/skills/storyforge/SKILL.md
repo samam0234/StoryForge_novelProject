@@ -50,9 +50,10 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - 병합 메시지는 다음 형식을 따릅니다.  
   `merge: feature/xxx into develop (no-ff)`
 
-### 커밋 기록 (생략 금지)
+### 커밋 기록 (필요할 때만)
 
-- 커밋마다 `docs/branchs/commits/`에 기록 파일을 만들고,  
+- **평소에는 작성하지 않습니다.** 사용자가 요청하거나 따로 남길 필요가 있을 때만 작성합니다. (v1.2 변경)
+- 작성할 때는 `docs/branchs/commits/`에 기록 파일을 만들고,  
   `docs/branchs/README.md` 목록 표에도 링크를 추가합니다.  
   **둘 다 같은 브랜치에 커밋**합니다.
 - 파일명 형식:  
@@ -61,7 +62,6 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - `HHMM`은 한 덩어리로 쓰고, 브랜치의 `/`는 `-`로 바꿉니다.
 - 본문은 `TEMPLATE.md`를 따릅니다.  
   섹션: **제목/커밋번호**, **주 내용**, **상세**, **결과**
-- `merge`나 작은 수정도 **예외가 아닙니다**.
 
 ---
 
@@ -70,6 +70,9 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 - 작업과 커밋은 `feature/*`, `bugfix/*`, `experimental/*`에서만 합니다.
 - `develop`과 `main`은 **통합용**입니다.
 - 병합은 `git merge --no-ff`만 사용합니다.
+- **브랜치를 임의로 만들지 않습니다.** 사용자가 정해 준 브랜치만 씁니다. `feature/*` 형식이라도 새로 만들려면 먼저 확인합니다. (v1.2 추가)
+  - 현재 지정 브랜치: `main`, `develop`, 작업 브랜치 `feature/auth` **1개**
+- **`main` 병합·반영은 사용자의 직접 명령이 있을 때만** 합니다. 임의 반영이나 일방적인 반영은 금지합니다. (v1.2 추가)
 
 ### 금지 사항
 
@@ -87,7 +90,7 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 | 영역 | 기술 | 역할 |
 |------|------|------|
 | Frontend | Angular 18+ (`storyforge-frontend/`) | SPA, Material UI, TipTap, RxJS |
-| Orchestrator | Spring Boot 3.x (`storyforge-backend/`) | 인증, CRUD, 상태 머신, WebClient, Flyway |
+| Orchestrator | Spring Boot 4.x (`storyforge-backend/`) | 인증, CRUD, 상태 머신, WebClient, Flyway |
 | AI Service | FastAPI (`storyforge-ai/`) | 프롬프트 조립, LLM 스트리밍, Continuity 검증 |
 | Database | PostgreSQL 16+ | 영속화 (pgvector 확장 검토) |
 
@@ -105,6 +108,8 @@ description: StoryForge 프로젝트의 에이전트 작업 규칙 정본. 기�
 BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED
 → CHAPTER_GENERATING → CHAPTER_REVIEW → COMPLETED
 ```
+
+기획서 v1.3 추가 전이: `CHAPTER_REVIEW → CHAPTER_GENERATING`(다음 챕터·재생성), `CHAPTER_GENERATING → OUTLINE_CONFIRMED`(첫 챕터 실패·중단 복귀)
 
 ### v1 / MVP 범위 준수
 
@@ -172,17 +177,30 @@ app/
 ### docs에서 하지 말 것
 
 - `docs/commits/`에 기록하지 않습니다. `docs/branchs/commits/`만 사용합니다.
-- 커밋 기록을 생략하지 않습니다.
 - 구현을 바꾸면서 `Architecture/`나 `CURRENT_STACK.md`를 갱신하지 않는 일이 없게 합니다.
 - 기획 원본을 `docs/` 안으로 옮기거나 이름을 바꾸지 않습니다.
 - 새 하위 폴더가 필요하면 **정본의 표에 용도를 추가한 뒤** 만듭니다.
 
-### 폴더 README 규칙 (v1.1 추가)
+### 변경 사유 문서화 (v1.2 추가)
 
-- 저장소의 **모든 폴더**(docs, 서비스 코드, 어댑터 루트 포함)에 `README.md`를 둡니다. 빈 폴더도 README로 git에 남깁니다.
-- README는 최소한 **목적**, **들어갈 것**, **들어가지 않을 것**, **관련 문서**(기획서 절, 정본 절)를 적습니다.
-- 폴더를 새로 만들거나 용도가 바뀌면 그 폴더와 상위 폴더의 README를 같은 커밋에서 갱신합니다.
-- 예외: `docs/branchs/commits/`의 개별 기록 파일, 자동 생성 폴더(`node_modules/`, `build/`, `dist/` 등).
+- 기능이 바뀌거나, 문제가 생겨 진행 방식을 바꾸면 **사유와 바뀐 방식을 문서에 남깁니다.**
+- 위치: 구조·흐름은 `Architecture/`, 스펙과 진행 현황은 `plan/`, 선택 이유는 `trainings/`, 문제 원인은 `find_debug/`.
+
+### 폴더 README 규칙 (v1.3 변경: "모든 폴더"에서 "필요한 곳만"으로)
+
+README는 **필요한 곳에만** 둡니다. 파일이 한두 개뿐이라 없어도 되는 폴더에는 두지 않습니다.
+
+README를 두는 곳:
+
+- 저장소 루트, 각 서비스 루트 (`storyforge-frontend/`, `storyforge-backend/`, `storyforge-ai/`)
+- 서비스 안에서 **여러 하위 기능을 묶는 폴더**와 **규칙이 있는 핵심 폴더** (예: 상태 머신, 보안 설정, 마이그레이션, 프롬프트)
+- `docs/`와 `docs/` 아래 최상위 폴더 (폴더 정의와 작성 템플릿이 들어 있어서)
+
+README를 두지 않는 곳: 파일이 한두 개뿐인 폴더, 패키지 경로용 빈 중간 폴더(`src/main/java/com/` 등), 자동 생성 폴더(`node_modules/`, `build/`, `dist/`), `docs/branchs/commits/`의 개별 기록.
+
+- README에는 **목적, 들어갈 것, 들어가지 않을 것, 관련 문서**를 적습니다. 상위 README가 하위 폴더의 파일 표를 함께 적을 수 있습니다.
+- 폴더 구조나 용도를 바꾸면 해당 README를 같은 커밋에서 갱신합니다.
+- README가 없는 폴더의 설명은 가장 가까운 상위 README에 적습니다.
 
 ---
 
@@ -207,7 +225,7 @@ app/
 
 ## 어댑터 규칙
 
-`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/` 등의 파일은 이 정본을 가리키는 복제본입니다.
+`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`, `.Manus/`, `.Gemini/`, `.Kimi/`, `.Ollama/`, `.Qwen/`, `.Opencode/`, `.Windsurf/` 등의 파일은 이 정본을 가리키는 복제본입니다.
 
 - 정본을 수정한 후 어댑터를 동기화합니다.
 - 어댑터만 수정하고 정본을 그대로 두지 않습니다.
@@ -215,9 +233,9 @@ app/
 
 ---
 
-**문서 버전**: 1.1 (1.0 → 1.1: 폴더 README 규칙 추가)  
-**최종 갱신**: 2026-10-22  
+**문서 버전**: 1.3 (1.2 → 1.3: 폴더 README를 모든 폴더에서 필요한 곳만으로 변경. 1.1 → 1.2: 커밋 기록은 필요할 때만, 브랜치·main 병합 제한, 변경 사유 문서화, 기획서 v1.3 반영)  
+**최종 갱신**: 2026-11-03  
 **상태**: 정본 (Canonical)  
 **프로젝트**: StoryForge  
-**기준 문서**: StoryForge_기획서_v1.2.md  
+**기준 문서**: StoryForge_기획서_v1.2.md (문서 버전 1.3, 파일명은 유지)  
 **스택**: Angular + Spring Boot + FastAPI + PostgreSQL

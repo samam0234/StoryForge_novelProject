@@ -32,7 +32,7 @@ def bible(project: ProjectInfo, prompt: str) -> BibleGenerateResponse:
             "이 세계에서는 한번 맺은 약속을 어기면 대가를 치른다는 규칙이 모든 사건의 바탕에 깔려 있다."
         ),
         theme="잃어버린 것을 되찾으려는 사람이 끝내 무엇을 지키기로 선택하는가.",
-        tone="3인칭 제한 시점. 차분하고 절제된 문장, 장면마다 감각 묘사를 하나씩 둔다.",
+        tone=project.default_tone or "3인칭 제한 시점. 차분하고 절제된 문장, 장면마다 감각 묘사를 하나씩 둔다.",
         characters=[
             GeneratedCharacter(
                 name="한서윤",

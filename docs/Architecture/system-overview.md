@@ -1,6 +1,6 @@
 # 시스템 개요
 
-> 기준: 기획서 v1.2 §7 (내용은 원본을 그대로 옮겼습니다. 원본이 바뀌면 이 문서를 맞춥니다.)
+> 기준: 기획서 v1.3 §7 (내용은 원본을 그대로 옮겼습니다. 원본이 바뀌면 이 문서를 맞춥니다.)
 
 ## 고수준 구조 (§7.1)
 
@@ -82,11 +82,23 @@ sequenceDiagram
 > 다이어그램은 §7.2의 번호 순서를 그대로 옮긴 것입니다. 스트리밍 중계의 실제 시점(생성 중 실시간 중계인지)은 구현 스펙에서 확정합니다.
 > 승인 엔드포인트는 §11의 `PUT /api/v1/chapters/{id}/confirm`을 사용했습니다.
 
+## 인증 (2026-11-02)
+
+`/api/v1/**`는 JWT가 필요합니다. 토큰 검증은 Spring Security가, 프로젝트·챕터 소유자 검사는 `OwnershipInterceptor`가 합니다. FastAPI는 기존대로 내부 전용이라 인증을 하지 않습니다. 자세한 내용은 [../plan/auth.md](../plan/auth.md)를 보세요.
+
+## 안정성·Should 기능 (2026-11-02)
+
+AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용됩니다 ([stability.md](../plan/stability.md)). 내보내기와 버전 이력은 Spring Boot 안에서 처리하며 AI 서비스를 호출하지 않습니다 ([should-features.md](../plan/should-features.md)).
+
+## 커뮤니티 (2026-11-03)
+
+프로젝트(비공개 작업실)와 작품(공개 스냅샷)을 나눕니다. 게시는 승인된 챕터를 복사하며 파이프라인 상태를 바꾸지 않습니다. 작업 기록(`activity_event`)이 작업 그래프와 활동 잔디의 원본이고, 업적은 커밋 뒤에 계산합니다. 함께 창작은 `project_collaborator`와 `work_commit`으로 두고, 인용 문장은 참여자에게만 돌려줍니다. 커뮤니티 읽기 API만 로그인 없이 열려 있습니다. 가이드챗의 LLM 호출도 FastAPI에서만 합니다. [community.md](../plan/community.md)
+
 ## 구현 메모 (2026-10-22)
 
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)
 - **트랜잭션**: Spring Boot는 FastAPI 호출 동안 DB 트랜잭션을 잡지 않습니다. 상태 확인·컨텍스트 조립 → (AI 호출) → 저장·상태 전이를 각각 짧은 트랜잭션으로 나눕니다.
-- **실패·중단**: AI 오류나 클라이언트 연결 종료 시 프로젝트 상태를 생성 전으로 되돌립니다. 자세한 내용은 [pipeline-state-machine.md](pipeline-state-machine.md)의 "구현 임시안"을 보세요.
+- **실패·중단**: AI 오류나 클라이언트 연결 종료 시 프로젝트 상태를 생성 전으로 되돌립니다. 전이 규칙은 [pipeline-state-machine.md](pipeline-state-machine.md)를 보세요.
 - **프론트 SSE**: 생성 요청이 POST라 `EventSource` 대신 `fetch` 스트림으로 읽습니다 (`core/api/chapter-stream.service.ts`).
 - **LLM 공급자**: 기본은 키 없이 동작하는 `mock`이고, `LLM_PROVIDER=anthropic`이면 Claude(`claude-opus-5-5`)를 씁니다.
 - 엔드포인트와 이벤트 형식은 [../plan/api-v1.md](../plan/api-v1.md)에 있습니다.

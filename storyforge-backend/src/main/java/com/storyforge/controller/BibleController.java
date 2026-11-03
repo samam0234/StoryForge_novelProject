@@ -1,6 +1,7 @@
 package com.storyforge.controller;
 
 import com.storyforge.domain.bible.BibleDtos.BibleResponse;
+import com.storyforge.domain.bible.BibleDtos.BibleVersionResponse;
 import com.storyforge.domain.bible.BibleDtos.GenerateBibleRequest;
 import com.storyforge.domain.bible.BibleDtos.UpdateBibleRequest;
 import com.storyforge.service.bible.BibleService;
@@ -8,6 +9,8 @@ import com.storyforge.service.orchestration.PipelineOrchestrator;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/projects/{projectId}/bible")
@@ -24,6 +27,12 @@ public class BibleController {
     @GetMapping
     public BibleResponse get(@PathVariable Long projectId) {
         return BibleResponse.from(bibleService.get(projectId));
+    }
+
+    /** 버전 이력 (기획서 §6.1), 최신순 */
+    @GetMapping("/versions")
+    public List<BibleVersionResponse> versions(@PathVariable Long projectId) {
+        return bibleService.versions(projectId);
     }
 
     @PutMapping

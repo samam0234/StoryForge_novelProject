@@ -41,4 +41,4 @@
 
 | 문서 | 결정 |
 |------|------|
-| (아직 없음) | |
+| [2026-11-02_chapter-content-markdown.md](2026-11-02_chapter-content-markdown.md) | 챕터 본문 저장 형식은 Markdown |

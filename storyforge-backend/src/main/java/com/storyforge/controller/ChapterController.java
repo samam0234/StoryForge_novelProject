@@ -1,6 +1,7 @@
 package com.storyforge.controller;
 
 import com.storyforge.domain.chapter.ChapterDtos.ChapterResponse;
+import com.storyforge.domain.chapter.ChapterDtos.ChapterVersionResponse;
 import com.storyforge.domain.chapter.ChapterDtos.UpdateChapterRequest;
 import com.storyforge.service.chapter.ChapterService;
 import com.storyforge.service.orchestration.PipelineOrchestrator;
@@ -35,18 +36,23 @@ public class ChapterController {
         return orchestrator.generateChapter(projectId, number);
     }
 
-    @GetMapping("/chapters/{id}")
-    public ChapterResponse get(@PathVariable Long id) {
-        return chapterService.get(id);
+    @GetMapping("/chapters/{chapterId}")
+    public ChapterResponse get(@PathVariable Long chapterId) {
+        return chapterService.get(chapterId);
     }
 
-    @PutMapping("/chapters/{id}")
-    public ChapterResponse update(@PathVariable Long id, @RequestBody UpdateChapterRequest request) {
-        return chapterService.edit(id, request.title(), request.content());
+    @GetMapping("/chapters/{chapterId}/versions")
+    public List<ChapterVersionResponse> versions(@PathVariable Long chapterId) {
+        return chapterService.versions(chapterId);
     }
 
-    @PutMapping("/chapters/{id}/confirm")
-    public ChapterResponse confirm(@PathVariable Long id) {
-        return orchestrator.confirmChapter(id);
+    @PutMapping("/chapters/{chapterId}")
+    public ChapterResponse update(@PathVariable Long chapterId, @RequestBody UpdateChapterRequest request) {
+        return chapterService.edit(chapterId, request.title(), request.content());
+    }
+
+    @PutMapping("/chapters/{chapterId}/confirm")
+    public ChapterResponse confirm(@PathVariable Long chapterId) {
+        return orchestrator.confirmChapter(chapterId);
     }
 }

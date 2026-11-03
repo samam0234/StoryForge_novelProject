@@ -10,6 +10,7 @@
 | `outline_generator.py` | Outline 생성, order 재번호 |
 | `chapter_generator.py` | 본문 스트리밍 → 요약 → Continuity 검증 → 결과 |
 | `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
+| `guide_assistant.py` | AI 가이드챗: 명령어 안내, 키워드 매칭, 자유 질문. 이동 버튼은 이 파일의 표에서만 만듦 |
 | `mock_writer.py` | `LLM_PROVIDER=mock`용 결정적 생성기 (mock 표시 포함) |
 
 ## 들어갈 것
@@ -28,4 +29,3 @@
 
 - [기획서 §6, §7.2, §8.3](../../../StoryForge_기획서_v1.2.md)
 - [docs/novel/](../../../docs/novel)
-- 상위 폴더: [../README.md](../README.md)

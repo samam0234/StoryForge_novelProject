@@ -1,0 +1,41 @@
+Copyright (c) 2026 StoryForge Project Team. All rights reserved.
+
+이 저장소의 소스 코드, 문서, 디자인 및 그 밖의 모든 내용(이하 "소프트웨어")은
+StoryForge Project Team의 독점 자산입니다. 이 저장소가 공개되어 있다는 사실만으로
+어떠한 사용 권한도 부여되지 않습니다.
+
+서면 허락 없이는 다음 행위를 할 수 없습니다.
+
+  1. 소프트웨어의 전부 또는 일부를 복사, 수정, 병합, 게시, 배포, 서브라이선스,
+     판매하거나 이를 바탕으로 파생물을 만드는 행위
+  2. 소프트웨어를 상업적 또는 비상업적 서비스의 일부로 운영하거나 제공하는 행위
+  3. 소프트웨어의 소스 코드로 인공지능 모델을 학습시키거나 평가하는 행위
+
+다만 다음은 허용합니다.
+
+  - GitHub의 이용 약관이 허용하는 범위에서 이 저장소를 열람하고 포크하는 행위
+    (포크한 사본에도 이 라이선스가 그대로 적용됩니다)
+  - 보안 취약점을 SECURITY.md의 절차에 따라 신고하기 위한 목적의 열람과 시험
+
+소프트웨어는 "있는 그대로" 제공되며, 상품성, 특정 목적에의 적합성, 권리 비침해를
+포함하여 명시적이든 묵시적이든 어떠한 종류의 보증도 하지 않습니다. 소프트웨어의
+사용 또는 그와 관련하여 발생하는 어떠한 청구, 손해 또는 기타 책임에 대해서도
+저작권자는 책임을 지지 않습니다.
+
+이 저장소에 포함된 제3자 소프트웨어와 글꼴은 각자의 라이선스를 따릅니다.
+THIRD_PARTY_NOTICES.md를 보세요. 이 라이선스는 그 구성 요소의 라이선스를 바꾸지 않습니다.
+
+라이선스 문의: 저장소 소유자에게 GitHub를 통해 연락하세요.
+
+---
+
+Copyright (c) 2026 StoryForge Project Team. All rights reserved.
+
+This repository and its contents (the "Software") are the proprietary property of the
+StoryForge Project Team. Publication of this repository does not grant any right to
+use, copy, modify, merge, publish, distribute, sublicense, sell, or create derivative
+works of the Software, or to use it to train or evaluate machine-learning models,
+without prior written permission. Viewing and forking on GitHub within GitHub's Terms of
+Service, and viewing/testing solely to report a vulnerability under SECURITY.md, are
+permitted. The Software is provided "AS IS", without warranty of any kind. Third-party
+components remain under their own licenses (see THIRD_PARTY_NOTICES.md).

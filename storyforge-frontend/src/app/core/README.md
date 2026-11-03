@@ -1,25 +1,28 @@
 # storyforge-frontend/src/app/core/
 
-앱 전체에서 한 번만 생성되는 **싱글톤 서비스, HTTP 인터셉터, 라우트 가드**를 둡니다.
+커뮤니티 API는 `api/community-api.service.ts`, 모델은 `models/community.ts`에 있습니다.
 
-## 들어갈 것
+앱 전체에서 한 번만 생성되는 **싱글톤 서비스, 인터셉터, 가드, 공통 타입**입니다. 특정 기능에서만 쓰는 서비스는 해당 `features/*`에 둡니다.
 
-- 인증 상태, API 클라이언트, 공용 모델
+## 파일
 
-## 들어가지 않을 것
-
-- 특정 기능에서만 쓰는 서비스 → 해당 `features/*`
-- 화면 컴포넌트
-
-## 하위 폴더
-
-| 폴더 | 내용 |
+| 위치 | 내용 |
 |------|------|
-| [api/](api/) | HTTP 클라이언트 래퍼 |
-| [auth/](auth/) | 인증 (JWT) |
-| [models/](models/) | 공용 타입 모델 |
+| `api/storyforge-api.service.ts` | Spring Boot `/api/v1` REST 래퍼 + `errorMessage()`(ProblemDetail → 사용자 메시지). 화면은 `HttpClient`를 직접 쓰지 않습니다 |
+| `api/chapter-stream.service.ts` | 챕터 생성 SSE를 `fetch` 스트림으로 읽어 `token`/`done`/`error` 이벤트로 변환. 토큰을 직접 붙입니다 |
+| `auth/auth.service.ts` | 세션 보관(localStorage), 로그인·가입·로그아웃, 만료·401 처리 |
+| `auth/auth.interceptor.ts` | `/api/v1` 요청에 Bearer 토큰 첨부, 401이면 로그인으로 |
+| `auth/auth.guard.ts` | `authGuard`(로그인 필요), `guestGuard`(로그인 화면용) |
+| `models/models.ts` | 엔티티 타입, `ProjectStatus`·`PIPELINE_STAGES`(기획서 §7.2), 모델·내보내기 형식 목록 |
+
+## 규칙
+
+- **FastAPI 주소나 `/internal/*`를 호출하지 않습니다.** Angular는 Spring Boot만 호출합니다.
+- LLM 호출, 상태 전이 판단을 넣지 않습니다. 상태 이름과 순서는 기획서 그대로입니다.
+- 챕터 SSE는 `fetch`를 쓰므로 인터셉터를 거치지 않습니다. 인증 처리를 바꾸면 `chapter-stream.service.ts`도 확인합니다.
+- `models.ts`의 `MODEL_OPTIONS`는 백엔드 `UpdateProjectRequest`가 허용하는 모델과 같게 유지합니다.
 
 ## 관련 문서
 
-- [기획서 §8.1](../../../../StoryForge_기획서_v1.2.md)
-- 상위 폴더: [../README.md](../README.md)
+- [기획서 §7.1, §8.1, §11](../../../../StoryForge_기획서_v1.2.md)
+- [docs/plan/api-v1.md](../../../../docs/plan/api-v1.md), [docs/plan/auth.md](../../../../docs/plan/auth.md)

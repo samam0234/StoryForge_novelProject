@@ -6,5 +6,11 @@ import java.util.List;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
-    List<Project> findAllByOrderByUpdatedAtDesc();
+    List<Project> findByOwnerIdOrderByUpdatedAtDesc(Long ownerId);
+
+    boolean existsByIdAndOwnerId(Long id, Long ownerId);
+
+    List<Project> findByStatus(ProjectStatus status);
+
+    long countByOwnerIdAndStatus(Long ownerId, ProjectStatus status);
 }

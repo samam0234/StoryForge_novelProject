@@ -14,7 +14,7 @@ class PipelineStateMachineTest {
 
     @Test
     void followsDefinedOrderFromBibleDraftToCompleted() {
-        Project p = new Project("t", "g");
+        Project p = new Project("t", "g", 1L);
         for (var next : new com.storyforge.domain.project.ProjectStatus[]{
                 BIBLE_CONFIRMED, OUTLINE_DRAFT, OUTLINE_CONFIRMED, CHAPTER_GENERATING, CHAPTER_REVIEW, COMPLETED}) {
             sm.transition(p, next);
@@ -24,14 +24,14 @@ class PipelineStateMachineTest {
 
     @Test
     void rejectsSkippingStages() {
-        Project p = new Project("t", "g");
+        Project p = new Project("t", "g", 1L);
         assertThatThrownBy(() -> sm.transition(p, OUTLINE_DRAFT)).isInstanceOf(InvalidStateException.class);
         assertThat(sm.canTransition(OUTLINE_CONFIRMED, CHAPTER_REVIEW)).isFalse();
         assertThat(sm.canTransition(CHAPTER_GENERATING, COMPLETED)).isFalse();
     }
 
     @Test
-    void allowsProvisionalChapterLoopAndRevert() {
+    void allowsChapterLoopAndRevertAddedInV13() {
         assertThat(sm.canTransition(CHAPTER_REVIEW, CHAPTER_GENERATING)).isTrue();
         assertThat(sm.canTransition(CHAPTER_GENERATING, OUTLINE_CONFIRMED)).isTrue();
         assertThat(sm.canTransition(COMPLETED, CHAPTER_GENERATING)).isFalse();

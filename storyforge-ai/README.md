@@ -27,7 +27,7 @@ python -m venv .venv
 ### 실행 — mock 모드 (기본, API 키 불필요)
 
 ```bash
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 개발 중 코드 변경을 바로 반영하려면 `--reload`를 붙입니다.
@@ -39,14 +39,14 @@ mock 모드는 파이프라인 흐름(Bible → Outline → 챕터 스트리밍 
 ```bash
 # bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
-  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 ```powershell
 # PowerShell
 $env:LLM_PROVIDER = "anthropic"
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
-.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 저장소 루트나 이 폴더의 `.env`에 값을 적어 두어도 자동으로 읽습니다 (`.env`는 커밋하지 않습니다).
@@ -55,13 +55,13 @@ $env:ANTHROPIC_API_KEY = "sk-ant-..."
 
 | 확인 | 명령 / 주소 | 기대 결과 |
 |------|-------------|-----------|
-| 상태 | `curl http://127.0.0.1:8000/health` | `{"status":"ok","provider":"mock","model":"-"}` |
-| API 문서 | http://127.0.0.1:8000/docs | FastAPI Swagger UI (내부 확인용) |
+| 상태 | `curl http://127.0.0.1:8001/health` | `{"status":"ok","provider":"mock","model":"-"}` |
+| API 문서 | http://127.0.0.1:8001/docs | FastAPI Swagger UI (내부 확인용) |
 
 직접 호출해 보기 (보통은 백엔드가 호출합니다):
 
 ```bash
-curl -X POST http://127.0.0.1:8000/internal/generate/bible \
+curl -X POST http://127.0.0.1:8001/internal/generate/bible \
   -H "Content-Type: application/json" \
   -d '{"project":{"title":"Test","genre":"fantasy"},"prompt":"a shop that trades memories"}'
 ```
@@ -70,7 +70,7 @@ curl -X POST http://127.0.0.1:8000/internal/generate/bible \
 
 | 하려는 일 | 명령 |
 |-----------|------|
-| 실행 | `.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` |
+| 실행 | `.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001` |
 | 자동 재시작 실행 | 위 명령에 `--reload` |
 | 테스트 의존성 설치 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` |
 | 테스트 | `.venv/Scripts/python -m pytest -q` (mock 모드, API 키 불필요) |
@@ -135,7 +135,7 @@ storyforge-ai/
 | 증상 | 원인 / 해결 |
 |------|-------------|
 | 한글 출력 시 `UnicodeEncodeError: 'cp949'` | Windows 콘솔 인코딩 문제입니다. `PYTHONIOENCODING=utf-8`을 설정합니다 |
-| `Address already in use` (8000), 또는 `/health`가 HTML을 돌려줌 | 다른 서버(예: 다른 프로젝트의 Django)가 8000을 씁니다. `--port 8001`로 띄우고 백엔드를 `AI_SERVICE_URL=http://localhost:8001`로 실행합니다 — [local-port-conflicts.md](../docs/repeater/local-port-conflicts.md) |
+| `Address already in use` (8001), 또는 `/health`가 HTML을 돌려줌 | 다른 서버가 8001을 씁니다. 다른 포트로 띄우고 백엔드 `AI_SERVICE_URL`도 맞춥니다 — [local-port-conflicts.md](../docs/repeater/local-port-conflicts.md) |
 | Claude 모드에서 `error` 이벤트 | 키·네트워크를 확인합니다. 메시지가 "거절" 또는 "출력 한도"면 프롬프트·분량 문제입니다 |
 | `ModuleNotFoundError: app` | `storyforge-ai` 폴더에서 실행해야 합니다 |
 
@@ -151,3 +151,4 @@ storyforge-ai/
 - [docs/novel/](../docs/novel/) — 프롬프트 작성 규칙, Continuity 규칙
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md), [docs/plan/CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)
+- 보안: [../SECURITY.md](../SECURITY.md), 라이선스: [../LICENSE](../LICENSE)

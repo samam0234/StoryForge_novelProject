@@ -14,6 +14,9 @@ class Schema(BaseModel):
 class ProjectInfo(Schema):
     title: str
     genre: str | None = None
+    # 프로젝트 설정 (기획서 §9.6-5). 비어 있으면 서비스 기본값을 씁니다.
+    model: str | None = None
+    default_tone: str | None = None
 
 
 class CharacterInfo(Schema):
@@ -116,3 +119,34 @@ class ChapterGenerateResult(Schema):
     content: str
     summary: str
     report: ContinuityResult
+
+
+# ── POST /internal/guide/chat ──
+class GuideContext(Schema):
+    """가이드챗이 참고할 사용자 상황. Spring Boot가 채웁니다."""
+
+    display_name: str
+    project_count: int = 0
+    published_works: int = 0
+    project_id: int | None = None
+    project_title: str | None = None
+    project_status: str | None = None
+    next_chapter: int | None = None
+
+
+class GuideChatRequest(Schema):
+    message: str = Field(max_length=2000)
+    context: GuideContext
+
+
+class GuideAction(Schema):
+    """kind: route(앱 안 이동), collab(외부 연결, 주소는 Spring Boot가 채움)"""
+
+    label: str
+    kind: Literal["route", "collab"]
+    target: str
+
+
+class GuideChatResponse(Schema):
+    reply: str
+    actions: list[GuideAction] = Field(default_factory=list)

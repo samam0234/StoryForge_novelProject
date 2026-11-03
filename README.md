@@ -6,7 +6,60 @@
 Story Bible 생성/관리 → Outline 생성 → 순차 챕터 생성 + Continuity Tracking
 ```
 
-단계마다 사용자 검토와 AI 자동 검증을 거칩니다. 자세한 배경은 [기획서](StoryForge_기획서_v1.2.md)를 보세요.
+단계마다 사용자 검토와 AI 자동 검증을 거칩니다. 자세한 배경은 [기획서](StoryForge_기획서_v1.2.md)(문서 버전 1.3)를 보세요.
+
+> **상태**: 기초 구현을 마친 개발 단계입니다. 정식 릴리스는 아직 없고, 실제 Claude 연동은 검증하지 못해 AI는 기본적으로 mock 공급자로 동작합니다. 라이선스는 [독점(All rights reserved)](LICENSE)입니다.
+
+## 주요 기능
+
+| 단계 | 하는 일 | AI | 사용자 |
+|------|---------|----|--------|
+| **Story Bible** | 세계관, 캐릭터, 테마, 톤을 만들고 관리 | 아이디어로 초안 생성 | 편집, 버전 비교, 확정 |
+| **Outline** | 챕터별 Beats, 등장 캐릭터, 연속성 포인트 구성 | 챕터 수만큼 생성 | 드래그 앤 드롭 재배치, 편집, 확정 |
+| **챕터** | Bible + Outline + 이전 챕터 요약으로 순차 생성 | 스트리밍 생성, 요약, Continuity 검증 | 리포트 확인, 편집, 승인·재생성 |
+| **내보내기** | 승인된 챕터를 원고 파일로 | — | Markdown · TXT · DOCX · PDF · HTML · EPUB · ODT · RTF |
+
+완성한 작품은 게시판에 올립니다. 자세한 내용은 [커뮤니티 스펙](docs/plan/community.md)에 있습니다.
+
+| 기능 | 내용 |
+|------|------|
+| **게시판** | 롱품, 숏품, 패키지포지, 창작하기(라운지 포함), 이슈. 읽기는 로그인 없이 가능 |
+| **작업 그래프** | 수동·에이전트 비율, 날짜별 막대, git 형식 작업 기록표. 막대는 그날 작업, 점은 기록 문단 |
+| **함께 창작** | 초대를 수락한 사람만 원고를 공유. 작업 커밋으로 고친 구간을 적고, 점을 누르면 그 문장이 표시됨 |
+| **활동 잔디** | 날짜 칸을 누르면 그날 기록 문단이 열림 |
+| **Clone** | 세계관, 플롯, 전체 원고 범위로 내 프로젝트를 만들어 이어 쓰기. 원본 비교, 파생작 트리 |
+| **공유 그래프** | 누가, 어디에 공유했고 몇 명이 들어왔는지 |
+| **패키지포지** | 작품을 유니버스, 옴니버스, 사가 등으로 묶기. 연결 지도, 통합 인물 사전, 통합 내보내기 |
+| **프로필** | 활동 잔디, 활동 내역, 업적, 계정 설정 |
+| **AI 가이드챗** | 명령어로 안내와 화면 이동 |
+
+설정 망각을 막기 위해 챕터마다 앞선 설정과 요약을 컨텍스트로 넣고, 설정 충돌·캐릭터 일관성·타임라인·플롯 스레드를 검증한 결과를 사용자에게 보여 줍니다. **사용자 검토를 건너뛰는 자동 승인은 없습니다.**
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> BIBLE_DRAFT
+    BIBLE_DRAFT --> BIBLE_CONFIRMED
+    BIBLE_CONFIRMED --> OUTLINE_DRAFT
+    OUTLINE_DRAFT --> OUTLINE_CONFIRMED
+    OUTLINE_CONFIRMED --> CHAPTER_GENERATING
+    CHAPTER_GENERATING --> CHAPTER_REVIEW
+    CHAPTER_REVIEW --> CHAPTER_GENERATING: 다음 챕터 / 재생성
+    CHAPTER_REVIEW --> COMPLETED
+```
+
+전이 규칙과 실패 시 복귀는 [pipeline-state-machine.md](docs/Architecture/pipeline-state-machine.md)에 있습니다.
+
+## 기술 스택
+
+| 영역 | 기술 |
+|------|------|
+| 프론트엔드 | Angular 21, Angular Material, TipTap, RxJS |
+| 백엔드 | Spring Boot 4.1 (Java 21), Spring Security(JWT), Flyway, PostgreSQL 16 |
+| AI 서비스 | FastAPI, Pydantic, Jinja2, Anthropic SDK (기본 `claude-opus-5-5`) |
+| 개발 환경 | Docker Compose(DB), Maven Wrapper |
+
+버전과 포트의 기준값은 [CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)입니다.
 
 ---
 
@@ -31,11 +84,11 @@ Maven과 Angular CLI는 따로 설치하지 않아도 됩니다 (Maven Wrapper, 
 # ① DB — PostgreSQL 16 (호스트 포트 5433)
 docker compose up -d
 
-# ② AI 서비스 — http://127.0.0.1:8000 (처음 한 번만 venv 생성·설치)
+# ② AI 서비스 — http://127.0.0.1:8001 (처음 한 번만 venv 생성·설치)
 cd storyforge-ai
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 
 # ③ 백엔드 — http://localhost:8080 (Flyway가 스키마를 자동 생성)
 cd storyforge-backend
@@ -54,14 +107,14 @@ npx ng serve
 
 | 확인 | 명령 / 주소 | 기대 결과 |
 |------|-------------|-----------|
-| AI 서비스 | `curl http://127.0.0.1:8000/health` | `{"status":"ok","provider":"mock",...}` |
+| AI 서비스 | `curl http://127.0.0.1:8001/health` | `{"status":"ok","provider":"mock",...}` |
 | 백엔드 | `curl http://localhost:8080/actuator/health` | `{"status":"UP"}` |
 | API 문서 | http://localhost:8080/swagger-ui.html | Swagger UI |
-| 웹 화면 | http://localhost:4200 | 다크 테마 대시보드 |
+| 웹 화면 | http://localhost:4200 | 로그인 화면 (회원가입 후 대시보드) |
 
 `health`가 JSON이 아니거나 포트 사용 중 오류가 나면 [local-port-conflicts.md](docs/repeater/local-port-conflicts.md)를 보세요.
 
-화면에서 **새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
+화면에서 **회원가입 → 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 생성**까지 진행하면, "AI writing..." 표시와 함께 본문이 흘러나오고 우측에 Continuity 점수가 나옵니다.
 
 ### 4. 실제 Claude로 생성하기
 
@@ -69,7 +122,7 @@ npx ng serve
 
 ```bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
-  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
 
 PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-ant-..."`를 먼저 실행합니다.
@@ -89,12 +142,12 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | 서비스 | 기술 | 포트 | 실행 안내 |
 |--------|------|------|-----------|
 | 프론트엔드 | Angular 21 + Angular Material | 4200 | [storyforge-frontend/README.md](storyforge-frontend/README.md) |
-| 백엔드 (Orchestrator) | Spring Boot 3.5 + PostgreSQL | 8080 | [storyforge-backend/README.md](storyforge-backend/README.md) |
-| AI 서비스 | FastAPI + anthropic SDK | 8000 (내부 전용) | [storyforge-ai/README.md](storyforge-ai/README.md) |
+| 백엔드 (Orchestrator) | Spring Boot 4.1 + PostgreSQL | 8080 | [storyforge-backend/README.md](storyforge-backend/README.md) |
+| AI 서비스 | FastAPI + anthropic SDK | 8001 (내부 전용) | [storyforge-ai/README.md](storyforge-ai/README.md) |
 | DB | PostgreSQL 16 (Docker) | 5433 | [docker-compose.yml](docker-compose.yml) |
 
 ```
-브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP──▶ FastAPI(8000) ──▶ LLM
+브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP──▶ FastAPI(8001) ──▶ LLM
                                               │
                                               ▼
                                        PostgreSQL(5433)
@@ -108,24 +161,29 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 | 서비스 | 명령 (각 서비스 폴더에서) |
 |--------|---------------------------|
-| 백엔드 | `./mvnw test` |
+| 백엔드 | `./mvnw test` (통합 테스트에 Docker 필요) |
 | AI 서비스 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` 후 `.venv/Scripts/python -m pytest -q` |
-| 프론트엔드 | `npx ng build` (빌드·타입 검사) |
+| 프론트엔드 | `npx ng test --watch=false`, `npx ng build` |
 
 ## 현재 구현 범위
 
 | 상태 | 항목 |
 |------|------|
-| ✅ 동작 | 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), Continuity 리포트, 사용자 승인, 다크/라이트 테마 |
-| ⏳ 미구현 | 인증(JWT — 현재 API 개방), TipTap 에디터(현재 textarea), 내보내기, 버전 히스토리·Diff |
-| ❓ 확인 대기 | 상태 머신 임시 전이 2개 — [pipeline-state-machine.md](docs/Architecture/pipeline-state-machine.md) "구현 임시안" |
+| ✅ 동작 | JWT 인증(가입·로그인·소유자 검사), 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), TipTap 에디터, Continuity 리포트, 사용자 승인, 내보내기(MD·DOCX·PDF), 버전 이력·Diff, 프로젝트 설정, Rate Limiting·Circuit Breaker, 다크/라이트 테마 |
+| ⏸ 보류 | 실제 Claude API 연동 검증 (현재 mock 공급자로 동작) |
 
 ## 저장소 구조
 
 ```
 StoryForge/
-├── StoryForge_기획서_v1.2.md   # 기획 원본 (이동·이름 변경 금지, .docx는 같은 내용의 배포본)
+├── StoryForge_기획서_v1.2.md   # 기획 원본 (이동·이름 변경 금지, 문서 버전 1.3, .docx는 요약본)
 ├── AGENTS.md                   # 작업 규칙 요약
+├── LICENSE                     # 독점 (All rights reserved)
+├── SECURITY.md                 # 보안 정책, 취약점 신고, 배포 전 체크리스트
+├── CONTRIBUTING.md             # 기여 안내 (작업 규칙 요약)
+├── CHANGELOG.md                # 변경 내역
+├── THIRD_PARTY_NOTICES.md      # 제3자 구성 요소 라이선스 고지
+├── .github/                    # PR 템플릿
 ├── .agents/                    # 규칙 정본 (skills/storyforge/SKILL.md)
 ├── .claude/ .cursor/ .codex/ .grok/ .antigravity/   # 도구별 규칙 어댑터
 ├── docs/                       # 스펙, 아키텍처, 실행 가이드, 커밋 기록
@@ -136,7 +194,7 @@ StoryForge/
 └── .env.example                # 환경 변수 키 목록
 ```
 
-모든 폴더에는 그 폴더를 소개하는 `README.md`가 있습니다.
+README는 서비스 루트와 핵심 기능 폴더에만 있습니다. 나머지 폴더의 설명은 가장 가까운 상위 README의 파일 표에 있습니다.
 
 ## 문서
 
@@ -148,12 +206,24 @@ StoryForge/
 | [docs/plan/api-v1.md](docs/plan/api-v1.md) | API, SSE 이벤트, Continuity 리포트 형식 |
 | [docs/Architecture/](docs/Architecture/) | 시스템 구조, 상태 머신 |
 | [AGENTS.md](AGENTS.md) / [.agents/skills/storyforge/SKILL.md](.agents/skills/storyforge/SKILL.md) | 작업 규칙 요약 / 정본 |
+| [docs/plan/roadmap-progress.md](docs/plan/roadmap-progress.md) | 작업 순서, 결정 사항, 진행 방식 변경 이력 |
+| [CHANGELOG.md](CHANGELOG.md) | 변경 내역 |
 
 ## 기여 규칙 요약
 
-1. `develop`에서 `feature/*`, `bugfix/*`, `experimental/*` 브랜치를 만들어 작업합니다.
+1. 지정된 작업 브랜치(현재 `feature/auth`)에서 작업합니다. 브랜치를 임의로 추가하지 않습니다.
 2. 커밋 메시지는 `type(scope): 한국어 요약` 형식입니다.
-3. 커밋마다 [docs/branchs/commits/](docs/branchs/commits/)에 기록 파일을 남깁니다.
-4. 병합은 `git merge --no-ff`로만 하고, 흐름은 `feature → develop → main`입니다. `main`이 기본 브랜치입니다.
+3. 커밋 기록([docs/branchs/commits/](docs/branchs/commits/))은 필요할 때만 남깁니다.
+4. 병합은 `git merge --no-ff`로만 하고, 흐름은 `feature → develop → main`입니다. `main`이 기본 브랜치이며, `main` 반영은 사용자의 직접 명령이 있을 때만 합니다.
 
-세부 규칙은 [AGENTS.md](AGENTS.md)를 보세요.
+세부 규칙은 [CONTRIBUTING.md](CONTRIBUTING.md)와 [AGENTS.md](AGENTS.md)를 보세요.
+
+## 보안
+
+취약점은 **공개 이슈로 올리지 말고** [SECURITY.md](SECURITY.md)의 절차대로 비공개로 신고해 주세요. 운영하기 전에 같은 문서의 "알려진 제한"과 "배포 전 체크리스트"를 꼭 확인하세요. 특히 `JWT_SECRET`과 DB 비밀번호는 개발 기본값으로 운영하면 안 됩니다.
+
+`LLM_PROVIDER=anthropic`이면 사용자의 소설 내용이 외부 LLM 제공자에게 전송됩니다.
+
+## 라이선스
+
+Copyright © 2026 StoryForge Project Team. **All rights reserved.** 서면 허락 없이 사용·복사·수정·배포할 수 없습니다. 자세한 내용은 [LICENSE](LICENSE)를, 사용 중인 오픈소스와 글꼴의 라이선스는 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)를 보세요.

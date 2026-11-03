@@ -12,4 +12,5 @@ async def generate_bible(llm: LLMClient, request: BibleGenerateRequest) -> Bible
         system=render("system"),
         prompt=render("bible", project=request.project, prompt=request.prompt),
         schema=BibleGenerateResponse,
+        model=request.project.model,
     )

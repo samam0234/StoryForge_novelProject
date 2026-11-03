@@ -5,6 +5,7 @@ AI 서비스 테스트입니다. `LLM_PROVIDER=mock`(기본값)으로 실행하�
 ## 들어갈 것
 
 - `test_pipeline.py` — 내부 API 계약(camelCase), 챕터 SSE 이벤트 순서(token → done), Continuity 규칙 검사와 점수
+- `test_llm_paths.py` — 가짜 LLM으로 필수 컨텍스트 주입, LLM 검증 결과 반영, 스트림 중 오류, 내부 메시지 비노출 (실제 API 호출 없음)
 
 ## 실행
 
@@ -19,4 +20,3 @@ AI 서비스 테스트입니다. `LLM_PROVIDER=mock`(기본값)으로 실행하�
 
 ## 관련 문서
 
-- 상위 폴더: [../README.md](../README.md)

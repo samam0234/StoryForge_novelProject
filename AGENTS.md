@@ -11,7 +11,7 @@
 4. [commit-message.md](.agents/skills/storyforge/commit-message.md)
 5. [branch-merge.md](.agents/skills/storyforge/branch-merge.md)
 6. [TEMPLATE.md](docs/branchs/TEMPLATE.md)
-7. 도구별 어댑터 (`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`)
+7. 도구별 어댑터 (`.claude/`, `.cursor/`, `.codex/`, `.grok/`, `.antigravity/`, `.Manus/`, `.Gemini/`, `.Kimi/`, `.Ollama/`, `.Qwen/`, `.Opencode/`, `.Windsurf/`)
 
 ## 작업 전 체크리스트
 
@@ -23,15 +23,15 @@
 ## 커밋할 때
 
 - 형식: `type(scope): 한국어 요약` — type/scope는 영어, 요약·본문·바닥글은 한국어, 끝에 마침표 없음
-- 커밋마다 `docs/branchs/commits/YYMMDD_HHMM_[커밋ID]_[커밋이름]_[브랜치].md`를 만들고
-  [docs/branchs/README.md](docs/branchs/README.md) 목록 표에 링크를 추가합니다. 둘 다 같은 브랜치에 커밋합니다.
-- merge나 작은 수정도 예외가 아닙니다.
+- 커밋 기록(`docs/branchs/commits/`)은 **평소에는 작성하지 않고 필요할 때만** 작성합니다. 형식은 [TEMPLATE.md](docs/branchs/TEMPLATE.md)를 따릅니다.
 - `.env` 시크릿은 커밋하지 않습니다.
 
 ## 병합할 때
 
 - `git merge --no-ff`만 사용합니다. 메시지: `merge: feature/xxx into develop (no-ff)`
 - `develop`을 거치지 않고 `main`에 병합하지 않습니다.
+- **`main` 병합·반영은 사용자의 직접 명령이 있을 때만** 합니다.
+- **브랜치를 임의로 만들지 않습니다.** 현재 지정 브랜치는 `main`, `develop`, 작업 브랜치 `feature/auth` 1개입니다.
 - **병합은 사용자가 요청할 때만** 합니다.
 - force-push는 명시적 요청이 있을 때만 합니다.
 
@@ -43,6 +43,7 @@
 - LLM 호출과 Continuity Check는 FastAPI에서만 합니다. Angular 컴포넌트에 LLM 로직을 넣지 않습니다.
 - 상태 머신은 임의로 바꾸지 않습니다.
   `BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED → CHAPTER_GENERATING → CHAPTER_REVIEW → COMPLETED`
+  (기획서 v1.3 추가 전이: `CHAPTER_REVIEW → CHAPTER_GENERATING`, `CHAPTER_GENERATING → OUTLINE_CONFIRMED`)
 - 포트와 인프라 값은 코드에서 정하지 않고 [docs/plan/CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)에서 관리합니다.
 - 폴더 구조는 기획서 §8을 따릅니다. 정본의 "권장 폴더 구조"와 다르면 기획서가 우선합니다.
 
@@ -50,8 +51,9 @@
 
 - 진입점은 [docs/README.md](docs/README.md)입니다. 폴더별 용도는 그 문서와 정본의 표를 따릅니다.
 - 구현을 바꾸면 `docs/Architecture/`와 `CURRENT_STACK.md`를 함께 갱신합니다.
+- 기능이 바뀌거나 문제가 생겨 진행 방식을 바꾸면 **사유와 바뀐 방식을 문서에 남깁니다.**
 - 기획 원본을 `docs/` 안으로 옮기거나 이름을 바꾸지 않습니다.
-- **모든 폴더에 `README.md`를 둡니다.** 목적, 들어갈 것, 들어가지 않을 것, 관련 문서를 적습니다.
+- **README는 필요한 곳에만 둡니다** (서비스 루트, 하위 기능을 묶는 폴더, 규칙이 있는 핵심 폴더, `docs/` 최상위 폴더). 파일이 한두 개뿐인 폴더에는 두지 않고 상위 README에 적습니다. 상세는 정본 "폴더 README 규칙".
 - `docs/vaildates/`의 스펠링은 의도적이므로 교정하지 않습니다.
 
 ## Continuity & 품질
