@@ -30,7 +30,7 @@
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
 | `feature/diagnostics-readme` | VS Code 경고 정리, README 실행 가이드 개편 | `develop` | 2026-10-23 | develop 병합 |
-| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능 | `develop` | 2026-11-02 | develop 병합 |
+| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능, 커뮤니티, 함께 창작, 재검증, 신고·관리 | `develop` | 2026-11-02 | develop 병합 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 
@@ -42,6 +42,21 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-11-04 20:44 | `dad7fd2` | feat(web): 알림, 신고, 관리자, 이용약관, 차단, 패키지 검사, 원본 가져오기 화면 추가 | `feature/auth` | [기록](commits/261104_2044_dad7fd2_moderation-web_feature-auth.md) |
+| 2026-11-04 20:40 | `edbc036` | fix(web): 창작하기 화면의 남는 닫는 태그로 빌드가 깨지던 문제 수정 | `feature/auth` | [기록](commits/261104_2040_edbc036_fix-create-page-build_feature-auth.md) |
+| 2026-11-04 20:34 | `79f61af` | feat(api): 패키지 전체 Continuity 검사와 원본 변경 가져오기 추가 | `feature/auth` | [기록](commits/261104_2034_79f61af_package-continuity_feature-auth.md) |
+| 2026-11-04 20:29 | `1c540d8` | feat(api): 신고, 관리자 조치, 차단, 계정 정지, 이용약관, 알림 추가 | `feature/auth` | [기록](commits/261104_2029_1c540d8_moderation-api_feature-auth.md) |
+| 2026-11-04 20:21 | `7ba9a61` | test(ai): 콜라보 안내 테스트를 버튼 구성 변경에 맞춤 | `feature/auth` | [기록](commits/261104_2021_7ba9a61_collab-guide-test_feature-auth.md) |
+| 2026-11-04 20:21 | `3020429` | feat(api): 고친 원고를 승인할 때 다시 요약·검증 | `feature/auth` | [기록](commits/261104_2021_3020429_chapter-review_feature-auth.md) |
+| 2026-11-03 10:46 | `c0f74ab` | merge: feature/auth into develop (no-ff) | `develop` | [기록](commits/261103_1046_c0f74ab_merge-collaboration_develop.md) |
+| 2026-11-03 07:13 | `f6dd5b8` | feat(api): 함께 창작 초대와 작업 커밋을 추가 | `feature/auth` | [기록](commits/261103_0713_f6dd5b8_collaboration-api_feature-auth.md) |
+| 2026-11-03 07:13 | `538cb59` | feat(web): 작업 기록표와 함께 창작 화면을 추가 | `feature/auth` | [기록](commits/261103_0713_538cb59_collaboration-web_feature-auth.md) |
+| 2026-11-03 07:13 | `07b704c` | docs(docs): 함께 창작 스펙과 에이전트 어댑터를 맞춤 | `feature/auth` | [기록](commits/261103_0713_07b704c_collaboration-docs_feature-auth.md) |
+| 2026-11-03 06:40 | `c373e57` | docs(docs): 커뮤니티 스펙과 변경 사유 문서화 | `feature/auth` | [기록](commits/261103_0640_c373e57_community-docs_feature-auth.md) |
+| 2026-11-03 06:40 | `bf640bf` | feat(web): 게시판, 작업·공유 그래프, 패키지포지, 프로필, 가이드챗 화면 추가 | `feature/auth` | [기록](commits/261103_0640_bf640bf_community-web_feature-auth.md) |
+| 2026-11-03 06:40 | `4c209c7` | feat(ai): AI 가이드챗 추가 | `feature/auth` | [기록](commits/261103_0640_4c209c7_guide-chat_feature-auth.md) |
+| 2026-11-03 06:40 | `4580148` | merge: feature/auth into develop (no-ff) | `develop` | [기록](commits/261103_0640_4580148_merge-community_develop.md) |
+| 2026-11-03 06:40 | `40d1406` | feat(api): 게시판, Clone, 공유, 패키지포지, 작업 그래프, 프로필 추가 | `feature/auth` | [기록](commits/261103_0640_40d1406_community-api_feature-auth.md) |
 | 2026-10-23 00:22 | `285f83e` | merge: feature/diagnostics-readme into develop (no-ff) | `develop` | [기록](commits/261023_0022_285f83e_merge-diagnostics-readme_develop.md) |
 | 2026-10-23 00:11 | `d4f2e85` | docs(docs): 서비스 README를 실행 방법 중심으로 개편 | `feature/diagnostics-readme` | [기록](commits/261023_0011_d4f2e85_readme-run-guides_feature-diagnostics-readme.md) |
 | 2026-10-23 00:11 | `ff57fb9` | fix(api): VS Code null 안전성 경고와 Spring 힌트 정리 | `feature/diagnostics-readme` | [기록](commits/261023_0011_ff57fb9_fix-null-safety-warnings_feature-diagnostics-readme.md) |
