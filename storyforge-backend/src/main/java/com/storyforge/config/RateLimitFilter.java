@@ -78,7 +78,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private static String principal(HttpServletRequest request) {
+    private String principal(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.isAuthenticated() ? auth.getName() : ClientAddresses.resolve(request, trustedProxies);
     }
