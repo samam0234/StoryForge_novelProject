@@ -59,7 +59,7 @@ public class CollaborationService {
     public List<CollaboratorView> listMembers(Long projectId) {
         Project project = projects.load(projectId);
         List<ProjectCollaborator> rows = members.findByProjectIdOrderByCreatedAtAsc(projectId);
-        Map<Long, AppUser> people = loadUsers(rows.stream().map(ProjectCollaborator::getUserId).toList());
+        Map<Long, AppUser> people = loadUsers(rows.stream().map(item -> item.getUserId()).toList());
         return rows.stream().map(m -> view(m, project.getTitle(), people.get(m.getUserId()))).toList();
     }
 
@@ -99,9 +99,9 @@ public class CollaborationService {
 
     public List<CollaboratorView> myInvitations(Long userId) {
         List<ProjectCollaborator> rows = members.findByUserIdOrderByCreatedAtDesc(userId);
-        Map<Long, Project> byId = rows.stream().map(ProjectCollaborator::getProjectId).distinct()
+        Map<Long, Project> byId = rows.stream().map(item -> item.getProjectId()).distinct()
                 .map(projects::load)
-                .collect(Collectors.toMap(Project::getId, Function.identity()));
+                .collect(Collectors.toMap(item -> item.getId(), Function.identity()));
         AppUser me = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         return rows.stream().map(row -> view(row, byId.get(row.getProjectId()).getTitle(), me)).toList();
@@ -138,7 +138,7 @@ public class CollaborationService {
     public List<CommitView> listCommits(Long projectId) {
         projects.load(projectId);
         List<WorkCommit> rows = commits.findByProjectIdOrderByCreatedAtDesc(projectId);
-        Map<Long, AppUser> people = loadUsers(rows.stream().map(WorkCommit::getAuthorId).distinct().toList());
+        Map<Long, AppUser> people = loadUsers(rows.stream().map(item -> item.getAuthorId()).distinct().toList());
         return rows.stream().map(c -> commitView(c, people.get(c.getAuthorId()))).toList();
     }
 
@@ -171,7 +171,7 @@ public class CollaborationService {
                 throw new InvalidStateException("표시 구간이 인용문 밖입니다.");
             }
         }
-        Long parent = commits.findFirstByProjectIdOrderByCreatedAtDesc(projectId).map(WorkCommit::getId).orElse(null);
+        Long parent = commits.findFirstByProjectIdOrderByCreatedAtDesc(projectId).map(item -> item.getId()).orElse(null);
         WorkCommit saved = commits.save(new WorkCommit(projectId, authorId, parent, request.message().strip(),
                 target, chapter, start, end, quote));
         int chars = quote == null ? 0 : (end != null && start != null ? end - start : quote.length());
@@ -183,7 +183,7 @@ public class CollaborationService {
         if (ids.isEmpty()) {
             return Map.of();
         }
-        return users.findAllById(ids).stream().collect(Collectors.toMap(AppUser::getId, Function.identity()));
+        return users.findAllById(ids).stream().collect(Collectors.toMap(item -> item.getId(), Function.identity()));
     }
 
     private static CollaboratorView view(ProjectCollaborator row, String title, AppUser user) {

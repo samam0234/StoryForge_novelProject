@@ -31,6 +31,7 @@ public class AppUser {
 
     private String suspendedReason;
 
+    @SuppressWarnings("unused") // 언제 동의했는지 남기는 기록. 판단에는 약관 버전을 씁니다.
     private Instant termsAcceptedAt;
 
     private String termsVersion;

@@ -3,7 +3,6 @@ package com.storyforge.service.community;
 import com.storyforge.domain.community.CommunityDtos.Celebration;
 import com.storyforge.domain.community.CommunityDtos.IssueBoard;
 import com.storyforge.domain.community.CommunityDtos.WorkCard;
-import com.storyforge.domain.community.IssueEvent;
 import com.storyforge.domain.community.IssueEvent.Metric;
 import com.storyforge.domain.community.IssueEventRepository;
 import com.storyforge.domain.community.Work;

@@ -41,6 +41,7 @@ public class ContentReport {
     @Column(nullable = false)
     private Status status;
 
+    @SuppressWarnings("unused") // 누가 처리했는지 남기는 기록. 화면에는 내보내지 않습니다.
     private Long resolvedBy;
 
     private String resolutionNote;

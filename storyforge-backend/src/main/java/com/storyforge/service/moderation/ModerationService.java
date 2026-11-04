@@ -215,7 +215,7 @@ public class ModerationService {
     }
 
     public List<UserSummary> blockedUsers(Long blocker) {
-        List<Long> ids = blocks.findByBlockerIdOrderByCreatedAtDesc(blocker).stream().map(UserBlock::getBlockedId).toList();
+        List<Long> ids = blocks.findByBlockerIdOrderByCreatedAtDesc(blocker).stream().map(item -> item.getBlockedId()).toList();
         return users.findAllById(ids).stream().map(UserSummary::from).toList();
     }
 

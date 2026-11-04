@@ -81,7 +81,7 @@ class ModerationIntegrationTest extends IntegrationTestBase {
                 row = n;
             }
         }
-        assertThat(row).isNotNull();
+        java.util.Objects.requireNonNull(row, "신고 목록에 신고가 있어야 합니다");
         assertThat(row.get("target").get("title").asString()).isEqualTo("신고 대상");
         assertThat(row.get("openReports").asInt()).isEqualTo(1);
     }

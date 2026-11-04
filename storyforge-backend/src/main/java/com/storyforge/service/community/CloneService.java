@@ -155,7 +155,7 @@ public class CloneService {
         Set<Long> projectIds = recent.stream().map(c -> c.getProjectId()).filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Long, Long> derived = new HashMap<>();
         for (Long projectId : projectIds) {
-            works.findByProjectId(projectId).filter(Work::isListed)
+            works.findByProjectId(projectId).filter(item -> item.isListed())
                     .ifPresent(w -> derived.put(projectId, w.getId()));
         }
         List<CloneEntry> entries = recent.stream()
