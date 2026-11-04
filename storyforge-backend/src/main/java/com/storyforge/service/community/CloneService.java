@@ -7,6 +7,7 @@ import com.storyforge.domain.chapter.Chapter;
 import com.storyforge.domain.chapter.ChapterRepository;
 import com.storyforge.domain.community.*;
 import com.storyforge.domain.community.CommunityDtos.*;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.project.Project;
 import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.domain.project.ProjectStatus;
@@ -16,6 +17,7 @@ import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
 import com.storyforge.service.bible.BibleService;
 import com.storyforge.service.chapter.ChapterService;
+import com.storyforge.service.notification.NotificationService;
 import com.storyforge.service.project.OutlineService;
 import com.storyforge.service.project.ProjectService;
 import org.springframework.stereotype.Service;
@@ -49,11 +51,14 @@ public class CloneService {
     private final AppUserRepository users;
     private final ActivityService activity;
     private final IssueService issues;
+    private final NotificationService notifications;
 
     public CloneService(WorkService workService, WorkRepository works, WorkChapterRepository workChapters,
                         WorkCloneRepository clones, ProjectRepository projects, ProjectService projectService,
                         BibleService bibles, OutlineService outlines, ChapterService chapterService,
-                        ChapterRepository chapters, AppUserRepository users, ActivityService activity, IssueService issues) {
+                        ChapterRepository chapters, AppUserRepository users, ActivityService activity, IssueService issues,
+                        NotificationService notifications) {
+        this.notifications = notifications;
         this.workService = workService;
         this.works = works;
         this.workChapters = workChapters;
@@ -106,6 +111,8 @@ public class CloneService {
         activity.recordWork(userId, project.getId(), work, ActivityType.PROJECT_CLONED,
                 modeLabel(request.mode()) + " 범위로 Clone (r" + work.getRevision() + ")", 0);
         activity.touchAchievements(work.getAuthor().getId());
+        notifications.notify(work.getAuthor().getId(), userId, Notification.Type.CLONE,
+                user.getDisplayName() + "님이 「" + work.getTitle() + "」을(를) Clone했습니다.", "/works/" + work.getId());
         return new CloneResponse(project.getId(), request.mode(), work.getRevision());
     }
 
@@ -124,7 +131,7 @@ public class CloneService {
         Set<Long> seen = new HashSet<>(List.of(work.getId()));
         while (root.getParentWorkId() != null && seen.add(root.getParentWorkId())) {
             Work parent = works.findWithAuthor(root.getParentWorkId()).orElse(null);
-            if (parent == null || parent.getVisibility() != Work.Visibility.PUBLIC) {
+            if (parent == null || !parent.isListed()) {
                 break;
             }
             root = parent;
@@ -136,7 +143,7 @@ public class CloneService {
         while (!frontier.isEmpty() && nodes.size() < MAX_NODES) {
             List<Long> next = new ArrayList<>();
             for (Work child : works.findByParentWorkIdIn(frontier)) {
-                boolean listed = child.getVisibility() == Work.Visibility.PUBLIC || child.getId().equals(workId);
+                boolean listed = child.isListed() || child.getId().equals(workId);
                 if (listed && visited.add(child.getId()) && nodes.size() < MAX_NODES) {
                     nodes.add(node(child, child.getParentWorkId(), workId));
                     next.add(child.getId());
@@ -148,7 +155,7 @@ public class CloneService {
         Set<Long> projectIds = recent.stream().map(c -> c.getProjectId()).filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Long, Long> derived = new HashMap<>();
         for (Long projectId : projectIds) {
-            works.findByProjectId(projectId).filter(w -> w.getVisibility() == Work.Visibility.PUBLIC)
+            works.findByProjectId(projectId).filter(item -> item.isListed())
                     .ifPresent(w -> derived.put(projectId, w.getId()));
         }
         List<CloneEntry> entries = recent.stream()
@@ -174,7 +181,7 @@ public class CloneService {
         WorkClone.Mode mode = WorkClone.Mode.valueOf(project.getCloneMode());
         Work upstream = project.getClonedFromWorkId() == null ? null
                 : works.findWithAuthor(project.getClonedFromWorkId())
-                .filter(w -> w.getVisibility() != Work.Visibility.PRIVATE || w.getAuthor().getId().equals(userId))
+                .filter(w -> (w.getVisibility() != Work.Visibility.PRIVATE && !w.isHidden()) || w.getAuthor().getId().equals(userId))
                 .orElse(null);
         if (upstream == null) {
             return new UpstreamCompare(null, project.getClonedFromTitle(), mode, project.getClonedFromRevision(),
@@ -189,6 +196,47 @@ public class CloneService {
                 .toList();
         return new UpstreamCompare(upstream.getId(), upstream.getTitle(), mode, project.getClonedFromRevision(),
                 upstream.getRevision(), true, rows);
+    }
+
+    /** 원본 최신 게시본의 한 챕터를 내 Draft로 가져옵니다. 전체 원고 Clone이 검토 단계일 때만 됩니다. */
+    @Transactional
+    public UpstreamCompare pullChapter(Long projectId, int number, Long userId) {
+        Project project = projectService.load(projectId);
+        if (!WorkClone.Mode.FULL.name().equals(project.getCloneMode())) {
+            throw new InvalidStateException("전체 원고 Clone만 원본 챕터를 가져올 수 있습니다.");
+        }
+        if (project.getStatus() != ProjectStatus.CHAPTER_REVIEW) {
+            throw new InvalidStateException("챕터 검토 단계에서만 가져올 수 있습니다.");
+        }
+        Work upstream = readableUpstream(project, userId);
+        boolean owned = upstream.getAuthor().getId().equals(userId);
+        if (!WorkService.cloneModes(upstream, owned).contains(WorkClone.Mode.FULL)) {
+            throw new InvalidStateException("작가가 전체 원고 Clone을 허용하지 않아 가져올 수 없습니다.");
+        }
+        WorkChapter theirs = workChapters.findByWorkIdAndNumber(upstream.getId(), number)
+                .orElseThrow(() -> new NotFoundException("원본에 없는 챕터입니다: " + number));
+        if (number > outlines.get(projectId).getChapters().size()) {
+            throw new InvalidStateException("내 Outline에 없는 챕터입니다: " + number);
+        }
+        chapterService.pullFromUpstream(project, number, theirs.getTitle(), theirs.getContent(), theirs.getSummary(), upstream.getId());
+        return compare(projectId, userId);
+    }
+
+    /** 원본의 현재 리비전까지 확인했다고 표시합니다. 내 원고는 바꾸지 않습니다. */
+    @Transactional
+    public UpstreamCompare acknowledge(Long projectId, Long userId) {
+        Project project = projectService.load(projectId);
+        project.acknowledgeUpstream(readableUpstream(project, userId).getRevision());
+        return compare(projectId, userId);
+    }
+
+    private Work readableUpstream(Project project, Long userId) {
+        if (project.getClonedFromRevision() == null || project.getClonedFromWorkId() == null) {
+            throw new InvalidStateException("원본이 없어 할 수 없습니다.");
+        }
+        return works.findWithAuthor(project.getClonedFromWorkId())
+                .filter(w -> (w.getVisibility() != Work.Visibility.PRIVATE && !w.isHidden()) || w.getAuthor().getId().equals(userId))
+                .orElseThrow(() -> new InvalidStateException("원본이 비공개로 바뀌어 할 수 없습니다."));
     }
 
     private static Set<Integer> union(Set<Integer> a, Set<Integer> b) {

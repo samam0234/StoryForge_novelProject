@@ -68,7 +68,12 @@ cd storyforge-backend
 | `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | `12h` | 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
-| `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` | 사용자당 AI 생성 요청 |
+| `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` | 사용자당 AI 호출 (생성, 가이드챗, 패키지 검사) |
+| `RATE_LIMIT_COMMUNITY_PER_MINUTE` | `60` | 사용자당 글·댓글·공유·Clone·신고, IP당 공유 방문 |
+| `ADMIN_EMAILS` | (없음) | 관리자 이메일. 쉼표로 구분 ([moderation.md](../docs/plan/moderation.md)) |
+| `TERMS_VERSION` | `2026-11-04` | 이용약관 버전 |
+| `COMMUNITY_ZONE` | `Asia/Seoul` | 작업 그래프와 활동 잔디의 날짜 기준 |
+| `CODICOMPERCHAT_URL` | (없음) | 가이드챗 콜라보 이동 주소 |
 
 예: `DB_PASSWORD=secret BACKEND_PORT=9090 ./mvnw spring-boot:run`
 
@@ -86,11 +91,14 @@ cd storyforge-backend
 | Outline 생성 / 저장 / 확정 | `POST .../outline/generate`, `PUT .../outline`, `PUT .../outline/confirm` | `BIBLE_CONFIRMED`, `OUTLINE_DRAFT` |
 | 챕터 생성 (SSE) | `POST .../chapters/{num}/generate` | `OUTLINE_CONFIRMED`, `CHAPTER_REVIEW` |
 | 챕터 승인 | `PUT /api/v1/chapters/{id}/confirm` | `CHAPTER_REVIEW` |
-| 내보내기 | `GET /api/v1/projects/{id}/export?format=md\|docx\|pdf` | 승인된 챕터가 있을 때 |
+| 내보내기 | `GET /api/v1/projects/{id}/export?format=md\|txt\|docx\|pdf\|html\|epub\|odt\|rtf` | 승인된 챕터가 있을 때 |
+| 게시 | `POST /api/v1/projects/{id}/publish` | 승인된 챕터가 있을 때. 상태는 바뀌지 않음 |
 | 이력 | `GET .../bible/versions`, `GET /api/v1/chapters/{id}/versions` | — |
 | 설정 | `PUT /api/v1/projects/{id}` | — |
 
-- 나머지 API는 모두 `Authorization: Bearer <토큰>`이 필요합니다. 없으면 **401**, 다른 사용자의 리소스는 **404**입니다 ([auth.md](../docs/plan/auth.md)).
+- 커뮤니티 API(게시판, Clone, 공유, 패키지, 라운지, 신고, 알림)는 [api-v1.md](../docs/plan/api-v1.md)에 있습니다. 읽기만 로그인 없이 됩니다.
+- 나머지 API는 모두 `Authorization: Bearer <토큰>`이 필요합니다. 없으면 **401**, 다른 사용자의 리소스는 **404**, 정지된 계정의 쓰기는 **403**입니다 ([auth.md](../docs/plan/auth.md)).
+- 고친 챕터는 승인할 때 AI로 다시 검증합니다. AI가 꺼져 있으면 승인이 **502**입니다.
 - 허용되지 않는 상태에서 요청하면 **409**, AI 서비스 장애는 **502**입니다.
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
@@ -107,14 +115,16 @@ storyforge-backend/
     │   ├── service/
     │   │   ├── orchestration/    # 상태 머신, 파이프라인 실행
     │   │   ├── auth/ project/ bible/ chapter/
-    │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter)
+    │   │   ├── community/        # 게시, Clone, 공유, 패키지, 라운지, 활동, 업적, 이슈, 가이드챗
+    │   │   ├── moderation/ notification/   # 신고·관리, 알림
+    │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter, community, activity, moderation, notification)
     │   ├── client/               # FastAPI WebClient + 내부 계약(AiDtos)
     │   ├── config/               # Security, JWT, 주인·공동 창작자 검사, WebClient, OpenAPI
     │   └── exception/            # ProblemDetail 변환
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위 테스트
+    └── test/                     # 단위·통합 테스트 76건 (실제 PostgreSQL)
 ```
 
 ## 문제 해결
@@ -130,6 +140,7 @@ storyforge-backend/
 ## 아직 없는 것
 
 - 리프레시 토큰 (토큰이 만료되면 다시 로그인)
+- 이메일 인증, 비밀번호 재설정 (메일 발송 수단 결정 필요)
 - Bible·Outline 확정 취소 (기획서에 정의 없음)
 - Prometheus 지표 (기획서 §12)
 - 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))

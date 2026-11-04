@@ -1,6 +1,5 @@
 # storyforge-frontend/src/app/core/
 
-커뮤니티 API는 `api/community-api.service.ts`, 모델은 `models/community.ts`에 있습니다.
 
 앱 전체에서 한 번만 생성되는 **싱글톤 서비스, 인터셉터, 가드, 공통 타입**입니다. 특정 기능에서만 쓰는 서비스는 해당 `features/*`에 둡니다.
 
@@ -9,11 +8,13 @@
 | 위치 | 내용 |
 |------|------|
 | `api/storyforge-api.service.ts` | Spring Boot `/api/v1` REST 래퍼 + `errorMessage()`(ProblemDetail → 사용자 메시지). 화면은 `HttpClient`를 직접 쓰지 않습니다 |
+| `api/community-api.service.ts` | 게시판, Clone, 공유, 패키지, 라운지, 프로필, 신고, 알림, 가이드챗 API. `saveBlob`, `safeFilename` |
 | `api/chapter-stream.service.ts` | 챕터 생성 SSE를 `fetch` 스트림으로 읽어 `token`/`done`/`error` 이벤트로 변환. 토큰을 직접 붙입니다 |
 | `auth/auth.service.ts` | 세션 보관(localStorage), 로그인·가입·로그아웃, 만료·401 처리 |
 | `auth/auth.interceptor.ts` | `/api/v1` 요청에 Bearer 토큰 첨부, 401이면 로그인으로 |
-| `auth/auth.guard.ts` | `authGuard`(로그인 필요), `guestGuard`(로그인 화면용) |
+| `auth/auth.guard.ts` | `authGuard`(로그인 필요), `guestGuard`(로그인 화면용), `adminGuard`(서버 최신 정보로 관리자 확인. 실제 권한 검사는 백엔드) |
 | `models/models.ts` | 엔티티 타입, `ProjectStatus`·`PIPELINE_STAGES`(기획서 §7.2), 모델·내보내기 형식 목록 |
+| `models/community.ts` | 커뮤니티 타입과 화면 레이블 (유형, 역할, 채널, 신고 사유 등) |
 
 ## 규칙
 

@@ -7,8 +7,10 @@ import com.storyforge.domain.community.CommentRepository;
 import com.storyforge.domain.community.PostRepository;
 import com.storyforge.domain.community.Work;
 import com.storyforge.domain.community.WorkRepository;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.domain.project.ProjectStatus;
+import com.storyforge.service.notification.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -74,9 +76,12 @@ public class AchievementService {
     private final CommentRepository comments;
     private final PostRepository posts;
     private final JdbcTemplate jdbc;
+    private final NotificationService notifications;
 
     public AchievementService(ActivityEventRepository events, ActivityService activity, WorkRepository works,
-                              ProjectRepository projects, CommentRepository comments, PostRepository posts, JdbcTemplate jdbc) {
+                              ProjectRepository projects, CommentRepository comments, PostRepository posts, JdbcTemplate jdbc,
+                              NotificationService notifications) {
+        this.notifications = notifications;
         this.events = events;
         this.activity = activity;
         this.works = works;
@@ -93,8 +98,12 @@ public class AchievementService {
             Stats stats = stats(event.userId());
             for (Definition d : DEFINITIONS) {
                 if (d.metric().applyAsLong(stats) >= d.target()) {
-                    jdbc.update("INSERT INTO user_achievement (user_id, code, earned_at) VALUES (?, ?, now()) ON CONFLICT DO NOTHING",
+                    int inserted = jdbc.update("INSERT INTO user_achievement (user_id, code, earned_at) VALUES (?, ?, now()) ON CONFLICT DO NOTHING",
                             event.userId(), d.code());
+                    if (inserted > 0) {
+                        notifications.send(event.userId(), Notification.Type.ACHIEVEMENT,
+                                "업적을 달성했습니다: " + d.name() + " — " + d.description(), "/users/" + event.userId());
+                    }
                 }
             }
         } catch (RuntimeException e) {

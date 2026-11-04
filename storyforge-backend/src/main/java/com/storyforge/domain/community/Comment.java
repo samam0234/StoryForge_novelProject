@@ -27,6 +27,8 @@ public class Comment {
     @Column(nullable = false, columnDefinition = "text")
     private String content;
 
+    private Instant hiddenAt;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -49,6 +51,14 @@ public class Comment {
     public void edit(String content) {
         this.content = content;
         this.updatedAt = Instant.now();
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hiddenAt = hidden ? Instant.now() : null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
     }
 
     public Long getId() { return id; }

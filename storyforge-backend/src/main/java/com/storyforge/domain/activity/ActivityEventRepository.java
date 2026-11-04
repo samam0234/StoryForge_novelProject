@@ -67,13 +67,15 @@ public interface ActivityEventRepository extends JpaRepository<ActivityEvent, Lo
     @Query(value = """
             select e from ActivityEvent e left join fetch e.work w left join fetch e.post p
             where e.userId = :userId and e.createdAt >= :from and e.createdAt < :to
-              and (:self = true or p.id is not null or w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC)
+              and (:self = true or (p.id is not null and p.hiddenAt is null)
+                   or (w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC and w.hiddenAt is null))
             order by e.createdAt desc, e.id desc
             """,
             countQuery = """
             select count(e) from ActivityEvent e left join e.work w left join e.post p
             where e.userId = :userId and e.createdAt >= :from and e.createdAt < :to
-              and (:self = true or p.id is not null or w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC)
+              and (:self = true or (p.id is not null and p.hiddenAt is null)
+                   or (w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC and w.hiddenAt is null))
             """)
     Page<ActivityEvent> feed(@Param("userId") Long userId, @Param("self") boolean self, @Param("from") Instant from,
                              @Param("to") Instant to, Pageable pageable);

@@ -41,6 +41,8 @@ public class Post {
     @Column(nullable = false)
     private long viewCount;
 
+    private Instant hiddenAt;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -64,6 +66,14 @@ public class Post {
         this.title = title;
         this.content = content;
         this.updatedAt = Instant.now();
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hiddenAt = hidden ? Instant.now() : null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
     }
 
     public Long getId() { return id; }

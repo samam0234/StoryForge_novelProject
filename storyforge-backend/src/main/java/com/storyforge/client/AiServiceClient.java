@@ -45,6 +45,15 @@ public class AiServiceClient {
         return post("/internal/generate/outline", request, OutlineGenerateResponse.class);
     }
 
+    /** 사람이 고친 원고의 재요약·재검증 */
+    public ChapterReviewResult reviewChapter(ChapterReviewRequest request) {
+        return post("/internal/generate/review", request, ChapterReviewResult.class);
+    }
+
+    public PackageContinuityResult checkPackage(PackageContinuityRequest request) {
+        return post("/internal/package/continuity", request, PackageContinuityResult.class);
+    }
+
     public GuideChatResponse guideChat(GuideChatRequest request) {
         return post("/internal/guide/chat", request, GuideChatResponse.class);
     }

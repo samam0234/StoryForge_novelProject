@@ -34,6 +34,7 @@ import { ShareGraphComponent } from '../../shared/components/share-graph/share-g
 import { UserChipComponent } from '../../shared/components/user-chip/user-chip.component';
 import { WorkCardComponent } from '../../shared/components/work-card/work-card.component';
 import { WorkGraphComponent } from '../../shared/components/work-graph/work-graph.component';
+import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
 import { CloneDialog, CloneDialogData } from './clone.dialog';
 import { CommentThreadComponent } from './comment-thread.component';
 import { ShareDialog, ShareDialogData } from './share.dialog';
@@ -69,6 +70,9 @@ const SHARE_TAB = 3;
       <mat-progress-bar mode="indeterminate" />
     } @else if (detail(); as d) {
       <div class="sf-page">
+        @if (d.card.hidden) {
+          <p class="hidden-note" role="alert"><mat-icon inline>visibility_off</mat-icon> 관리자가 숨긴 작품입니다. 작가와 관리자에게만 보입니다.</p>
+        }
         <header class="head">
           <div class="sf-row meta">
             <span class="sf-badge">{{ kindLabel() }}</span>
@@ -136,6 +140,9 @@ const SHARE_TAB = 3;
                 <button mat-menu-item (click)="export(f.value)">{{ f.label }}</button>
               }
             </mat-menu>
+            @if (!d.owned) {
+              <button mat-button (click)="openReport()"><mat-icon>flag</mat-icon> 신고</button>
+            }
             @if (d.owned) {
               <span class="sf-spacer"></span>
               @if (d.card.kind === 'PACKAGE') {
@@ -347,6 +354,13 @@ const SHARE_TAB = 3;
     }
   `,
   styles: `
+    .hidden-note {
+      margin: 0 0 12px;
+      padding: 8px 12px;
+      border-left: 3px solid var(--sf-severity-high);
+      background: var(--sf-surface-2);
+      border-radius: 6px;
+    }
     .head {
       display: flex;
       flex-direction: column;
@@ -612,6 +626,13 @@ export class WorkDetailPage {
           error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
         });
       });
+  }
+
+  protected openReport(): void {
+    const d = this.detail();
+    if (!d || !this.requireLogin()) return;
+    const data: ReportDialogData = { targetType: 'WORK', targetId: d.card.id, label: d.card.title };
+    this.dialog.open(ReportDialog, { data, maxWidth: '95vw' });
   }
 
   protected openShare(): void {

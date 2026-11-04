@@ -35,6 +35,10 @@ public class Chapter {
     @Column(columnDefinition = "text")
     private String summary;
 
+    /** 본문이 요약·Continuity 결과와 어긋날 수 있어 승인 전에 다시 검증해야 하는 상태 */
+    @Column(nullable = false)
+    private boolean needsReview;
+
     /** 생성에 사용한 컨텍스트 (기획서 §9.1 투명성) */
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Object> generationContext;
@@ -59,6 +63,17 @@ public class Chapter {
         this.summary = summary;
         this.generationContext = generationContext;
         this.status = ChapterStatus.DRAFT;
+        this.needsReview = false;
+    }
+
+    public void markNeedsReview() {
+        this.needsReview = true;
+    }
+
+    /** 재검증 결과 반영. 다음 챕터 컨텍스트에는 이 요약이 들어갑니다. */
+    public void applyReview(String summary) {
+        this.summary = summary;
+        this.needsReview = false;
     }
 
     /** 사용자 검토 중 직접 수정 */
@@ -78,6 +93,7 @@ public class Chapter {
     public String getContent() { return content; }
     public ChapterStatus getStatus() { return status; }
     public String getSummary() { return summary; }
+    public boolean isNeedsReview() { return needsReview; }
     public Map<String, Object> getGenerationContext() { return generationContext; }
     public Instant getCreatedAt() { return createdAt; }
 }

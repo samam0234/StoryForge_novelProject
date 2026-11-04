@@ -33,6 +33,7 @@ public abstract class IntegrationTestBase {
             new PostgreSQLContainer(DockerImageName.parse("postgres:16"));
     protected static final StubAiServer AI = new StubAiServer();
     protected static final ObjectMapper JSON = JsonMapper.builder().build();
+    protected static final String ADMIN_EMAIL = "admin@example.com";
     private static final HttpClient HTTP = HttpClient.newHttpClient();
 
     static {
@@ -51,6 +52,7 @@ public abstract class IntegrationTestBase {
         registry.add("storyforge.rate-limit.auth-per-minute", () -> 100_000);
         registry.add("storyforge.rate-limit.generate-per-minute", () -> 100_000);
         registry.add("storyforge.rate-limit.community-per-minute", () -> 100_000);
+        registry.add("storyforge.admin.emails", () -> ADMIN_EMAIL);
     }
 
     @LocalServerPort
@@ -89,8 +91,18 @@ public abstract class IntegrationTestBase {
     protected String newUser() throws Exception {
         Response r = call("POST", "/auth/register", Map.of(
                 "email", "u" + UUID.randomUUID() + "@example.com",
-                "password", "password123",
+                "acceptTerms", true, "password", "password123",
                 "displayName", "테스터"), null);
+        return r.json().get("accessToken").asString();
+    }
+
+    /** 관리자 토큰. 테스트 전체가 같은 DB를 쓰므로 있으면 로그인합니다. */
+    protected String adminToken() throws Exception {
+        Response r = call("POST", "/auth/login", Map.of("email", ADMIN_EMAIL, "password", "password123"), null);
+        if (r.status() != 200) {
+            r = call("POST", "/auth/register", Map.of("email", ADMIN_EMAIL, "acceptTerms", true, "password", "password123",
+                    "displayName", "관리자"), null);
+        }
         return r.json().get("accessToken").asString();
     }
 

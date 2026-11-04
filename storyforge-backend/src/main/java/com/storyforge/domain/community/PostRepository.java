@@ -17,9 +17,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("""
             select p from Post p
             where p.category in :categories
+              and p.hiddenAt is null
+              and p.author.id not in (select b.blockedId from com.storyforge.domain.moderation.UserBlock b where b.blockerId = :viewer)
               and (:like = '' or lower(p.title) like :like escape '\\' or lower(p.content) like :like escape '\\')
             """)
-    Page<Post> search(@Param("categories") Collection<Post.Category> categories, @Param("like") String like, Pageable pageable);
+    Page<Post> search(@Param("categories") Collection<Post.Category> categories, @Param("like") String like,
+                      @Param("viewer") Long viewer, Pageable pageable);
 
     @EntityGraph(attributePaths = "author")
     @Query("select p from Post p where p.id = :id")

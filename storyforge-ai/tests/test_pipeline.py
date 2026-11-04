@@ -63,3 +63,23 @@ def test_rule_checks_flag_missing_character_and_lower_score():
     assert any("유령" in i.description for i in issues)
     assert score(issues) < 100
     assert score([ContinuityIssue(type="timeline", description="d", severity="high")]) == 70
+
+
+def test_review_uses_edited_text_for_summary_and_rules():
+    ctx = {
+        "project": PROJECT,
+        "bible": {"characters": [{"name": "한서윤"}]},
+        "chapterNumber": 2,
+        "outlineChapter": {"order": 2, "title": "t", "characters": ["한서윤"]},
+    }
+    missing = client.post("/internal/generate/review", json={"context": ctx, "title": "t", "content": "고친 본문"}).json()
+    assert missing["summary"] == "2장(수정본): 고친 본문"
+    assert any("나오지 않습니다" in i["description"] for i in missing["report"]["issues"])
+
+    present = client.post(
+        "/internal/generate/review", json={"context": ctx, "title": "t", "content": "한서윤이 돌아왔다." * 40}
+    ).json()
+    assert present["summary"].startswith("2장(수정본): 한서윤")
+    assert present["report"]["issues"] == []
+    assert present["report"]["score"] == 100
+

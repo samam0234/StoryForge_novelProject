@@ -28,17 +28,22 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 | `PostController` | 창작 라운지 |
 | `UserController` | 프로필, 활동 잔디, 업적, 이슈, 계정 설정 |
 | `GuideController` | AI 가이드챗 |
+| `CollaborationController` | 함께 창작: 초대, 참여자, 작업 커밋 |
+| `ModerationController` | 신고, 차단, 관리자 처리 |
+| `NotificationController` | 내 알림 |
 
 ## service/ — 비즈니스 로직
 
 | 패키지 | 파일 | 내용 |
 |--------|------|------|
-| `community/` | `WorkService`, `CloneService`, `ShareService`, `PackageService`, `EngagementService`, `PostService`, `IssueService`, `ActivityService`, `AchievementService`, `ProfileService`, `GuideService` | 커뮤니티 ([community.md](../../../../../../docs/plan/community.md)) |
+| `moderation/` | `ModerationService` | 신고, 관리자 조치, 차단 ([moderation.md](../../../../../../docs/plan/moderation.md)) |
+| `notification/` | `NotificationService` | 알림. 호출한 쪽 트랜잭션에 묶임 |
+| `community/` | `WorkService`, `CloneService`, `ShareService`, `PackageService`, `PackageContinuityService`, `EngagementService`, `PostService`, `IssueService`, `ActivityService`, `AchievementService`, `ProfileService`, `GuideService` | 커뮤니티 ([community.md](../../../../../../docs/plan/community.md)) |
 | `orchestration/` | `PipelineStateMachine`, `PipelineOrchestrator`, `PipelineRecovery` | 상태 머신, 단계 실행, 시작 시 복구 ([README](service/orchestration/README.md)) |
-| `project/` | `ProjectService`, `OutlineService`, `ExportService` | 프로젝트·Outline, 내보내기. `ManuscriptBlocks`·`ManuscriptDocxWriter`·`ManuscriptPdfWriter`가 Markdown을 DOCX·PDF로 변환 |
+| `project/` | `ProjectService`, `OutlineService`, `ExportService`, `CollaborationService` | 프로젝트·Outline, 내보내기, 함께 창작. `ManuscriptBlocks`가 Markdown을 블록으로 바꾸고 `ManuscriptDocxWriter`·`ManuscriptPdfWriter`·`ManuscriptWriters`(TXT, HTML, RTF, EPUB, ODT)가 파일을 만듦 |
 | `bible/` | `BibleService` | Bible 전체 교체 저장, 버전 증가, 이력 |
-| `chapter/` | `ChapterService` | 챕터 Draft·리포트 저장, 수정, 이력 |
-| `auth/` | `AuthService`, `TokenService`, `CurrentUser` | 가입·로그인, HS256 토큰 발급, 요청 스레드의 사용자 |
+| `chapter/` | `ChapterService` | 챕터 Draft·리포트 저장, 수정, 재검증 결과 반영, Clone·원본 가져오기, 이력 |
+| `auth/` | `AuthService`, `TokenService`, `CurrentUser`, `AccountPolicy` | 가입·로그인, HS256 토큰 발급, 요청 스레드의 사용자, 관리자·약관 판별 |
 
 기획서 §8.2에는 `service/outline`과 `service/auth`가 없어, Outline은 `project/`에 두고 `auth/`는 인증 구현을 위해 추가했습니다 ([auth.md](../../../../../../docs/plan/auth.md)).
 
@@ -48,7 +53,7 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 
 | 파일 | 내용 |
 |------|------|
-| `AiServiceClient` | Bible·Outline 동기 호출(연결 실패 1회 재시도), 챕터 SSE, Circuit Breaker |
+| `AiServiceClient` | Bible·Outline·재검증·패키지 검사·가이드챗 동기 호출(연결 실패 1회 재시도), 챕터 SSE, Circuit Breaker |
 | `AiDtos` | 내부 계약 record. `storyforge-ai/app/models/schemas.py`와 짝이라 한쪽을 바꾸면 다른 쪽도 함께 바꿉니다 |
 | `AiServiceProperties` | `storyforge.ai.*` 설정 |
 
@@ -59,6 +64,7 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 | `GlobalExceptionHandler` | 아래 예외를 ProblemDetail로 변환. 동시 요청 충돌은 409, 입력 검증은 400 |
 | `NotFoundException` | 404 |
 | `InvalidStateException` | 409 (현재 상태에서 불가) |
+| `ForbiddenException` | 403 (관리자 전용, 정지된 계정) |
 | `AuthenticationFailedException` | 401 |
 | `AiServiceException` | 502 (내부 주소는 응답에 노출하지 않음) |
 

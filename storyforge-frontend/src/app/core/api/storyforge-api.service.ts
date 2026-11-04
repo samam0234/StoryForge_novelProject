@@ -86,6 +86,9 @@ export class StoryforgeApi {
   listChapters(projectId: number): Observable<Chapter[]> {
     return this.http.get<Chapter[]>(`${this.base}/projects/${projectId}/chapters`);
   }
+  getChapter(id: number): Observable<Chapter> {
+    return this.http.get<Chapter>(`${this.base}/chapters/${id}`);
+  }
   updateChapter(id: number, body: { title: string | null; content: string | null }): Observable<Chapter> {
     return this.http.put<Chapter>(`${this.base}/chapters/${id}`, body);
   }

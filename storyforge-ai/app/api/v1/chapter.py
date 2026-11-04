@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
 from app.core.llm import LLMClient, LLMError, get_llm
-from app.models.schemas import ChapterContext
-from app.services.chapter_generator import Done, Token, generate_chapter
+from app.models.schemas import ChapterContext, ChapterReviewRequest, ChapterReviewResult
+from app.services.chapter_generator import Done, Token, generate_chapter, review_chapter
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -17,6 +17,11 @@ def sse(event: str, data: str) -> str:
     # 여러 줄 데이터는 줄마다 data: 를 붙입니다 (수신 측에서 \n으로 다시 합칩니다).
     lines = "\n".join(f"data: {line}" for line in data.split("\n"))
     return f"event: {event}\n{lines}\n\n"
+
+
+@router.post("/review", response_model=ChapterReviewResult, response_model_by_alias=True)
+async def review(request: ChapterReviewRequest, llm: LLMClient = Depends(get_llm)) -> ChapterReviewResult:
+    return await review_chapter(llm, request)
 
 
 @router.post("/chapter")

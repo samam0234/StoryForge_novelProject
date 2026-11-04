@@ -226,11 +226,7 @@ public class PipelineOrchestrator {
         if (number > outlineChapters.size()) {
             throw new InvalidStateException("Outline에 " + number + "장이 없습니다.");
         }
-        List<PreviousChapter> previous = chapterService.confirmedBefore(projectId, number).stream()
-                .map(c -> new PreviousChapter(c.getNumber(), c.getTitle(), c.getSummary()))
-                .toList();
-        ChapterContext context = new ChapterContext(projectInfo(p), bibleInfo(bibleService.get(projectId)),
-                number, outlineChapters.get(number - 1), previous);
+        ChapterContext context = chapterContext(p, number, outlineChapters);
         ProjectStatus previousStatus = p.getStatus();
         stateMachine.transition(p, CHAPTER_GENERATING);
         return new Prepared(projectId, number, previousStatus, context);
@@ -264,19 +260,40 @@ public class PipelineOrchestrator {
         }
     }
 
-    /** 사용자 승인 (기획서 §7.2 6단계). 마지막 챕터면 COMPLETED. */
+    /**
+     * 사용자 승인 (기획서 §7.2 6단계). 마지막 챕터면 COMPLETED.
+     * 생성 뒤 고쳤거나 Clone한 원고는 먼저 다시 요약·검증합니다. 다음 챕터 컨텍스트가 실제 본문과 어긋나지 않게 하기 위해서입니다.
+     * AI 호출이 실패하면 승인하지 않습니다. 재검증에서 심각한 이슈가 나오면 결과를 저장하고 승인을 멈춰 사용자에게 보여 줍니다.
+     */
     public ChapterResponse confirmChapter(Long chapterId) {
+        ChapterReviewRequest review = tx.execute(s -> {
+            Chapter chapter = chapterService.load(chapterId);
+            requireConfirmable(chapter);
+            if (!chapter.isNeedsReview()) {
+                return null;
+            }
+            Project p = chapter.getProject();
+            ChapterContext context = chapterContext(p, chapter.getNumber(), outlineService.get(p.getId()).getChapters());
+            return new ChapterReviewRequest(context, chapter.getTitle(), chapter.getContent());
+        });
+        if (review != null) {
+            ChapterReviewResult result = ai.reviewChapter(review);
+            ContinuityResult report = result.report() == null ? new ContinuityResult(List.of(), 0) : result.report();
+            tx.executeWithoutResult(s -> chapterService.applyReview(chapterId, result.summary(), report.issues(), report.score()));
+            long high = report.issues().stream().filter(i -> "high".equals(i.severity())).count();
+            if (high > 0) {
+                throw new InvalidStateException("수정본을 다시 검증했더니 심각한 연속성 이슈가 " + high
+                        + "건 있습니다. 리포트를 확인한 뒤 다시 승인해 주세요.");
+            }
+        }
         return inTx(s -> {
             Chapter chapter = chapterService.load(chapterId);
             Project p = chapter.getProject();
-            stateMachine.requireIn(p, CHAPTER_REVIEW);
-            if (chapter.getStatus() != ChapterStatus.DRAFT) {
-                throw new InvalidStateException("이미 확정된 챕터입니다.");
+            requireConfirmable(chapter);
+            if (chapter.isNeedsReview()) {
+                throw new InvalidStateException("검증하는 동안 본문이 바뀌었습니다. 다시 승인해 주세요.");
             }
             int confirmed = chapterService.confirmedCount(p.getId());
-            if (chapter.getNumber() != confirmed + 1) {
-                throw new InvalidStateException("앞 챕터부터 순서대로 확정해야 합니다.");
-            }
             chapter.confirm();
             p.touch();
             activity.recordProject(p, ActivityType.CHAPTER_CONFIRMED, chapter.getNumber() + "장 승인", 0);
@@ -285,6 +302,26 @@ public class PipelineOrchestrator {
             }
             return chapterService.toResponse(chapter);
         });
+    }
+
+    private void requireConfirmable(Chapter chapter) {
+        Project p = chapter.getProject();
+        stateMachine.requireIn(p, CHAPTER_REVIEW);
+        if (chapter.getStatus() != ChapterStatus.DRAFT) {
+            throw new InvalidStateException("이미 확정된 챕터입니다.");
+        }
+        if (chapter.getNumber() != chapterService.confirmedCount(p.getId()) + 1) {
+            throw new InvalidStateException("앞 챕터부터 순서대로 확정해야 합니다.");
+        }
+    }
+
+    /** 컨텍스트 패키지: Bible + Outline 해당 장 + 확정된 이전 챕터 요약 (기획서 §6.3) */
+    private ChapterContext chapterContext(Project p, int number, List<OutlineChapter> outlineChapters) {
+        List<PreviousChapter> previous = chapterService.confirmedBefore(p.getId(), number).stream()
+                .map(c -> new PreviousChapter(c.getNumber(), c.getTitle(), c.getSummary()))
+                .toList();
+        return new ChapterContext(projectInfo(p), bibleInfo(bibleService.get(p.getId())),
+                number, outlineChapters.get(number - 1), previous);
     }
 
     // ───────────── helpers ─────────────

@@ -128,6 +128,12 @@ TOPICS: dict[str, Topic] = {
         (),
         ("그래프", "수동", "에이전트", "비율", "기록", "잔디"),
     ),
+    "moderation": Topic(
+        "작품, 글, 댓글, 프로필의 신고 버튼으로 신고할 수 있고, 신고자는 작성자에게 알려지지 않습니다.\n"
+        "프로필에서 사용자를 차단하면 그 사람의 글이 보이지 않습니다. 차단 목록은 계정 설정에 있습니다.",
+        (_route("이용약관", "/terms"), _route("계정 설정", "/me/settings")),
+        ("신고", "차단", "약관", "정지"),
+    ),
     "collab": Topic(
         "함께 쓰려면 창작하기에서 초대를 수락하거나, 프로젝트 작업 기록에서 이메일로 초대합니다. "
         "수락한 사람만 원고를 보고, 작업 커밋에 고친 구간을 글로 남기면 점을 눌렀을 때 그 문장이 표시됩니다.\n"
@@ -154,6 +160,7 @@ COMMANDS: dict[str, str] = {
     "게시판": "board", "board": "board",
     "이슈": "issue", "issue": "issue",
     "프로필": "profile", "계정": "profile", "profile": "profile",
+    "신고": "moderation", "차단": "moderation", "약관": "moderation", "report": "moderation",
     "그래프": "graph", "graph": "graph",
     "콜라보": "collab", "collab": "collab", "codicomper": "collab", "codicomperchat": "collab",
 }
@@ -163,7 +170,7 @@ HELP = (
     "/상태 내 프로젝트의 다음 단계\n"
     "/시작 /바이블 /아웃라인 /챕터 /검증 창작 절차\n"
     "/게시 /클론 /공유 /패키지 /내보내기 게시와 배포\n"
-    "/게시판 /이슈 /프로필 /그래프 커뮤니티\n"
+    "/게시판 /이슈 /프로필 /그래프 /신고 커뮤니티\n"
     "/콜라보 Codicomperchat으로 이동\n"
     "명령어 없이 물어봐도 됩니다."
 )
