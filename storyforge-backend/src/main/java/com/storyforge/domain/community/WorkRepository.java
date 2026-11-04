@@ -17,23 +17,28 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
 
     @Query(value = """
             select w from Work w join fetch w.author
-            where w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
+            where w.hiddenAt is null
+              and w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
               and w.kind = :kind
               and (:genre = '' or w.genre = :genre)
               and (:like = '' or lower(w.title) like :like escape '\\'
                    or lower(coalesce(w.synopsis, '')) like :like escape '\\'
                    or lower(coalesce(w.tags, '')) like :like escape '\\')
+              and (:blockedEmpty = true or w.author.id not in :blocked)
             """,
             countQuery = """
             select count(w) from Work w
-            where w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
+            where w.hiddenAt is null
+              and w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
               and w.kind = :kind
               and (:genre = '' or w.genre = :genre)
               and (:like = '' or lower(w.title) like :like escape '\\'
                    or lower(coalesce(w.synopsis, '')) like :like escape '\\'
                    or lower(coalesce(w.tags, '')) like :like escape '\\')
+              and (:blockedEmpty = true or w.author.id not in :blocked)
             """)
     Page<Work> board(@Param("kind") Work.Kind kind, @Param("genre") String genre, @Param("like") String like,
+                     @Param("blockedEmpty") boolean blockedEmpty, @Param("blocked") Collection<Long> blocked,
                      Pageable pageable);
 
     @EntityGraph(attributePaths = "author")

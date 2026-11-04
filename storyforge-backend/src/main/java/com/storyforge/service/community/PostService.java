@@ -14,7 +14,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -27,17 +29,24 @@ public class PostService {
     private final AppUserRepository users;
     private final ActivityService activity;
     private final JdbcTemplate jdbc;
+    private final BlockQuery blocks;
+    private final ContentPolicy contentPolicy;
 
-    public PostService(PostRepository posts, AppUserRepository users, ActivityService activity, JdbcTemplate jdbc) {
+    public PostService(PostRepository posts, AppUserRepository users, ActivityService activity, JdbcTemplate jdbc,
+                       BlockQuery blocks, ContentPolicy contentPolicy) {
         this.posts = posts;
         this.users = users;
         this.activity = activity;
         this.jdbc = jdbc;
+        this.blocks = blocks;
+        this.contentPolicy = contentPolicy;
     }
 
-    public PageResponse<PostCard> list(Post.Category category, String q, int page, int size) {
+    public PageResponse<PostCard> list(Post.Category category, String q, int page, int size, Long viewerId) {
         Set<Post.Category> categories = category == null ? EnumSet.allOf(Post.Category.class) : EnumSet.of(category);
-        Page<Post> result = posts.search(categories, WorkService.likePattern(q),
+        Collection<Long> excluded = blocks.excludedAuthorIds(viewerId);
+        Page<Post> result = posts.search(categories, WorkService.likePattern(q), excluded.isEmpty(),
+                excluded.isEmpty() ? List.of(-1L) : excluded,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50), Sort.by(Sort.Direction.DESC, "createdAt")));
         return new PageResponse<>(result.stream().map(PostCard::from).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
@@ -51,6 +60,10 @@ public class PostService {
     @Transactional
     public PostDetail detail(Long postId, Long viewerId) {
         Post post = load(postId);
+        if ((post.getHiddenAt() != null && !post.getAuthor().getId().equals(viewerId))
+                || blocks.separated(viewerId, post.getAuthor().getId())) {
+            throw new NotFoundException("게시글을 찾을 수 없습니다: " + postId);
+        }
         boolean owned = post.getAuthor().getId().equals(viewerId);
         if (!owned) {
             posts.addView(postId);
@@ -64,6 +77,7 @@ public class PostService {
     public PostCard create(PostRequest request, Long userId) {
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+        contentPolicy.check(request.title(), request.content());
         Post post = posts.save(new Post(author, request.category(), request.title().strip(), request.content().strip()));
         activity.recordPost(userId, post, ActivityType.POST_WRITTEN, "라운지에 글 작성");
         return PostCard.from(post);
@@ -72,6 +86,7 @@ public class PostService {
     @Transactional
     public PostCard update(Long postId, PostRequest request, Long userId) {
         Post post = loadOwned(postId, userId);
+        contentPolicy.check(request.title(), request.content());
         post.update(request.category(), request.title().strip(), request.content().strip());
         return PostCard.from(post);
     }

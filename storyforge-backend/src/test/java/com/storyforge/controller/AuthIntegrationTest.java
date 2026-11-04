@@ -17,7 +17,7 @@ class AuthIntegrationTest extends IntegrationTestBase {
     @Test
     void registerReturnsTokenThatAuthorizesRequests() throws Exception {
         String email = email();
-        Response r = call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가"), null);
+        Response r = call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가", "termsAccepted", true), null);
         assertThat(r.status()).isEqualTo(201);
         String token = r.json().get("accessToken").asString();
         assertThat(r.body()).doesNotContain("password");
@@ -30,10 +30,10 @@ class AuthIntegrationTest extends IntegrationTestBase {
     @Test
     void emailIsCaseInsensitiveForDuplicateCheckAndLogin() throws Exception {
         String email = email();
-        call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가"), null);
+        call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가", "termsAccepted", true), null);
 
         assertThat(call("POST", "/auth/register",
-                Map.of("email", email.toUpperCase(), "password", "password123", "displayName", "나"), null).status()).isEqualTo(409);
+                Map.of("email", email.toUpperCase(), "password", "password123", "displayName", "나", "termsAccepted", true), null).status()).isEqualTo(409);
         assertThat(call("POST", "/auth/login",
                 Map.of("email", email.toUpperCase(), "password", "password123"), null).status()).isEqualTo(200);
     }
@@ -41,7 +41,7 @@ class AuthIntegrationTest extends IntegrationTestBase {
     @Test
     void wrongPasswordAndUnknownEmailGiveSameResponse() throws Exception {
         String email = email();
-        call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가"), null);
+        call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "가", "termsAccepted", true), null);
 
         Response wrong = call("POST", "/auth/login", Map.of("email", email, "password", "wrong-password"), null);
         Response unknown = call("POST", "/auth/login", Map.of("email", email(), "password", "wrong-password"), null);
@@ -53,9 +53,11 @@ class AuthIntegrationTest extends IntegrationTestBase {
     @Test
     void rejectsInvalidRegistration() throws Exception {
         assertThat(call("POST", "/auth/register",
-                Map.of("email", email(), "password", "short", "displayName", "가"), null).status()).isEqualTo(400);
+                Map.of("email", email(), "password", "short", "displayName", "가", "termsAccepted", true), null).status()).isEqualTo(400);
         assertThat(call("POST", "/auth/register",
-                Map.of("email", "not-an-email", "password", "password123", "displayName", "가"), null).status()).isEqualTo(400);
+                Map.of("email", "not-an-email", "password", "password123", "displayName", "가", "termsAccepted", true), null).status()).isEqualTo(400);
+        assertThat(call("POST", "/auth/register",
+                Map.of("email", email(), "password", "password123", "displayName", "가", "termsAccepted", false), null).status()).isEqualTo(400);
     }
 
     @Test

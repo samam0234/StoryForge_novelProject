@@ -96,7 +96,17 @@ import { ThemeService } from './theme.service';
               <mat-icon matListItemIcon>settings</mat-icon>
               <span matListItemTitle>계정 설정</span>
             </a>
+            @if (u.role === 'ADMIN') {
+              <a mat-list-item routerLink="/admin/reports" routerLinkActive="active" (click)="closeIfNarrow()">
+                <mat-icon matListItemIcon>gavel</mat-icon>
+                <span matListItemTitle>신고 처리</span>
+              </a>
+            }
           }
+          <a mat-list-item routerLink="/terms" routerLinkActive="active" (click)="closeIfNarrow()">
+            <mat-icon matListItemIcon>policy</mat-icon>
+            <span matListItemTitle>이용약관</span>
+          </a>
         </mat-nav-list>
       </mat-sidenav>
       <mat-sidenav-content>

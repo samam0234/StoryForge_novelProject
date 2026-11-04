@@ -8,6 +8,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login.page').then((m) => m.LoginPage),
   },
   {
+    path: 'terms',
+    loadComponent: () => import('./features/legal/terms.page').then((m) => m.TermsPage),
+  },
+  {
     path: '',
     pathMatch: 'full',
     canActivate: [authGuard],
@@ -62,6 +66,11 @@ export const routes: Routes = [
     path: 'me/settings',
     canActivate: [authGuard],
     loadComponent: () => import('./features/profile/account-settings.page').then((m) => m.AccountSettingsPage),
+  },
+  {
+    path: 'admin/reports',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/moderation/admin-reports.page').then((m) => m.AdminReportsPage),
   },
   {
     path: 'projects/:projectId',

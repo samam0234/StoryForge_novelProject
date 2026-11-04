@@ -15,6 +15,7 @@ import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.servi
 import { BibleSnapshot, BibleVersion, Character, StoryBible } from '../../core/models/models';
 import { VersionHistoryData, VersionHistoryDialog } from '../../shared/components/version-history/version-history.dialog';
 import { ProjectContext } from '../projects/project-context';
+import { LlmNoticeComponent } from '../guide/llm-notice.component';
 
 interface BibleDraft {
   worldSetting: string;
@@ -43,9 +44,11 @@ function snapshotText(s: BibleSnapshot): string {
     MatInputModule,
     MatProgressBarModule,
     MatTabsModule,
+    LlmNoticeComponent,
   ],
   template: `
     <div class="sf-page">
+      <sf-llm-notice />
       @if (busy()) {
         <mat-progress-bar mode="indeterminate" class="busy" />
       }

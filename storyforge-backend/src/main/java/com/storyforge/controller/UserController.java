@@ -47,7 +47,7 @@ public class UserController {
     @GetMapping("/users/{userId}/works")
     public List<WorkCard> works(@PathVariable Long userId) {
         profiles.requireExists(userId);
-        return works.publicWorksOf(userId);
+        return works.publicWorksOf(userId, currentUser.idOrNull());
     }
 
     @GetMapping("/users/{userId}/contributions")

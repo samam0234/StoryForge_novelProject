@@ -33,6 +33,8 @@ public class Comment {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private Instant hiddenAt;
+
     protected Comment() {
     }
 
@@ -51,6 +53,10 @@ public class Comment {
         this.updatedAt = Instant.now();
     }
 
+    public void hide() {
+        this.hiddenAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public Long getWorkId() { return workId; }
     public Long getPostId() { return postId; }
@@ -59,4 +65,5 @@ public class Comment {
     public String getContent() { return content; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getHiddenAt() { return hiddenAt; }
 }

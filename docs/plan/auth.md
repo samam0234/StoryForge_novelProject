@@ -19,7 +19,7 @@ sequenceDiagram
 
 | 메서드 | 경로 | 인증 | 설명 |
 |--------|------|------|------|
-| POST | `/api/v1/auth/register` | 없음 | `{email, password, displayName}` → 토큰. 이메일 중복 409 |
+| POST | `/api/v1/auth/register` | 없음 | `{email, password, displayName, termsAccepted:true}` → 토큰. 이메일 중복 409. 약관 미동의 400 |
 | POST | `/api/v1/auth/login` | 없음 | `{email, password}` → 토큰. 실패 401 |
 | GET | `/api/v1/auth/me` | 필요 | 현재 사용자 |
 
@@ -31,7 +31,7 @@ sequenceDiagram
 |------|------|------|
 | 토큰 | HS256 JWT, 기본 12시간 (`JWT_TTL`) | 서비스 하나가 발급·검증하므로 대칭키로 충분 |
 | 리프레시 토큰 | 두지 않음 | MVP 범위. 만료되면 다시 로그인 |
-| 비밀 키 | `JWT_SECRET` (32바이트 이상, 짧으면 시작 실패). 비우면 시작할 때 무작위 생성하고 경고 로그 | 저장소에 기본 키를 넣지 않기 위해. 무작위 키는 재시작하면 기존 토큰이 무효가 되므로 **운영에서는 반드시 지정** |
+| 비밀 키 | `JWT_SECRET` (32바이트 이상, 짧으면 시작 실패). 개발에서 비우면 시작할 때 무작위 생성하고 경고 로그. `prod` 프로필에서는 비우면 시작 실패 | 저장소에 기본 키를 넣지 않기 위해. 무작위 키는 재시작하면 기존 토큰이 무효 |
 | 비밀번호 | BCrypt, 8~72바이트 | BCrypt가 72바이트까지만 처리 |
 | 이메일 | 앞뒤 공백 제거, 소문자로 저장 | 대소문자 중복 가입 방지 |
 | 소유자 검사 | `OwnershipInterceptor`가 경로 변수 `{projectId}`, `{chapterId}`로 일괄 검사 | 새 엔드포인트에서 검사를 빠뜨리지 않도록 |

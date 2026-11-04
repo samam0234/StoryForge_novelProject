@@ -28,10 +28,12 @@ public class EngagementService {
     private final ActivityService activity;
     private final IssueService issues;
     private final JdbcTemplate jdbc;
+    private final BlockQuery blocks;
+    private final ContentPolicy contentPolicy;
 
     public EngagementService(WorkService workService, WorkRepository works, PostService postService, PostRepository posts,
                              CommentRepository comments, AppUserRepository users, ActivityService activity,
-                             IssueService issues, JdbcTemplate jdbc) {
+                             IssueService issues, JdbcTemplate jdbc, BlockQuery blocks, ContentPolicy contentPolicy) {
         this.workService = workService;
         this.works = works;
         this.postService = postService;
@@ -41,6 +43,8 @@ public class EngagementService {
         this.activity = activity;
         this.issues = issues;
         this.jdbc = jdbc;
+        this.blocks = blocks;
+        this.contentPolicy = contentPolicy;
     }
 
     // ───────────── 추천 ─────────────
@@ -101,6 +105,7 @@ public class EngagementService {
     public List<CommentView> workComments(Long workId, Long viewerId) {
         Work work = workService.loadVisible(workId, viewerId);
         return comments.findByWorkIdOrderByCreatedAt(workId).stream()
+                .filter(c -> visibleComment(c, viewerId))
                 .map(c -> view(c, viewerId, work.getAuthor().getId()))
                 .toList();
     }
@@ -108,6 +113,7 @@ public class EngagementService {
     public List<CommentView> postComments(Long postId, Long viewerId) {
         Post post = postService.load(postId);
         return comments.findByPostIdOrderByCreatedAt(postId).stream()
+                .filter(c -> visibleComment(c, viewerId))
                 .map(c -> view(c, viewerId, post.getAuthor().getId()))
                 .toList();
     }
@@ -115,9 +121,10 @@ public class EngagementService {
     @Transactional
     public CommentView commentOnWork(Long workId, CommentRequest request, Long userId) {
         Work work = workService.loadVisible(workId, userId);
+        contentPolicy.check(request.content());
         checkParent(request.parentId(), workId, null);
         Comment saved = comments.save(new Comment(workId, null, user(userId), request.parentId(), request.content().strip()));
-        works.setCommentCount(workId, comments.countByWorkId(workId));
+        works.setCommentCount(workId, comments.countByWorkIdAndHiddenAtIsNull(workId));
         activity.recordWork(userId, null, work, ActivityType.COMMENT_WRITTEN, "작품에 댓글 작성", 0);
         return view(saved, userId, work.getAuthor().getId());
     }
@@ -125,9 +132,14 @@ public class EngagementService {
     @Transactional
     public CommentView commentOnPost(Long postId, CommentRequest request, Long userId) {
         Post post = postService.load(postId);
+        if ((post.getHiddenAt() != null && !post.getAuthor().getId().equals(userId))
+                || blocks.separated(userId, post.getAuthor().getId())) {
+            throw new NotFoundException("게시글을 찾을 수 없습니다: " + postId);
+        }
+        contentPolicy.check(request.content());
         checkParent(request.parentId(), null, postId);
         Comment saved = comments.save(new Comment(null, postId, user(userId), request.parentId(), request.content().strip()));
-        posts.setCommentCount(postId, comments.countByPostId(postId));
+        posts.setCommentCount(postId, comments.countByPostIdAndHiddenAtIsNull(postId));
         activity.recordPost(userId, post, ActivityType.COMMENT_WRITTEN, "게시글에 댓글 작성");
         return view(saved, userId, post.getAuthor().getId());
     }
@@ -139,6 +151,7 @@ public class EngagementService {
         if (!comment.getAuthor().getId().equals(userId)) {
             throw new NotFoundException("댓글을 찾을 수 없습니다: " + commentId);
         }
+        contentPolicy.check(request.content());
         comment.edit(request.content().strip());
         return view(comment, userId, targetOwner(comment));
     }
@@ -155,9 +168,9 @@ public class EngagementService {
         comments.delete(comment);
         comments.flush();
         if (workId != null) {
-            works.setCommentCount(workId, comments.countByWorkId(workId));
+            works.setCommentCount(workId, comments.countByWorkIdAndHiddenAtIsNull(workId));
         } else {
-            posts.setCommentCount(postId, comments.countByPostId(postId));
+            posts.setCommentCount(postId, comments.countByPostIdAndHiddenAtIsNull(postId));
         }
     }
 
@@ -189,6 +202,13 @@ public class EngagementService {
     private AppUser user(Long userId) {
         return users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    private boolean visibleComment(Comment comment, Long viewerId) {
+        if (comment.getHiddenAt() != null && !comment.getAuthor().getId().equals(viewerId)) {
+            return false;
+        }
+        return !blocks.separated(viewerId, comment.getAuthor().getId());
     }
 
     private static CommentView view(Comment c, Long viewerId, Long ownerId) {

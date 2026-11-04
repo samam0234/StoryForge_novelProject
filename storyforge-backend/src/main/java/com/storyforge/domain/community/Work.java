@@ -113,6 +113,8 @@ public class Work {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private Instant hiddenAt;
+
     protected Work() {
     }
 
@@ -163,6 +165,10 @@ public class Work {
         this.updatedAt = Instant.now();
     }
 
+    public void hide() {
+        this.hiddenAt = Instant.now();
+    }
+
     /** 본문이 바뀔 때마다 하나씩 올립니다. */
     public int nextRevision() {
         this.revision++;
@@ -197,4 +203,5 @@ public class Work {
     public long getViewCount() { return viewCount; }
     public Instant getPublishedAt() { return publishedAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getHiddenAt() { return hiddenAt; }
 }

@@ -6,6 +6,8 @@ import com.storyforge.domain.user.AuthDtos.AuthResponse;
 import com.storyforge.domain.user.AuthDtos.LoginRequest;
 import com.storyforge.domain.user.AuthDtos.RegisterRequest;
 import com.storyforge.domain.user.AuthDtos.UserResponse;
+import com.storyforge.config.AdminDirectory;
+import com.storyforge.domain.user.Role;
 import com.storyforge.exception.AuthenticationFailedException;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
@@ -26,11 +28,13 @@ public class AuthService {
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokens;
+    private final AdminDirectory admins;
 
-    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens) {
+    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens, AdminDirectory admins) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
+        this.admins = admins;
     }
 
     @Transactional
@@ -43,13 +47,22 @@ public class AuthService {
             throw new InvalidStateException("이미 가입된 이메일입니다.");
         }
         AppUser user = new AppUser(email, passwordEncoder.encode(request.password()), request.displayName().trim());
+        user.acceptTerms();
+        if (admins.contains(email)) {
+            user.grantAdmin();
+        }
         return tokens.issue(Objects.requireNonNull(users.save(user)));
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
-        AppUser user = users.findByEmail(normalizeEmail(request.email()))
+        String email = normalizeEmail(request.email());
+        AppUser user = users.findByEmail(email)
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new AuthenticationFailedException("이메일 또는 비밀번호가 올바르지 않습니다."));
+        if (admins.contains(email) && user.getRole() != Role.ADMIN) {
+            user.grantAdmin();
+        }
         return tokens.issue(user);
     }
 

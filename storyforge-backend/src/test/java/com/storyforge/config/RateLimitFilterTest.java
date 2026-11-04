@@ -32,7 +32,7 @@ class RateLimitFilterTest {
                 public Instant instant() {
                     return clock.instant();
                 }
-            });
+            }, java.util.Set.of());
 
     private int request(String method, String path, String ip) throws Exception {
         MockHttpServletRequest req = new MockHttpServletRequest(method, path);
@@ -80,5 +80,30 @@ class RateLimitFilterTest {
 
         // 읽기는 제한하지 않습니다.
         assertThat(request("GET", "/api/v1/works/1/comments", "9.9.9.2")).isEqualTo(200);
+    }
+
+    @Test
+    void usesForwardedClientOnlyWhenThePeerIsTrusted() throws Exception {
+        RateLimitFilter trusted = new RateLimitFilter(new RateLimitProperties(1, 1, 1), JsonMapper.builder().build(), Clock.systemUTC(),
+                java.util.Set.of("10.0.0.8"));
+        assertThat(send(trusted, login("8.8.8.8", "1.2.3.4"))).isEqualTo(200);
+        assertThat(send(trusted, login("8.8.8.8", "1.2.3.4"))).isEqualTo(429);
+        assertThat(send(trusted, login("10.0.0.8", "9.9.9.9, 10.0.0.8"))).isEqualTo(200);
+        assertThat(send(trusted, login("10.0.0.8", "9.9.9.9, 10.0.0.8"))).isEqualTo(429);
+        assertThat(send(trusted, login("10.0.0.8", "4.4.4.4"))).isEqualTo(200);
+    }
+
+    private static MockHttpServletRequest login(String remote, String forwarded) {
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/auth/login");
+        request.setRequestURI("/api/v1/auth/login");
+        request.setRemoteAddr(remote);
+        request.addHeader("X-Forwarded-For", forwarded);
+        return request;
+    }
+
+    private static int send(RateLimitFilter filter, MockHttpServletRequest request) throws Exception {
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(request, response, new MockFilterChain());
+        return response.getStatus();
     }
 }

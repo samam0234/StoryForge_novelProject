@@ -90,7 +90,7 @@ public abstract class IntegrationTestBase {
         Response r = call("POST", "/auth/register", Map.of(
                 "email", "u" + UUID.randomUUID() + "@example.com",
                 "password", "password123",
-                "displayName", "테스터"), null);
+                "displayName", "테스터", "termsAccepted", true), null);
         return r.json().get("accessToken").asString();
     }
 
