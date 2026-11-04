@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -43,6 +43,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/profile/profile.page').then((m) => m.ProfilePage),
   },
   {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/moderation/admin-reports.page').then((m) => m.AdminReportsPage),
+  },
+  {
     path: 'package-forge',
     canActivate: [authGuard],
     loadComponent: () => import('./features/packages/package-forge.page').then((m) => m.PackageForgePage),
@@ -66,11 +71,6 @@ export const routes: Routes = [
     path: 'me/settings',
     canActivate: [authGuard],
     loadComponent: () => import('./features/profile/account-settings.page').then((m) => m.AccountSettingsPage),
-  },
-  {
-    path: 'admin/reports',
-    canActivate: [authGuard],
-    loadComponent: () => import('./features/moderation/admin-reports.page').then((m) => m.AdminReportsPage),
   },
   {
     path: 'projects/:projectId',

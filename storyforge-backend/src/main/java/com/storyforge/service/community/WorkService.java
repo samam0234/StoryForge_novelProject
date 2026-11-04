@@ -14,6 +14,7 @@ import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
+import com.storyforge.service.auth.AccountPolicy;
 import com.storyforge.service.bible.BibleService;
 import com.storyforge.service.project.ExportService;
 import com.storyforge.service.project.ProjectService;
@@ -60,14 +61,16 @@ public class WorkService {
     private final IssueService issues;
     private final ExportService exports;
     private final JdbcTemplate jdbc;
-    private final BlockQuery blocks;
+    private final AccountPolicy policy;
     private final ContentPolicy contentPolicy;
 
     public WorkService(WorkRepository works, WorkChapterRepository workChapters, WorkRevisionRepository revisions,
                        ProjectService projects, ChapterRepository chapters, BibleService bibles, OutlineRepository outlines,
                        AppUserRepository users, PackageItemRepository packageItems, PackageService packages,
                        ActivityService activity, IssueService issues, ExportService exports, JdbcTemplate jdbc,
-                       BlockQuery blocks, ContentPolicy contentPolicy) {
+                       AccountPolicy policy, ContentPolicy contentPolicy) {
+        this.contentPolicy = contentPolicy;
+        this.policy = policy;
         this.works = works;
         this.workChapters = workChapters;
         this.revisions = revisions;
@@ -82,17 +85,13 @@ public class WorkService {
         this.issues = issues;
         this.exports = exports;
         this.jdbc = jdbc;
-        this.blocks = blocks;
-        this.contentPolicy = contentPolicy;
     }
 
     // ───────────── 게시판 ─────────────
 
     public PageResponse<WorkCard> board(Work.Kind kind, String genre, String q, String sort, int page, int size, Long viewerId) {
         Sort order = SORTS.getOrDefault(sort == null ? "latest" : sort, SORTS.get("latest"));
-        java.util.Collection<Long> excluded = blocks.excludedAuthorIds(viewerId);
-        Page<Work> result = works.board(kind, genre == null ? "" : genre.strip(), likePattern(q),
-                excluded.isEmpty(), excluded.isEmpty() ? List.of(-1L) : excluded,
+        Page<Work> result = works.board(kind, genre == null ? "" : genre.strip(), likePattern(q), viewerId == null ? -1L : viewerId,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50), order));
         return new PageResponse<>(result.stream().map(WorkCard::from).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
@@ -111,12 +110,8 @@ public class WorkService {
         return works.findByAuthorIdOrderByUpdatedAtDesc(userId).stream().map(WorkCard::from).toList();
     }
 
-    public List<WorkCard> publicWorksOf(Long userId, Long viewerId) {
-        if (blocks.separated(viewerId, userId)) {
-            return List.of();
-        }
-        return works.findByAuthorIdAndVisibilityOrderByPublishedAtDesc(userId, Work.Visibility.PUBLIC).stream()
-                .filter(w -> w.getHiddenAt() == null)
+    public List<WorkCard> publicWorksOf(Long userId) {
+        return works.findByAuthorIdAndVisibilityAndHiddenAtIsNullOrderByPublishedAtDesc(userId, Work.Visibility.PUBLIC).stream()
                 .map(WorkCard::from).toList();
     }
 
@@ -126,13 +121,12 @@ public class WorkService {
     public Work loadVisible(Long workId, Long viewerId) {
         Work work = works.findWithAuthor(Objects.requireNonNull(workId))
                 .orElseThrow(() -> new NotFoundException("작품을 찾을 수 없습니다: " + workId));
-        if (work.getVisibility() == Work.Visibility.PRIVATE && !work.getAuthor().getId().equals(viewerId)) {
+        boolean author = work.getAuthor().getId().equals(viewerId);
+        if (work.getVisibility() == Work.Visibility.PRIVATE && !author) {
             throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
         }
-        if (work.getHiddenAt() != null && !work.getAuthor().getId().equals(viewerId)) {
-            throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
-        }
-        if (blocks.separated(viewerId, work.getAuthor().getId())) {
+        // 관리자가 숨긴 작품은 작가와 관리자만 봅니다.
+        if (work.isHidden() && !author && !policy.isAdminId(viewerId)) {
             throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
         }
         return work;
@@ -165,8 +159,7 @@ public class WorkService {
         boolean sourceVisible = !modes.isEmpty();
         List<Long> packageIds = packageItems.findPackageIdsOf(workId);
         List<WorkCard> inPackages = packageIds.isEmpty() ? List.of() : works.findAllWithAuthor(packageIds).stream()
-                .filter(p -> p.getHiddenAt() == null)
-                .filter(p -> p.getVisibility() == Work.Visibility.PUBLIC || p.getAuthor().getId().equals(viewerId))
+                .filter(p -> p.isListed() || p.getAuthor().getId().equals(viewerId))
                 .map(WorkCard::from).toList();
         return new WorkDetail(WorkCard.from(work), owned, liked, work.isDownloadable(), owned ? work.getProjectId() : null,
                 modes, entries,
@@ -214,6 +207,7 @@ public class WorkService {
         if (request.kind() == Work.Kind.PACKAGE) {
             throw new InvalidStateException("패키지는 패키지포지에서 만듭니다.");
         }
+        policy.requireTerms(userId);
         Project project = projects.load(projectId);
         if (!userId.equals(project.getOwnerId())) {
             throw new InvalidStateException("게시할 수 있는 사람은 작품 주인뿐입니다.");
@@ -226,6 +220,7 @@ public class WorkService {
             throw new InvalidStateException("승인된 챕터가 있어야 게시할 수 있습니다.");
         }
         contentPolicy.check(request.title(), request.synopsis());
+        checkChapters(confirmed);
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         Work work = new Work(author, request.kind(), request.title().strip());
@@ -253,6 +248,7 @@ public class WorkService {
         if (confirmed.isEmpty()) {
             throw new InvalidStateException("승인된 챕터가 있어야 업데이트할 수 있습니다.");
         }
+        checkChapters(confirmed);
         applySource(work, work.getProjectId());
         int chars = copyChapters(work, confirmed);
         work.applyCounts(confirmed.size(), chars);
@@ -265,8 +261,8 @@ public class WorkService {
 
     @Transactional
     public WorkCard update(Long workId, UpdateWorkRequest request, Long userId) {
-        Work work = loadOwned(workId, userId);
         contentPolicy.check(request.title(), request.synopsis(), request.worldNote());
+        Work work = loadOwned(workId, userId);
         work.updateMeta(request.title().strip(), blankToNull(request.synopsis()), blankToNull(request.genre()),
                 blankToNull(request.tags()), request.visibility(), request.clonePolicy(), request.downloadable());
         if (work.getKind() == Work.Kind.PACKAGE) {
@@ -280,10 +276,10 @@ public class WorkService {
     /** 게시본 본문 직접 수정. 프로젝트 원고는 건드리지 않습니다. */
     @Transactional
     public WorkChapterResponse editChapter(Long workId, int number, UpdateWorkChapterRequest request, Long userId) {
+        contentPolicy.check(request.title(), request.content());
         Work work = loadOwned(workId, userId);
         WorkChapter chapter = workChapters.findByWorkIdAndNumber(workId, number)
                 .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + number));
-        contentPolicy.check(request.title(), request.content());
         int changed = ActivityService.changedChars(chapter.getContent(), request.content())
                 + ActivityService.changedChars(chapter.getTitle(), request.title());
         if (changed > 0) {
@@ -318,8 +314,7 @@ public class WorkService {
             for (PackageItem item : packageItems.findWithMembers(workId)) {
                 Work member = item.getMember();
                 boolean memberOwned = member.getAuthor().getId().equals(viewerId);
-                if (item.getStatus() == PackageItem.Status.APPROVED && member.getHiddenAt() == null
-                        && member.getVisibility() != Work.Visibility.PRIVATE
+                if (item.getStatus() == PackageItem.Status.APPROVED && member.getVisibility() != Work.Visibility.PRIVATE && !member.isHidden()
                         && (member.isDownloadable() || memberOwned)) {
                     sections.addAll(sectionsOf(member, member.getTitle() + " — "));
                 }
@@ -341,6 +336,12 @@ public class WorkService {
     }
 
     // ───────────── helpers ─────────────
+
+    private void checkChapters(List<Chapter> confirmed) {
+        for (Chapter chapter : confirmed) {
+            contentPolicy.check(chapter.getTitle(), chapter.getContent());
+        }
+    }
 
     private List<Chapter> confirmedChapters(Long projectId) {
         return chapters.findByProjectIdOrderByNumber(projectId).stream()

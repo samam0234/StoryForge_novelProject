@@ -88,6 +88,11 @@ public class UserController {
         return profiles.update(currentUser.id(), request);
     }
 
+    @PutMapping("/me/terms")
+    public UserResponse acceptTerms() {
+        return profiles.acceptTerms(currentUser.id());
+    }
+
     @PutMapping("/me/password")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void changePassword(@Valid @RequestBody ChangePasswordRequest request) {

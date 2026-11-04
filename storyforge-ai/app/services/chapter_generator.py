@@ -8,7 +8,7 @@ from dataclasses import dataclass
 
 from app.core.config import get_settings
 from app.core.llm import LLMClient
-from app.models.schemas import ChapterContext, ChapterGenerateResult
+from app.models.schemas import ChapterContext, ChapterGenerateResult, ChapterReviewRequest, ChapterReviewResult
 from app.prompts import render
 from app.services import mock_writer
 from app.services.continuity_checker import check_continuity
@@ -41,6 +41,17 @@ async def generate_chapter(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator
             report=report,
         )
     )
+
+
+async def review_chapter(llm: LLMClient, request: ChapterReviewRequest) -> ChapterReviewResult:
+    """사람이 고친 본문을 기준으로 요약과 Continuity 검증을 다시 합니다."""
+    ctx = request.context
+    if llm.is_mock:
+        summary = mock_writer.review_summary(ctx, request.content)
+    else:
+        summary = await _summarize(llm, ctx, request.content)
+    report = await check_continuity(llm, ctx, request.content)
+    return ChapterReviewResult(summary=summary, report=report)
 
 
 def _stream_body(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator[str]:

@@ -54,8 +54,8 @@ def test_status_with_project_points_to_next_step():
 
 
 def test_collab_action_has_no_url_here():
-    action = chat("/콜라보")["actions"][0]
-    assert action["kind"] == "collab" and "://" not in action["target"]
+    action = next(a for a in chat("/콜라보")["actions"] if a["kind"] == "collab")
+    assert "://" not in action["target"]
 
 
 def test_free_question_matches_topic_in_mock():

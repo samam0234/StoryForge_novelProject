@@ -12,13 +12,13 @@ import { AuthService } from '../../core/auth/auth.service';
 import { POST_CATEGORIES, PostCategory, PostDetail, labelOf } from '../../core/models/community';
 import { UserChipComponent } from '../../shared/components/user-chip/user-chip.component';
 import { CommentThreadComponent } from '../board/comment-thread.component';
-import { ReportButtonComponent } from '../moderation/report-button.component';
+import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
 import { PostEditDialog } from './post-edit.dialog';
 
 /** 라운지 게시글 읽기 */
 @Component({
   selector: 'sf-post-detail-page',
-  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, UserChipComponent, CommentThreadComponent, ReportButtonComponent],
+  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, UserChipComponent, CommentThreadComponent],
   template: `
     <div class="sf-page narrow">
       @if (error()) {
@@ -27,6 +27,9 @@ import { PostEditDialog } from './post-edit.dialog';
         <mat-progress-bar mode="indeterminate" />
       } @else if (post(); as p) {
         <a mat-button routerLink="/create"><mat-icon>arrow_back</mat-icon> 라운지</a>
+        @if (p.hidden) {
+          <p class="hidden-note" role="alert">관리자가 숨긴 글입니다. 작성자와 관리자에게만 보입니다.</p>
+        }
         <article>
           <span class="sf-badge">{{ categoryLabel(p.card.category) }}</span>
           <h1>{{ p.card.title }}</h1>
@@ -41,14 +44,12 @@ import { PostEditDialog } from './post-edit.dialog';
               <button mat-stroked-button (click)="toggleLike()" [attr.aria-pressed]="p.liked">
                 <mat-icon>{{ p.liked ? 'favorite' : 'favorite_border' }}</mat-icon> 추천 {{ p.card.likeCount }}
               </button>
+              <button mat-button (click)="openReport()"><mat-icon>flag</mat-icon> 신고</button>
             } @else {
               <span class="sf-muted">추천 {{ p.card.likeCount }}</span>
               <span class="sf-spacer"></span>
               <button mat-button (click)="edit()">수정</button>
               <button mat-button (click)="remove()">삭제</button>
-            }
-            @if (!p.owned) {
-              <sf-report-button targetType="POST" [targetId]="p.card.id" />
             }
           </div>
         </article>
@@ -60,6 +61,12 @@ import { PostEditDialog } from './post-edit.dialog';
   styles: `
     .narrow {
       max-width: 800px;
+    }
+    .hidden-note {
+      padding: 8px 12px;
+      border-left: 3px solid var(--sf-severity-high);
+      background: var(--sf-surface-2);
+      border-radius: 6px;
     }
     h1 {
       margin: 8px 0;
@@ -121,6 +128,17 @@ export class PostDetailPage {
       next: (r) => this.post.set({ ...p, liked: r.liked, card: { ...p.card, likeCount: r.likeCount } }),
       error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
     });
+  }
+
+  protected openReport(): void {
+    const p = this.post();
+    if (!p) return;
+    if (!this.auth.isLoggedIn()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
+      return;
+    }
+    const data: ReportDialogData = { targetType: 'POST', targetId: p.card.id, label: p.card.title };
+    this.dialog.open(ReportDialog, { data, maxWidth: '95vw' });
   }
 
   protected edit(): void {

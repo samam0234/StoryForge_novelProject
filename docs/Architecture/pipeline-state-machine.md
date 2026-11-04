@@ -55,6 +55,7 @@ stateDiagram-v2
 ## 별도 상태: Chapter (§10)
 
 프로젝트 상태와 별개로, 각 Chapter 엔티티는 `DRAFT` / `CONFIRMED` 상태를 가집니다.
+생성 뒤 본문을 고쳤거나 Clone으로 가져온 Chapter는 `needsReview`가 켜지고, 승인할 때 프로젝트 상태를 바꾸지 않은 채 요약과 Continuity를 다시 만듭니다. 심각한 이슈가 나오거나 AI가 실패하면 `CHAPTER_REVIEW`에 그대로 머뭅니다.
 §7.2 6단계에 따라 사용자가 승인하면 Chapter가 `CONFIRMED`로 바뀌고 프로젝트 상태 머신이 갱신됩니다.
 
 ## 서버 재시작 시 복구

@@ -113,6 +113,8 @@ export interface WorkCard {
   viewCount: number;
   parentWorkId: number | null;
   parentTitle: string | null;
+  /** 관리자가 숨김. 작가와 관리자에게만 보입니다. */
+  hidden: boolean;
   publishedAt: string;
   updatedAt: string;
 }
@@ -293,6 +295,7 @@ export interface PostDetail {
   content: string;
   owned: boolean;
   liked: boolean;
+  hidden: boolean;
   updatedAt: string;
 }
 
@@ -301,6 +304,7 @@ export interface CommentView {
   parentId: number | null;
   author: UserSummary;
   content: string;
+  hidden: boolean;
   canEdit: boolean;
   canDelete: boolean;
   createdAt: string;
@@ -328,7 +332,8 @@ export interface Profile {
   website: string | null;
   joinedAt: string;
   self: boolean;
-  blocked: boolean;
+  blockedByMe: boolean;
+  suspended: boolean;
   stats: { works: number; likesReceived: number; clonesReceived: number; posts: number; comments: number; achievements: number };
 }
 
@@ -424,3 +429,59 @@ export interface GuideReply {
   reply: string;
   actions: GuideAction[];
 }
+
+// 신고·관리
+export type ReportTargetType = 'WORK' | 'POST' | 'COMMENT' | 'USER';
+export type ReportReason = 'SPAM' | 'ABUSE' | 'SEXUAL' | 'VIOLENCE' | 'COPYRIGHT' | 'PERSONAL_INFO' | 'OTHER';
+export type ReportStatus = 'OPEN' | 'RESOLVED' | 'DISMISSED';
+export type ReportAction = 'HIDE' | 'RESTORE' | 'DISMISS' | 'SUSPEND' | 'UNSUSPEND';
+
+export const REPORT_REASONS: { value: ReportReason; label: string }[] = [
+  { value: 'SPAM', label: '도배·광고' },
+  { value: 'ABUSE', label: '욕설·괴롭힘·혐오' },
+  { value: 'SEXUAL', label: '부적절한 성적 내용' },
+  { value: 'VIOLENCE', label: '불법·폭력 조장' },
+  { value: 'COPYRIGHT', label: '저작권 침해' },
+  { value: 'PERSONAL_INFO', label: '개인정보 노출' },
+  { value: 'OTHER', label: '기타' },
+];
+
+export interface ReportView {
+  id: number;
+  targetType: ReportTargetType;
+  targetId: number;
+  reason: ReportReason;
+  detail: string | null;
+  status: ReportStatus;
+  reporter: UserSummary;
+  openReports: number;
+  target: {
+    title: string;
+    excerpt: string | null;
+    link: string | null;
+    author: UserSummary | null;
+    hidden: boolean;
+    authorSuspended: boolean;
+    exists: boolean;
+  };
+  resolutionNote: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface NotificationView {
+  id: number;
+  type: string;
+  message: string;
+  link: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface PackageReportView {
+  issues: { type: string; description: string; severity: string; workTitles: string[] }[];
+  score: number;
+  skippedTitles: string[];
+  createdAt: string;
+}
+

@@ -7,10 +7,12 @@ import com.storyforge.domain.community.Work;
 import com.storyforge.domain.community.WorkRepository;
 import com.storyforge.domain.community.WorkShare;
 import com.storyforge.domain.community.WorkShareRepository;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
+import com.storyforge.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +31,11 @@ public class ShareService {
     private final AppUserRepository users;
     private final ActivityService activity;
     private final IssueService issues;
+    private final NotificationService notifications;
 
     public ShareService(WorkService workService, WorkRepository works, WorkShareRepository shares, AppUserRepository users,
-                        ActivityService activity, IssueService issues) {
+                        ActivityService activity, IssueService issues, NotificationService notifications) {
+        this.notifications = notifications;
         this.workService = workService;
         this.works = works;
         this.shares = shares;
@@ -43,7 +47,7 @@ public class ShareService {
     @Transactional
     public ShareCreated share(Long workId, ShareRequest request, Long userId) {
         Work work = workService.loadVisible(workId, userId);
-        if (work.getVisibility() == Work.Visibility.PRIVATE) {
+        if (work.getVisibility() == Work.Visibility.PRIVATE || work.isHidden()) {
             throw new InvalidStateException("비공개 작품은 공유할 수 없습니다.");
         }
         AppUser user = users.findById(Objects.requireNonNull(userId))
@@ -53,6 +57,8 @@ public class ShareService {
         works.addShare(workId);
         issues.reached(workId, IssueEvent.Metric.TOTAL_SHARES, works.shareCount(workId));
         activity.recordWork(userId, null, work, ActivityType.WORK_SHARED, "작품 공유: " + channelLabel(request.channel()), 0);
+        notifications.notify(work.getAuthor().getId(), userId, Notification.Type.SHARE,
+                user.getDisplayName() + "님이 「" + work.getTitle() + "」을(를) 공유했습니다.", "/works/" + workId);
         return new ShareCreated(ShareEntry.from(share), token);
     }
 

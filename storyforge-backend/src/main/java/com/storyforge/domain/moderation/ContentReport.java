@@ -5,16 +5,16 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
-/** 게시글·작품·댓글·사용자 신고. 같은 대상의 열린 신고는 신고자당 하나입니다. */
+/** 신고. 관리자의 처리 결과와 처리한 사람도 여기에 남습니다. */
 @Entity
 @Table(name = "content_report")
 public class ContentReport {
 
-    public enum TargetType { POST, WORK, COMMENT, USER }
+    public enum TargetType { WORK, POST, COMMENT, USER }
 
-    public enum Reason { SPAM, ABUSE, ILLEGAL, COPYRIGHT, OTHER }
+    public enum Reason { SPAM, ABUSE, SEXUAL, VIOLENCE, COPYRIGHT, PERSONAL_INFO, OTHER }
 
-    public enum Status { OPEN, DISMISSED, HIDDEN }
+    public enum Status { OPEN, RESOLVED, DISMISSED }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,21 +35,21 @@ public class ContentReport {
     @Column(nullable = false)
     private Reason reason;
 
-    @Column(length = 1000)
     private String detail;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status;
 
+    @SuppressWarnings("unused") // 누가 처리했는지 남기는 기록. 화면에는 내보내지 않습니다.
+    private Long resolvedBy;
+
+    private String resolutionNote;
+
     @Column(nullable = false)
     private Instant createdAt;
 
     private Instant resolvedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "resolver_id")
-    private AppUser resolver;
 
     protected ContentReport() {
     }
@@ -64,9 +64,10 @@ public class ContentReport {
         this.createdAt = Instant.now();
     }
 
-    public void resolve(Status status, AppUser resolver) {
+    public void close(Status status, Long adminId, String note) {
         this.status = status;
-        this.resolver = resolver;
+        this.resolvedBy = adminId;
+        this.resolutionNote = note;
         this.resolvedAt = Instant.now();
     }
 
@@ -77,6 +78,7 @@ public class ContentReport {
     public Reason getReason() { return reason; }
     public String getDetail() { return detail; }
     public Status getStatus() { return status; }
+    public String getResolutionNote() { return resolutionNote; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getResolvedAt() { return resolvedAt; }
 }

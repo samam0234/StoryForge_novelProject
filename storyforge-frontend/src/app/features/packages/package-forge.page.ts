@@ -1,4 +1,5 @@
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,6 +20,7 @@ import {
   LINK_TYPES,
   LinkType,
   PACKAGE_TYPES,
+  PackageReportView,
   PackageType,
   VISIBILITY_OPTIONS,
   Visibility,
@@ -34,6 +36,7 @@ import { PackageMapComponent } from '../../shared/components/package-map/package
 @Component({
   selector: 'sf-package-forge-page',
   imports: [
+    DatePipe,
     CdkDrag,
     CdkDragHandle,
     CdkDropList,
@@ -185,6 +188,37 @@ import { PackageMapComponent } from '../../shared/components/package-map/package
           </ul>
         </section>
 
+        <section class="panel" aria-label="패키지 전체 검사">
+          <div class="sf-row">
+            <h2>전체 Continuity 검사</h2>
+            <span class="sf-spacer"></span>
+            <button mat-stroked-button [disabled]="checking()" (click)="runCheck()">
+              <mat-icon>rule</mat-icon> {{ checking() ? '검사 중…' : '검사 실행' }}
+            </button>
+          </div>
+          <p class="sf-muted hint">승인된 작품끼리 인물, 세계 규칙, 사건이 어긋나는지 봅니다. 결과는 패키지 주인에게만 보입니다.</p>
+          @if (report(); as r) {
+            <p class="score">점수 <strong>{{ r.score }}</strong> / 100 <span class="sf-muted">{{ r.createdAt | date: 'yyyy-MM-dd HH:mm' }}</span></p>
+            @if (r.skippedTitles.length) {
+              <p class="sf-muted hint">작가가 설정을 공개하지 않아 건너뛴 작품: {{ r.skippedTitles.join(', ') }}</p>
+            }
+            @if (!r.issues.length) {
+              <p class="sf-muted">발견된 문제가 없습니다.</p>
+            }
+            <ul class="issues">
+              @for (i of r.issues; track $index) {
+                <li [attr.data-severity]="i.severity">
+                  <strong class="sev">{{ i.severity }}</strong>
+                  <span>{{ i.description }}</span>
+                  @if (i.workTitles.length) {
+                    <small class="sf-muted"> ({{ i.workTitles.join(', ') }})</small>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+
         <section class="panel">
           <h2>연결 지도</h2>
           <sf-package-map [items]="items()" [links]="d.packageView?.links ?? []" />
@@ -333,6 +367,39 @@ import { PackageMapComponent } from '../../shared/components/package-map/package
     .add mat-form-field {
       flex: 1;
     }
+    .hint {
+      margin: 4px 0 8px;
+      font-size: 13px;
+    }
+    .score {
+      margin: 8px 0;
+    }
+    .issues {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 14px;
+    }
+    .issues li {
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--sf-surface-2);
+      border-left: 3px solid var(--sf-severity-low);
+    }
+    .issues li[data-severity='high'] {
+      border-left-color: var(--sf-severity-high);
+    }
+    .issues li[data-severity='medium'] {
+      border-left-color: var(--sf-severity-medium);
+    }
+    .sev {
+      margin-right: 6px;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
     .links {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -359,6 +426,8 @@ export class PackageForgePage {
   protected readonly others = signal<WorkCard[]>([]);
   protected readonly picked = signal(new Set<number>());
   protected readonly busy = signal(false);
+  protected readonly checking = signal(false);
+  protected readonly report = signal<PackageReportView | null>(null);
   protected readonly items = computed(() => this.detail()?.packageView?.items ?? []);
   protected readonly addable = computed(() => {
     const inside = new Set(this.items().map((i) => i.work.id));
@@ -383,7 +452,10 @@ export class PackageForgePage {
     this.api.myWorks().subscribe((list) => this.mine.set(list.filter((w) => w.kind !== 'PACKAGE')));
     effect(() => {
       const id = this.workId();
-      if (id) this.reload(Number(id), true);
+      if (id) {
+        this.reload(Number(id), true);
+        this.api.packageContinuity(Number(id)).subscribe({ next: (r) => this.report.set(r), error: () => undefined });
+      }
       else this.detail.set(null);
     });
   }
@@ -402,6 +474,22 @@ export class PackageForgePage {
         this.worldNote = d.packageView?.worldNote ?? '';
       },
       error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
+    });
+  }
+
+  protected runCheck(): void {
+    const d = this.detail();
+    if (!d) return;
+    this.checking.set(true);
+    this.api.runPackageContinuity(d.card.id).subscribe({
+      next: (r) => {
+        this.checking.set(false);
+        this.report.set(r);
+      },
+      error: (e) => {
+        this.checking.set(false);
+        this.snack.open(errorMessage(e), '닫기', { duration: 4000 });
+      },
     });
   }
 

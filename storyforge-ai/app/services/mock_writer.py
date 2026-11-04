@@ -101,6 +101,12 @@ def summary(ctx: ChapterContext) -> str:
     return f"{ctx.chapter_number}장: " + " / ".join(oc.beats)
 
 
+def review_summary(ctx: ChapterContext, content: str) -> str:
+    """수정본 요약. 본문이 바뀌면 요약도 바뀌도록 앞부분을 씁니다."""
+    body = content.replace(MOCK_NOTE, "").strip()
+    return f"{ctx.chapter_number}장(수정본): {body[:120]}"
+
+
 async def stream_text(text: str, delay: float) -> AsyncIterator[str]:
     """실제 스트리밍처럼 몇 글자씩 나눠 보냅니다."""
     step = 6

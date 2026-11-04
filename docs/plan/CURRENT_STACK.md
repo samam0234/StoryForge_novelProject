@@ -48,13 +48,14 @@
 | `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | backend | `20` | IP당 로그인·가입 |
 | `RATE_LIMIT_GENERATE_PER_MINUTE` | backend | `30` | 사용자당 AI 생성, 가이드챗 |
-| `RATE_LIMIT_COMMUNITY_PER_MINUTE` | backend | `60` | 사용자당 글·댓글·공유·Clone·신고·차단, IP당 공유 방문 |
-| `TRUSTED_PROXIES` | backend | (없음) | 이 주소에서 들어온 요청만 `X-Forwarded-For`의 실제 클라이언트로 제한. 비우면 연결 주소만 사용 |
+| `RATE_LIMIT_COMMUNITY_PER_MINUTE` | backend | `60` | 사용자당 글·댓글·공유·Clone, IP당 공유 방문 |
+| `ADMIN_EMAILS` | backend | (없음) | 관리자 이메일. 쉼표로 구분. [moderation.md](moderation.md) |
+| `TERMS_VERSION` | backend | `2026-11-04` | 이용약관 버전. 올리면 기존 사용자는 다시 동의해야 게시 가능 |
+| `TRUSTED_PROXIES` | backend | (없음) | 이 주소에서 온 요청만 `X-Forwarded-For`를 신뢰. 비우면 접속 주소만 사용 |
 | `CONTENT_BLOCKLIST` | backend | (없음) | 쉼표로 구분한 금지 표현. 비우면 검사하지 않음 |
-| `ADMIN_EMAILS` | backend | (없음) | 가입·로그인 시 관리자가 되는 이메일. 쉼표로 여러 주소 |
-| `LLM_PROVIDER` | backend, ai | `mock` | `mock` / `anthropic`. 백엔드 안내와 AI 서비스가 같은 값을 읽음 |
 | `COMMUNITY_ZONE` | backend | `Asia/Seoul` | 작업 그래프와 활동 잔디의 날짜 기준 |
 | `CODICOMPERCHAT_URL` | backend | (없음) | 가이드챗 콜라보 이동 주소. 비우면 이동 버튼을 표시하지 않음 |
+| `LLM_PROVIDER` | ai, backend | `mock` | `mock` / `anthropic`. 백엔드는 외부 전송 안내에 같은 값을 씀 |
 | `LLM_MODEL` | ai | `claude-opus-5-5` | |
 | `LLM_EFFORT` | ai | `medium` | Claude Opus 5.5 기본값과 같게 명시 |
 | `ANTHROPIC_API_KEY` | ai | (없음) | 비우면 SDK 표준 자격 증명 경로 사용 |
@@ -69,7 +70,7 @@
 | Spring Boot → PostgreSQL | JDBC (JPA, Flyway) | §7.1 |
 
 - 외부 API 버전 prefix: `/api/v1/` (§11). 상세는 [api-v1.md](api-v1.md)
-- 내부 API: `POST /internal/generate/{bible|outline|chapter}` (§7.2)
+- 내부 API: `POST /internal/generate/{bible|outline|chapter|review}` (§7.2), `/internal/package/continuity`, `/internal/guide/chat`
 - 타임아웃: 백엔드 → AI 180초, 연결 5초. MVC 비동기 요청 180초 (§4 P95 < 90초 기준 여유)
 
 ## 변경 이력
@@ -80,4 +81,6 @@
 | 2026-10-22 | 첫 구현에 맞춰 버전·포트·환경 변수 확정 | `feature/web-foundation` 커밋 기록 참고 |
 | 2026-11-02 | JWT 인증 환경 변수 추가 | [auth.md](auth.md) |
 | 2026-11-02 | Spring Boot 4.1.2 전환, AI 기본 포트 8001 | [roadmap-progress.md](roadmap-progress.md) |
-| 2026-11-05 | `TRUSTED_PROXIES`, `CONTENT_BLOCKLIST`, `ADMIN_EMAILS`. `LLM_PROVIDER`는 백엔드 안내와 AI가 함께 읽음 | [stability.md](stability.md), [community.md](community.md) |
+| 2026-11-03 | 커뮤니티 환경 변수, 내보내기 형식 추가 | [community.md](community.md) |
+| 2026-11-04 | `ADMIN_EMAILS`, `TERMS_VERSION`, 내부 API 2개 추가 | [moderation.md](moderation.md) |
+| 2026-11-05 | 운영 프로필 잠금, `TRUSTED_PROXIES`, `CONTENT_BLOCKLIST`, 외부 모델 안내 | 원격 develop과 병합 |

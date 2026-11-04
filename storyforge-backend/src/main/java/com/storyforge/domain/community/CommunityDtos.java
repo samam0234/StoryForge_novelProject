@@ -34,14 +34,14 @@ public final class CommunityDtos {
             List<String> tags, UserSummary author, Work.Visibility visibility, Work.ClonePolicy clonePolicy,
             int revision, int chapterCount, int charCount, int likeCount, int commentCount, int cloneCount,
             int shareCount, long viewCount, Long parentWorkId, String parentTitle,
-            Instant publishedAt, Instant updatedAt) {
+            boolean hidden, Instant publishedAt, Instant updatedAt) {
 
         public static WorkCard from(Work w) {
             return new WorkCard(w.getId(), w.getKind(), w.getPackageType(), w.getTitle(), w.getSynopsis(), w.getGenre(),
                     splitTags(w.getTags()), UserSummary.from(w.getAuthor()), w.getVisibility(), w.getClonePolicy(),
                     w.getRevision(), w.getChapterCount(), w.getCharCount(), w.getLikeCount(), w.getCommentCount(),
                     w.getCloneCount(), w.getShareCount(), w.getViewCount(), w.getParentWorkId(), w.getParentTitle(),
-                    w.getPublishedAt(), w.getUpdatedAt());
+                    w.isHidden(), w.getPublishedAt(), w.getUpdatedAt());
         }
 
         private static List<String> splitTags(String tags) {
@@ -207,6 +207,9 @@ public final class CommunityDtos {
                                  @Size(max = 200) String label) {
     }
 
+    public record PackageReportView(List<PackageReport.Issue> issues, int score, List<String> skippedTitles, Instant createdAt) {
+    }
+
     public record PackageRequest(Long itemId, Long packageId, String packageTitle, UserSummary requester, WorkCard work,
                                  Instant createdAt) {
     }
@@ -229,7 +232,7 @@ public final class CommunityDtos {
         }
     }
 
-    public record PostDetail(PostCard card, String content, boolean owned, boolean liked, Instant updatedAt) {
+    public record PostDetail(PostCard card, String content, boolean owned, boolean liked, boolean hidden, Instant updatedAt) {
     }
 
     public record CommentRequest(@NotBlank @Size(max = 2000) String content, Long parentId) {
@@ -238,7 +241,7 @@ public final class CommunityDtos {
     public record CommentEditRequest(@NotBlank @Size(max = 2000) String content) {
     }
 
-    public record CommentView(Long id, Long parentId, UserSummary author, String content, boolean canEdit,
+    public record CommentView(Long id, Long parentId, UserSummary author, String content, boolean hidden, boolean canEdit,
                               boolean canDelete, Instant createdAt, Instant updatedAt) {
     }
 
@@ -257,7 +260,8 @@ public final class CommunityDtos {
                                long achievements) {
     }
 
-    public record Profile(UserSummary user, String bio, String website, Instant joinedAt, boolean self, boolean blocked, ProfileStats stats) {
+    public record Profile(UserSummary user, String bio, String website, Instant joinedAt, boolean self,
+                          boolean blockedByMe, boolean suspended, ProfileStats stats) {
     }
 
     public record UpdateProfileRequest(

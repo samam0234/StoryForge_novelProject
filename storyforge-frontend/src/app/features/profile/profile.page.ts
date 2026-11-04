@@ -1,19 +1,21 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
 import { CommunityApi } from '../../core/api/community-api.service';
-import { ModerationApi } from '../../core/api/moderation-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { Achievement, ActivityEntry, Contributions, Profile, WorkCard } from '../../core/models/community';
 import { ContributionHeatmapComponent } from '../../shared/components/contribution-heatmap/contribution-heatmap.component';
 import { WorkCardComponent } from '../../shared/components/work-card/work-card.component';
+import { AuthService } from '../../core/auth/auth.service';
+import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
 
 /** 유저 프로필: 작품, 활동 잔디와 내역, 업적 */
 @Component({
@@ -42,6 +44,9 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
           <span class="avatar" [style.background]="p.user.avatarColor ?? 'var(--sf-primary)'" aria-hidden="true">{{ initial() }}</span>
           <div class="info">
             <h1>{{ p.user.displayName }}</h1>
+            @if (p.suspended) {
+              <span class="sf-badge suspended">이용 정지</span>
+            }
             @if (p.bio) {
               <p class="bio">{{ p.bio }}</p>
             }
@@ -55,7 +60,10 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
           @if (p.self) {
             <a mat-stroked-button routerLink="/me/settings"><mat-icon>settings</mat-icon> 계정 설정</a>
           } @else if (auth.isLoggedIn()) {
-            <button mat-stroked-button type="button" (click)="toggleBlock(p)">{{ p.blocked ? '차단 해제' : '차단' }}</button>
+            <button mat-stroked-button (click)="toggleBlock()" [attr.aria-pressed]="p.blockedByMe">
+              <mat-icon>block</mat-icon> {{ p.blockedByMe ? '차단 해제' : '차단' }}
+            </button>
+            <button mat-button (click)="openReport()"><mat-icon>flag</mat-icon> 신고</button>
           }
         </header>
         <div class="stats">
@@ -187,6 +195,9 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
       font-size: 24px;
       overflow-wrap: anywhere;
     }
+    .suspended {
+      background: color-mix(in srgb, var(--sf-severity-high) 20%, transparent);
+    }
     .bio {
       margin: 4px 0;
       white-space: pre-wrap;
@@ -315,7 +326,8 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
 })
 export class ProfilePage {
   private readonly api = inject(CommunityApi);
-  private readonly moderation = inject(ModerationApi);
+  private readonly dialog = inject(MatDialog);
+  private readonly snack = inject(MatSnackBar);
   protected readonly auth = inject(AuthService);
   readonly userId = input.required<string>();
 
@@ -331,14 +343,6 @@ export class ProfilePage {
 
   protected readonly initial = computed(() => Array.from(this.profile()?.user.displayName ?? '?')[0]);
   protected readonly earnedCount = computed(() => this.achievements().filter((a) => a.earnedAt).length);
-
-  protected toggleBlock(p: Profile): void {
-    const request = p.blocked ? this.moderation.unblock(p.user.id) : this.moderation.block(p.user.id);
-    request.subscribe({
-      next: () => this.profile.set({ ...p, blocked: !p.blocked }),
-      error: (e) => this.error.set(errorMessage(e)),
-    });
-  }
 
   constructor() {
     effect(() => {
@@ -357,6 +361,25 @@ export class ProfilePage {
       // 날짜·페이지 변경은 loadFeed를 직접 부릅니다. 여기서 추적하면 프로필 전체를 다시 읽고 탭이 처음으로 돌아갑니다.
       untracked(() => this.loadFeed(id));
     });
+  }
+
+  protected toggleBlock(): void {
+    const p = this.profile();
+    if (!p) return;
+    this.api.block(p.user.id, !p.blockedByMe).subscribe({
+      next: () => {
+        this.profile.set({ ...p, blockedByMe: !p.blockedByMe });
+        this.snack.open(p.blockedByMe ? '차단을 해제했습니다.' : '차단했습니다. 이 사용자의 글과 댓글이 보이지 않습니다.', undefined, { duration: 3000 });
+      },
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
+    });
+  }
+
+  protected openReport(): void {
+    const p = this.profile();
+    if (!p) return;
+    const data: ReportDialogData = { targetType: 'USER', targetId: p.user.id, label: p.user.displayName };
+    this.dialog.open(ReportDialog, { data, maxWidth: '95vw' });
   }
 
   private loadFeed(id: number): void {

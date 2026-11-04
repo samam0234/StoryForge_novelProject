@@ -3,11 +3,12 @@ package com.storyforge.service.community;
 import com.storyforge.domain.community.CommunityDtos.Celebration;
 import com.storyforge.domain.community.CommunityDtos.IssueBoard;
 import com.storyforge.domain.community.CommunityDtos.WorkCard;
-import com.storyforge.domain.community.IssueEvent;
 import com.storyforge.domain.community.IssueEvent.Metric;
 import com.storyforge.domain.community.IssueEventRepository;
 import com.storyforge.domain.community.Work;
 import com.storyforge.domain.community.WorkRepository;
+import com.storyforge.domain.notification.Notification;
+import com.storyforge.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +35,10 @@ public class IssueService {
 
     private final IssueEventRepository issues;
     private final WorkRepository works;
+    private final NotificationService notifications;
 
-    public IssueService(IssueEventRepository issues, WorkRepository works) {
+    public IssueService(IssueEventRepository issues, WorkRepository works, NotificationService notifications) {
+        this.notifications = notifications;
         this.issues = issues;
         this.works = works;
     }
@@ -44,8 +47,10 @@ public class IssueService {
     @Transactional
     public void reached(Long workId, Metric metric, long value) {
         for (int threshold : THRESHOLDS.get(metric)) {
-            if (value >= threshold) {
-                issues.reach(workId, metric.name(), threshold);
+            // 처음 넘었을 때만 작가에게 알립니다. 같은 단위는 다시 기록되지 않습니다.
+            if (value >= threshold && issues.reach(workId, metric.name(), threshold) > 0) {
+                works.findWithAuthor(workId).ifPresent(w -> notifications.send(w.getAuthor().getId(), Notification.Type.MILESTONE,
+                        "축하합니다! 「" + w.getTitle() + "」이(가) " + message(metric, threshold), "/works/" + workId));
             }
         }
     }
@@ -54,21 +59,18 @@ public class IssueService {
         List<Long> ids = works.trendingIds(Instant.now().minus(Duration.ofDays(7)));
         Map<Long, Work> found = ids.isEmpty() ? Map.of()
                 : works.findAllWithAuthor(ids).stream().collect(Collectors.toMap(w -> w.getId(), Function.identity()));
-        List<WorkCard> trending = ids.stream().map(found::get)
-                .filter(w -> w != null && w.getHiddenAt() == null).map(WorkCard::from).toList();
+        List<WorkCard> trending = ids.stream().map(found::get).filter(w -> w != null).map(WorkCard::from).toList();
         List<Celebration> celebrations = issues.recent().stream()
-                .filter(e -> e.getWork().getHiddenAt() == null)
-                .map(e -> new Celebration(e.getId(), e.getMetric(), e.getThreshold(), message(e), WorkCard.from(e.getWork()), e.getCreatedAt()))
+                .map(e -> new Celebration(e.getId(), e.getMetric(), e.getThreshold(), message(e.getMetric(), e.getThreshold()), WorkCard.from(e.getWork()), e.getCreatedAt()))
                 .toList();
-        List<WorkCard> fresh = works.findTop12ByVisibilityOrderByPublishedAtDesc(Work.Visibility.PUBLIC).stream()
-                .filter(w -> w.getHiddenAt() == null)
+        List<WorkCard> fresh = works.findTop12ByVisibilityAndHiddenAtIsNullOrderByPublishedAtDesc(Work.Visibility.PUBLIC).stream()
                 .map(WorkCard::from).toList();
         return new IssueBoard(trending, celebrations, fresh);
     }
 
-    private static String message(IssueEvent e) {
-        String n = NumberFormat.getIntegerInstance(Locale.KOREA).format(e.getThreshold());
-        return switch (e.getMetric()) {
+    private static String message(Metric metric, int threshold) {
+        String n = NumberFormat.getIntegerInstance(Locale.KOREA).format(threshold);
+        return switch (metric) {
             case DAILY_LIKES -> "하루 만에 추천 " + n + "개를 받았습니다";
             case TOTAL_LIKES -> "누적 추천 " + n + "개를 달성했습니다";
             case TOTAL_CLONES -> "누적 Clone " + n + "회를 달성했습니다";

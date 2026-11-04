@@ -22,13 +22,21 @@ import {
   PostCard,
   PostCategory,
   PostDetail,
+  NotificationView,
+  PackageReportView,
   Profile,
   PublishBody,
+  ReportAction,
+  ReportReason,
+  ReportStatus,
+  ReportTargetType,
+  ReportView,
   ShareChannel,
   ShareEntry,
   ShareGraph,
   UpdateWorkBody,
   UpstreamCompare,
+  UserSummary,
   Visibility,
   WorkCard,
   WorkChapter,
@@ -221,6 +229,59 @@ export class CommunityApi {
   }
   deleteAccount(password: string): Observable<void> {
     return this.http.post<void>(`${this.base}/me/delete`, { password });
+  }
+
+  // 약관
+  acceptTerms(): Observable<User> {
+    return this.http.put<User>(`${this.base}/me/terms`, null);
+  }
+
+  // 신고·차단·관리
+  report(body: { targetType: ReportTargetType; targetId: number; reason: ReportReason; detail: string | null }): Observable<{ id: number; status: ReportStatus }> {
+    return this.http.post<{ id: number; status: ReportStatus }>(`${this.base}/reports`, body);
+  }
+  block(userId: number, blocked: boolean): Observable<void> {
+    const url = `${this.base}/users/${userId}/block`;
+    return blocked ? this.http.put<void>(url, null) : this.http.delete<void>(url);
+  }
+  blockedUsers(): Observable<UserSummary[]> {
+    return this.http.get<UserSummary[]>(`${this.base}/me/blocks`);
+  }
+  adminReports(status: ReportStatus, page: number): Observable<PageResponse<ReportView>> {
+    return this.http.get<PageResponse<ReportView>>(`${this.base}/admin/reports`, { params: params({ status, page, size: 20 }) });
+  }
+  decideReport(id: number, body: { action: ReportAction; note: string | null }): Observable<ReportView> {
+    return this.http.put<ReportView>(`${this.base}/admin/reports/${id}`, body);
+  }
+
+  // 알림
+  notifications(page: number): Observable<PageResponse<NotificationView>> {
+    return this.http.get<PageResponse<NotificationView>>(`${this.base}/me/notifications`, { params: params({ page, size: 20 }) });
+  }
+  unreadNotifications(): Observable<{ count: number }> {
+    return this.http.get<{ count: number }>(`${this.base}/me/notifications/unread-count`);
+  }
+  readNotification(id: number): Observable<NotificationView> {
+    return this.http.put<NotificationView>(`${this.base}/me/notifications/${id}/read`, null);
+  }
+  readAllNotifications(): Observable<void> {
+    return this.http.put<void>(`${this.base}/me/notifications/read-all`, null);
+  }
+
+  // 패키지 전체 검사
+  packageContinuity(id: number): Observable<PackageReportView | null> {
+    return this.http.get<PackageReportView | null>(`${this.base}/packages/${id}/continuity`);
+  }
+  runPackageContinuity(id: number): Observable<PackageReportView> {
+    return this.http.post<PackageReportView>(`${this.base}/packages/${id}/continuity`, null);
+  }
+
+  // 원본 변경 가져오기
+  pullUpstreamChapter(projectId: number, number: number): Observable<UpstreamCompare> {
+    return this.http.post<UpstreamCompare>(`${this.base}/projects/${projectId}/upstream/chapters/${number}/pull`, null);
+  }
+  acknowledgeUpstream(projectId: number): Observable<UpstreamCompare> {
+    return this.http.put<UpstreamCompare>(`${this.base}/projects/${projectId}/upstream/acknowledge`, null);
   }
 
   // 가이드챗

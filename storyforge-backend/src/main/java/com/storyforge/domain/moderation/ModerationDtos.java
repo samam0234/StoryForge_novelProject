@@ -1,5 +1,6 @@
 package com.storyforge.domain.moderation;
 
+import com.storyforge.domain.community.CommunityDtos.UserSummary;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -10,27 +11,29 @@ public final class ModerationDtos {
     private ModerationDtos() {
     }
 
-    public record ReportRequest(
-            @NotNull ContentReport.TargetType targetType,
-            @NotNull Long targetId,
-            @NotNull ContentReport.Reason reason,
-            @Size(max = 1000) String detail) {
+    public enum Action { HIDE, RESTORE, DISMISS, SUSPEND, UNSUSPEND }
+
+    public record ReportRequest(@NotNull ContentReport.TargetType targetType, @NotNull Long targetId,
+                                @NotNull ContentReport.Reason reason, @Size(max = 500) String detail) {
     }
 
-    public record ReportView(
-            Long id, Long reporterId, String reporterName, ContentReport.TargetType targetType, Long targetId,
-            ContentReport.Reason reason, String detail, ContentReport.Status status, Instant createdAt) {
-
-        public static ReportView from(ContentReport report) {
-            return new ReportView(report.getId(), report.getReporter().getId(), report.getReporter().getDisplayName(),
-                    report.getTargetType(), report.getTargetId(), report.getReason(), report.getDetail(),
-                    report.getStatus(), report.getCreatedAt());
-        }
+    public record ReportReceipt(Long id, ContentReport.Status status) {
     }
 
-    public record BlockRequest(@NotNull Long userId) {
+    /** 관리자가 판단할 때 보는 대상 정보. 링크는 앱 안 경로입니다. */
+    public record TargetView(String title, String excerpt, String link, UserSummary author, boolean hidden,
+                             boolean authorSuspended, boolean exists) {
     }
 
+    public record ReportView(Long id, ContentReport.TargetType targetType, Long targetId, ContentReport.Reason reason,
+                             String detail, ContentReport.Status status, UserSummary reporter, long openReports,
+                             TargetView target, String resolutionNote, Instant createdAt, Instant resolvedAt) {
+    }
+
+    public record DecideRequest(@NotNull Action action, @Size(max = 300) String note) {
+    }
+
+    /** 외부 언어 모델로 원고가 나가는지. notice는 external일 때만 있습니다. */
     public record LlmNotice(String provider, boolean external, String notice) {
     }
 }

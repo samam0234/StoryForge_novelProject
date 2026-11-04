@@ -7,6 +7,7 @@ import com.storyforge.domain.community.PostRepository;
 import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.NotFoundException;
+import com.storyforge.service.auth.AccountPolicy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -14,9 +15,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -29,24 +28,22 @@ public class PostService {
     private final AppUserRepository users;
     private final ActivityService activity;
     private final JdbcTemplate jdbc;
-    private final BlockQuery blocks;
+    private final AccountPolicy policy;
     private final ContentPolicy contentPolicy;
 
     public PostService(PostRepository posts, AppUserRepository users, ActivityService activity, JdbcTemplate jdbc,
-                       BlockQuery blocks, ContentPolicy contentPolicy) {
+                       AccountPolicy policy, ContentPolicy contentPolicy) {
+        this.contentPolicy = contentPolicy;
+        this.policy = policy;
         this.posts = posts;
         this.users = users;
         this.activity = activity;
         this.jdbc = jdbc;
-        this.blocks = blocks;
-        this.contentPolicy = contentPolicy;
     }
 
     public PageResponse<PostCard> list(Post.Category category, String q, int page, int size, Long viewerId) {
         Set<Post.Category> categories = category == null ? EnumSet.allOf(Post.Category.class) : EnumSet.of(category);
-        Collection<Long> excluded = blocks.excludedAuthorIds(viewerId);
-        Page<Post> result = posts.search(categories, WorkService.likePattern(q), excluded.isEmpty(),
-                excluded.isEmpty() ? List.of(-1L) : excluded,
+        Page<Post> result = posts.search(categories, WorkService.likePattern(q), viewerId == null ? -1L : viewerId,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50), Sort.by(Sort.Direction.DESC, "createdAt")));
         return new PageResponse<>(result.stream().map(PostCard::from).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
@@ -57,27 +54,33 @@ public class PostService {
                 .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다: " + postId));
     }
 
-    @Transactional
-    public PostDetail detail(Long postId, Long viewerId) {
+    /** 관리자가 숨긴 글은 작성자와 관리자만 봅니다. */
+    public Post loadVisible(Long postId, Long viewerId) {
         Post post = load(postId);
-        if ((post.getHiddenAt() != null && !post.getAuthor().getId().equals(viewerId))
-                || blocks.separated(viewerId, post.getAuthor().getId())) {
+        if (post.isHidden() && !post.getAuthor().getId().equals(viewerId) && !policy.isAdminId(viewerId)) {
             throw new NotFoundException("게시글을 찾을 수 없습니다: " + postId);
         }
+        return post;
+    }
+
+    @Transactional
+    public PostDetail detail(Long postId, Long viewerId) {
+        Post post = loadVisible(postId, viewerId);
         boolean owned = post.getAuthor().getId().equals(viewerId);
         if (!owned) {
             posts.addView(postId);
         }
         boolean liked = viewerId != null && Boolean.TRUE.equals(jdbc.queryForObject(
                 "SELECT EXISTS (SELECT 1 FROM post_like WHERE post_id = ? AND user_id = ?)", Boolean.class, postId, viewerId));
-        return new PostDetail(PostCard.from(post), post.getContent(), owned, liked, post.getUpdatedAt());
+        return new PostDetail(PostCard.from(post), post.getContent(), owned, liked, post.isHidden(), post.getUpdatedAt());
     }
 
     @Transactional
     public PostCard create(PostRequest request, Long userId) {
+        policy.requireTerms(userId);
+        contentPolicy.check(request.title(), request.content());
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
-        contentPolicy.check(request.title(), request.content());
         Post post = posts.save(new Post(author, request.category(), request.title().strip(), request.content().strip()));
         activity.recordPost(userId, post, ActivityType.POST_WRITTEN, "라운지에 글 작성");
         return PostCard.from(post);
@@ -85,8 +88,8 @@ public class PostService {
 
     @Transactional
     public PostCard update(Long postId, PostRequest request, Long userId) {
-        Post post = loadOwned(postId, userId);
         contentPolicy.check(request.title(), request.content());
+        Post post = loadOwned(postId, userId);
         post.update(request.category(), request.title().strip(), request.content().strip());
         return PostCard.from(post);
     }

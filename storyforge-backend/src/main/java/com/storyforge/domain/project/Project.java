@@ -92,6 +92,12 @@ public class Project {
         return p;
     }
 
+    /** 원본의 이 리비전까지 확인했다고 표시합니다. */
+    public void acknowledgeUpstream(int revision) {
+        this.clonedFromRevision = revision;
+        touch();
+    }
+
     /** 상태 변경은 PipelineStateMachine을 통해서만 호출합니다. */
     public void changeStatus(ProjectStatus status) {
         this.status = status;
