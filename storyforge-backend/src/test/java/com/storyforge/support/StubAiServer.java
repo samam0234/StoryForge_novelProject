@@ -28,6 +28,8 @@ public class StubAiServer {
     private volatile boolean failReview = false;
     /** 받은 재검증 요청 본문 */
     public final List<String> reviewRequests = new CopyOnWriteArrayList<>();
+    /** 받은 패키지 검사 요청 본문 */
+    public final List<String> packageRequests = new CopyOnWriteArrayList<>();
     private final AtomicInteger syncCalls = new AtomicInteger();
     /** 받은 챕터 요청 본문 (컨텍스트 주입 검증용) */
     public final List<String> chapterRequests = new CopyOnWriteArrayList<>();
@@ -58,6 +60,7 @@ public class StubAiServer {
                   {"name":"한서윤","description":"설명","personality":"성격","relationships":"관계"}]}"""));
         server.createContext("/internal/generate/outline", this::outline);
         server.createContext("/internal/generate/review", this::review);
+        server.createContext("/internal/package/continuity", this::packageContinuity);
         server.createContext("/internal/guide/chat", ex -> respondSync(ex, """
                 {"reply":"안내입니다.","actions":[{"label":"Codicomperchat으로 이동","kind":"collab","target":"codicomperchat"},
                   {"label":"이슈 보기","kind":"route","target":"/issues"}]}"""));
@@ -78,6 +81,7 @@ public class StubAiServer {
         reviewFindsHighIssue = false;
         failReview = false;
         reviewRequests.clear();
+        packageRequests.clear();
     }
 
     public void reviewFindsHighIssue(boolean value) {
@@ -86,6 +90,17 @@ public class StubAiServer {
 
     public void failReview(boolean value) {
         this.failReview = value;
+    }
+
+    private void packageContinuity(HttpExchange ex) throws IOException {
+        packageRequests.add(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+        byte[] bytes = """
+                {"issues":[{"type":"character_consistency","description":"인물 설명이 다릅니다","severity":"medium","workTitles":["가","나"]}],"score":88}"""
+                .getBytes(StandardCharsets.UTF_8);
+        ex.getResponseHeaders().set("Content-Type", "application/json");
+        ex.sendResponseHeaders(200, bytes.length);
+        ex.getResponseBody().write(bytes);
+        ex.close();
     }
 
     private void review(HttpExchange ex) throws IOException {

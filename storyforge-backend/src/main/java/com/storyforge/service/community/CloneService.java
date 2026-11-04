@@ -198,6 +198,47 @@ public class CloneService {
                 upstream.getRevision(), true, rows);
     }
 
+    /** 원본 최신 게시본의 한 챕터를 내 Draft로 가져옵니다. 전체 원고 Clone이 검토 단계일 때만 됩니다. */
+    @Transactional
+    public UpstreamCompare pullChapter(Long projectId, int number, Long userId) {
+        Project project = projectService.load(projectId);
+        if (!WorkClone.Mode.FULL.name().equals(project.getCloneMode())) {
+            throw new InvalidStateException("전체 원고 Clone만 원본 챕터를 가져올 수 있습니다.");
+        }
+        if (project.getStatus() != ProjectStatus.CHAPTER_REVIEW) {
+            throw new InvalidStateException("챕터 검토 단계에서만 가져올 수 있습니다.");
+        }
+        Work upstream = readableUpstream(project, userId);
+        boolean owned = upstream.getAuthor().getId().equals(userId);
+        if (!WorkService.cloneModes(upstream, owned).contains(WorkClone.Mode.FULL)) {
+            throw new InvalidStateException("작가가 전체 원고 Clone을 허용하지 않아 가져올 수 없습니다.");
+        }
+        WorkChapter theirs = workChapters.findByWorkIdAndNumber(upstream.getId(), number)
+                .orElseThrow(() -> new NotFoundException("원본에 없는 챕터입니다: " + number));
+        if (number > outlines.get(projectId).getChapters().size()) {
+            throw new InvalidStateException("내 Outline에 없는 챕터입니다: " + number);
+        }
+        chapterService.pullFromUpstream(project, number, theirs.getTitle(), theirs.getContent(), theirs.getSummary(), upstream.getId());
+        return compare(projectId, userId);
+    }
+
+    /** 원본의 현재 리비전까지 확인했다고 표시합니다. 내 원고는 바꾸지 않습니다. */
+    @Transactional
+    public UpstreamCompare acknowledge(Long projectId, Long userId) {
+        Project project = projectService.load(projectId);
+        project.acknowledgeUpstream(readableUpstream(project, userId).getRevision());
+        return compare(projectId, userId);
+    }
+
+    private Work readableUpstream(Project project, Long userId) {
+        if (project.getClonedFromRevision() == null || project.getClonedFromWorkId() == null) {
+            throw new InvalidStateException("원본이 없어 할 수 없습니다.");
+        }
+        return works.findWithAuthor(project.getClonedFromWorkId())
+                .filter(w -> (w.getVisibility() != Work.Visibility.PRIVATE && !w.isHidden()) || w.getAuthor().getId().equals(userId))
+                .orElseThrow(() -> new InvalidStateException("원본이 비공개로 바뀌어 할 수 없습니다."));
+    }
+
     private static Set<Integer> union(Set<Integer> a, Set<Integer> b) {
         Set<Integer> all = new HashSet<>(a);
         all.addAll(b);

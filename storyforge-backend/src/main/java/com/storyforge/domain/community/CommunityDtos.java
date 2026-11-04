@@ -207,6 +207,9 @@ public final class CommunityDtos {
                                  @Size(max = 200) String label) {
     }
 
+    public record PackageReportView(List<PackageReport.Issue> issues, int score, List<String> skippedTitles, Instant createdAt) {
+    }
+
     public record PackageRequest(Long itemId, Long packageId, String packageTitle, UserSummary requester, WorkCard work,
                                  Instant createdAt) {
     }

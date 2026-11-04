@@ -135,6 +135,46 @@ class ChapterReviewResult(Schema):
     report: ContinuityResult
 
 
+# ── POST /internal/package/continuity ──
+class PackageWorkInfo(Schema):
+    title: str
+    role: str | None = None
+    bible: BibleInfo
+    chapters: list[PreviousChapter] = Field(default_factory=list)
+
+
+class PackageLinkInfo(Schema):
+    from_title: str
+    to_title: str
+    type: str
+    label: str | None = None
+
+
+class PackageContinuityRequest(Schema):
+    title: str
+    world_note: str | None = None
+    works: list[PackageWorkInfo]
+    links: list[PackageLinkInfo] = Field(default_factory=list)
+
+
+class PackageIssue(Schema):
+    type: IssueType
+    description: str
+    severity: Severity
+    work_titles: list[str] = Field(default_factory=list)
+
+
+class PackageIssues(Schema):
+    """LLM 검증 응답 형식"""
+
+    issues: list[PackageIssue]
+
+
+class PackageContinuityResult(Schema):
+    issues: list[PackageIssue]
+    score: int = Field(ge=0, le=100)
+
+
 # ── POST /internal/guide/chat ──
 class GuideContext(Schema):
     """가이드챗이 참고할 사용자 상황. Spring Boot가 채웁니다."""

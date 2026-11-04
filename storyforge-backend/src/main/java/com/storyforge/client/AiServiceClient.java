@@ -50,6 +50,10 @@ public class AiServiceClient {
         return post("/internal/generate/review", request, ChapterReviewResult.class);
     }
 
+    public PackageContinuityResult checkPackage(PackageContinuityRequest request) {
+        return post("/internal/package/continuity", request, PackageContinuityResult.class);
+    }
+
     public GuideChatResponse guideChat(GuideChatRequest request) {
         return post("/internal/guide/chat", request, GuideChatResponse.class);
     }
