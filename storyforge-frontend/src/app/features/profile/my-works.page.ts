@@ -71,7 +71,12 @@ import { KIND_LABEL, PackageRequest, VISIBILITY_OPTIONS, Visibility, WorkCard, l
             <tbody>
               @for (w of works(); track w.id) {
                 <tr>
-                  <td class="title"><a [routerLink]="['/works', w.id]">{{ w.title }}</a></td>
+                  <td class="title">
+                    <a [routerLink]="['/works', w.id]">{{ w.title }}</a>
+                    @if (w.hidden) {
+                      <span class="hidden-tag">관리자 숨김</span>
+                    }
+                  </td>
                   <td>{{ kinds[w.kind] }}</td>
                   <td>{{ visibilityLabel(w.visibility) }}</td>
                   <td>r{{ w.revision }}</td>
@@ -126,6 +131,11 @@ import { KIND_LABEL, PackageRequest, VISIBILITY_OPTIONS, Visibility, WorkCard, l
       font-weight: 600;
       text-decoration: none;
       color: var(--sf-emphasis);
+    }
+    .hidden-tag {
+      margin-left: 6px;
+      font-size: 12px;
+      color: var(--sf-severity-high);
     }
     .num {
       text-align: right;

@@ -57,6 +57,10 @@ export interface User {
   bio?: string | null;
   website?: string | null;
   avatarColor?: string | null;
+  /** 관리자 (ADMIN_EMAILS 설정) */
+  admin?: boolean;
+  /** 현재 버전의 이용약관에 동의했는지 */
+  termsAccepted?: boolean;
 }
 
 export interface AuthResponse {

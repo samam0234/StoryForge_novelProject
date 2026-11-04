@@ -2,6 +2,7 @@ import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -13,6 +14,7 @@ import { errorMessage } from '../../core/api/storyforge-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { CommentView } from '../../core/models/community';
 import { UserChipComponent } from '../../shared/components/user-chip/user-chip.component';
+import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
 
 /** 작품·게시글 공용 댓글. 내용은 글자로만 보여 줍니다 (HTML로 넣지 않음). */
 @Component({
@@ -72,6 +74,9 @@ import { UserChipComponent } from '../../shared/components/user-chip/user-chip.c
         @if (c.canDelete) {
           <button mat-button (click)="remove(c)">삭제</button>
         }
+        @if (auth.isLoggedIn() && !c.hidden && auth.user()?.id !== c.author.id) {
+          <button mat-button (click)="reportComment(c)">신고</button>
+        }
       </div>
       @if (editing() === c.id) {
         <div class="write">
@@ -82,7 +87,7 @@ import { UserChipComponent } from '../../shared/components/user-chip/user-chip.c
           <button mat-stroked-button [disabled]="busy() || !editDraft.trim()" (click)="saveEdit(c)">저장</button>
         </div>
       } @else {
-        <p class="content">{{ c.content }}</p>
+        <p class="content" [class.masked]="c.hidden">{{ c.content }}</p>
       }
     </ng-template>
   `,
@@ -120,6 +125,10 @@ import { UserChipComponent } from '../../shared/components/user-chip/user-chip.c
     .when {
       font-size: 12px;
     }
+    .masked {
+      color: var(--sf-text-muted);
+      font-style: italic;
+    }
     .content {
       margin: 4px 0 0;
       white-space: pre-wrap;
@@ -130,6 +139,7 @@ import { UserChipComponent } from '../../shared/components/user-chip/user-chip.c
 export class CommentThreadComponent {
   private readonly api = inject(CommunityApi);
   private readonly snack = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
   protected readonly auth = inject(AuthService);
 
   /** 둘 중 하나를 넘깁니다. */
@@ -184,6 +194,11 @@ export class CommentThreadComponent {
       this.comments.update((list) => list.map((x) => (x.id === c.id ? updated : x)));
       this.editing.set(null);
     });
+  }
+
+  protected reportComment(c: CommentView): void {
+    const data: ReportDialogData = { targetType: 'COMMENT', targetId: c.id, label: `${c.author.displayName}님의 댓글` };
+    this.dialog.open(ReportDialog, { data, maxWidth: '95vw' });
   }
 
   protected remove(c: CommentView): void {
