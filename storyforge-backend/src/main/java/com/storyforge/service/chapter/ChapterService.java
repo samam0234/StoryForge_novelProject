@@ -77,6 +77,7 @@ public class ChapterService {
     public void importDraft(Project project, int number, String title, String content, String summary, Long sourceWorkId) {
         Chapter chapter = new Chapter(project, number);
         chapter.applyDraft(title, content, summary, Map.of("clonedFromWorkId", sourceWorkId));
+        chapter.markNeedsReview();
         saveVersion(chapters.save(chapter), ChapterVersion.Source.CLONED);
     }
 
@@ -88,6 +89,9 @@ public class ChapterService {
         }
         boolean changed = !Objects.equals(chapter.getTitle(), title) || !Objects.equals(chapter.getContent(), content);
         int changedChars = ActivityService.changedChars(chapter.getContent(), content);
+        if (changedChars > 0) {
+            chapter.markNeedsReview();
+        }
         chapter.edit(title, content);
         if (changed) {
             saveVersion(chapter, ChapterVersion.Source.EDITED);
@@ -95,6 +99,14 @@ public class ChapterService {
                     chapter.getNumber() + "장 직접 수정", changedChars);
         }
         return toResponse(chapter);
+    }
+
+    /** 재검증 결과를 저장합니다. 요약을 바꾸고 새 리포트를 남깁니다. */
+    @Transactional
+    public void applyReview(Long chapterId, String summary, List<ContinuityIssue> issues, int score) {
+        Chapter chapter = load(chapterId);
+        chapter.applyReview(summary);
+        reports.save(new ContinuityReport(chapter, issues, score));
     }
 
     /** 생성·수정 이력 (기획서 §6.4), 최신순 */

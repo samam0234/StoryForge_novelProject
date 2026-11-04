@@ -121,6 +121,20 @@ class ChapterGenerateResult(Schema):
     report: ContinuityResult
 
 
+# ── POST /internal/generate/review ──
+class ChapterReviewRequest(Schema):
+    """사람이 고친 원고의 재요약·재검증"""
+
+    context: ChapterContext
+    title: str | None = None
+    content: str
+
+
+class ChapterReviewResult(Schema):
+    summary: str
+    report: ContinuityResult
+
+
 # ── POST /internal/guide/chat ──
 class GuideContext(Schema):
     """가이드챗이 참고할 사용자 상황. Spring Boot가 채웁니다."""

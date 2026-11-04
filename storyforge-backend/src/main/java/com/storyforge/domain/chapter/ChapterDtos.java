@@ -19,12 +19,12 @@ public final class ChapterDtos {
     public record ChapterResponse(
             Long id, Long projectId, int number, String title, String content,
             ChapterStatus status, String summary, Map<String, Object> generationContext,
-            Instant createdAt, ContinuityReportDto continuityReport) {
+            Instant createdAt, ContinuityReportDto continuityReport, boolean needsReview) {
 
         public static ChapterResponse from(Chapter c, ContinuityReport report) {
             return new ChapterResponse(c.getId(), c.getProject().getId(), c.getNumber(), c.getTitle(),
                     c.getContent(), c.getStatus(), c.getSummary(), c.getGenerationContext(),
-                    c.getCreatedAt(), ContinuityReportDto.from(report));
+                    c.getCreatedAt(), ContinuityReportDto.from(report), c.isNeedsReview());
         }
     }
 

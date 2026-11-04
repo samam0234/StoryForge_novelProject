@@ -51,6 +51,13 @@ public final class AiDtos {
     public record ContinuityResult(List<ContinuityIssue> issues, int score) {
     }
 
+    // POST /internal/generate/review
+    public record ChapterReviewRequest(ChapterContext context, String title, String content) {
+    }
+
+    public record ChapterReviewResult(String summary, ContinuityResult report) {
+    }
+
     // POST /internal/guide/chat
     public record GuideContext(String displayName, int projectCount, long publishedWorks, Long projectId,
                                String projectTitle, String projectStatus, Integer nextChapter) {

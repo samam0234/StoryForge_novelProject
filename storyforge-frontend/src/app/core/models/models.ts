@@ -158,6 +158,8 @@ export interface Chapter {
   generationContext: Record<string, unknown> | null;
   createdAt: string;
   continuityReport: ContinuityReport | null;
+  /** 생성 뒤 고쳤거나 Clone한 원고. 승인할 때 다시 요약·검증합니다. */
+  needsReview: boolean;
 }
 
 export interface ChapterVersion {
