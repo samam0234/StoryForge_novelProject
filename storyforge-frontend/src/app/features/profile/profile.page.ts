@@ -7,7 +7,9 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { CommunityApi } from '../../core/api/community-api.service';
+import { ModerationApi } from '../../core/api/moderation-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { Achievement, ActivityEntry, Contributions, Profile, WorkCard } from '../../core/models/community';
 import { ContributionHeatmapComponent } from '../../shared/components/contribution-heatmap/contribution-heatmap.component';
@@ -52,6 +54,8 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
           </div>
           @if (p.self) {
             <a mat-stroked-button routerLink="/me/settings"><mat-icon>settings</mat-icon> 계정 설정</a>
+          } @else if (auth.isLoggedIn()) {
+            <button mat-stroked-button type="button" (click)="toggleBlock(p)">{{ p.blocked ? '차단 해제' : '차단' }}</button>
           }
         </header>
         <div class="stats">
@@ -311,6 +315,8 @@ import { WorkCardComponent } from '../../shared/components/work-card/work-card.c
 })
 export class ProfilePage {
   private readonly api = inject(CommunityApi);
+  private readonly moderation = inject(ModerationApi);
+  protected readonly auth = inject(AuthService);
   readonly userId = input.required<string>();
 
   protected readonly profile = signal<Profile | null>(null);
@@ -325,6 +331,14 @@ export class ProfilePage {
 
   protected readonly initial = computed(() => Array.from(this.profile()?.user.displayName ?? '?')[0]);
   protected readonly earnedCount = computed(() => this.achievements().filter((a) => a.earnedAt).length);
+
+  protected toggleBlock(p: Profile): void {
+    const request = p.blocked ? this.moderation.unblock(p.user.id) : this.moderation.block(p.user.id);
+    request.subscribe({
+      next: () => this.profile.set({ ...p, blocked: !p.blocked }),
+      error: (e) => this.error.set(errorMessage(e)),
+    });
+  }
 
   constructor() {
     effect(() => {

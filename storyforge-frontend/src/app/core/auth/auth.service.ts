@@ -24,6 +24,12 @@ export class AuthService {
   readonly user = computed(() => this.session()?.user ?? null);
   readonly isLoggedIn = computed(() => this.session() !== null);
 
+  constructor() {
+    if (this.token()) {
+      this.refreshUser().subscribe({ error: () => undefined });
+    }
+  }
+
   /** 만료된 토큰은 돌려주지 않습니다. */
   token(): string | null {
     const s = this.session();
@@ -39,7 +45,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.base}/login`, body).pipe(tap((r) => this.store(r)));
   }
 
-  register(body: { email: string; password: string; displayName: string }): Observable<AuthResponse> {
+  register(body: { email: string; password: string; displayName: string; termsAccepted: boolean }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.base}/register`, body).pipe(tap((r) => this.store(r)));
   }
 

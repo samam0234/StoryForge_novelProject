@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
 import { Outline, OutlineChapter } from '../../core/models/models';
 import { ProjectContext } from '../projects/project-context';
+import { LlmNoticeComponent } from '../guide/llm-notice.component';
 
 /** 편집용 뷰 모델: 목록 필드는 줄/쉼표 단위 텍스트로 다룹니다. */
 interface ChapterDraft {
@@ -39,9 +40,11 @@ const lines = (s: string) => s.split('\n').map((x) => x.trim()).filter(Boolean);
     MatIconModule,
     MatInputModule,
     MatProgressBarModule,
+    LlmNoticeComponent,
   ],
   template: `
     <div class="sf-page">
+      <sf-llm-notice />
       @if (busy()) {
         <mat-progress-bar mode="indeterminate" class="busy" />
       }

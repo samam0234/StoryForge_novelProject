@@ -57,6 +57,7 @@ export interface User {
   bio?: string | null;
   website?: string | null;
   avatarColor?: string | null;
+  role?: 'USER' | 'ADMIN';
 }
 
 export interface AuthResponse {

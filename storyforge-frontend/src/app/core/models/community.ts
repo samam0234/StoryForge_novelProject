@@ -328,6 +328,7 @@ export interface Profile {
   website: string | null;
   joinedAt: string;
   self: boolean;
+  blocked: boolean;
   stats: { works: number; likesReceived: number; clonesReceived: number; posts: number; comments: number; achievements: number };
 }
 

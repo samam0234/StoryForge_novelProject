@@ -37,6 +37,7 @@ import { WorkGraphComponent } from '../../shared/components/work-graph/work-grap
 import { CloneDialog, CloneDialogData } from './clone.dialog';
 import { CommentThreadComponent } from './comment-thread.component';
 import { ShareDialog, ShareDialogData } from './share.dialog';
+import { ReportButtonComponent } from '../moderation/report-button.component';
 
 const SHARE_TAB = 3;
 
@@ -61,6 +62,7 @@ const SHARE_TAB = 3;
     UserChipComponent,
     WorkCardComponent,
     WorkGraphComponent,
+    ReportButtonComponent,
   ],
   template: `
     @if (error()) {
@@ -136,7 +138,9 @@ const SHARE_TAB = 3;
                 <button mat-menu-item (click)="export(f.value)">{{ f.label }}</button>
               }
             </mat-menu>
-            @if (d.owned) {
+            @if (!d.owned) {
+              <sf-report-button targetType="WORK" [targetId]="d.card.id" />
+            } @else {
               <span class="sf-spacer"></span>
               @if (d.card.kind === 'PACKAGE') {
                 <a mat-stroked-button [routerLink]="['/package-forge', d.card.id]"><mat-icon>hub</mat-icon> 패키지 편집</a>

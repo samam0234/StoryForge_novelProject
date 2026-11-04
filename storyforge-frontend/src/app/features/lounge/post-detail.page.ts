@@ -12,12 +12,13 @@ import { AuthService } from '../../core/auth/auth.service';
 import { POST_CATEGORIES, PostCategory, PostDetail, labelOf } from '../../core/models/community';
 import { UserChipComponent } from '../../shared/components/user-chip/user-chip.component';
 import { CommentThreadComponent } from '../board/comment-thread.component';
+import { ReportButtonComponent } from '../moderation/report-button.component';
 import { PostEditDialog } from './post-edit.dialog';
 
 /** 라운지 게시글 읽기 */
 @Component({
   selector: 'sf-post-detail-page',
-  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, UserChipComponent, CommentThreadComponent],
+  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, UserChipComponent, CommentThreadComponent, ReportButtonComponent],
   template: `
     <div class="sf-page narrow">
       @if (error()) {
@@ -45,6 +46,9 @@ import { PostEditDialog } from './post-edit.dialog';
               <span class="sf-spacer"></span>
               <button mat-button (click)="edit()">수정</button>
               <button mat-button (click)="remove()">삭제</button>
+            }
+            @if (!p.owned) {
+              <sf-report-button targetType="POST" [targetId]="p.card.id" />
             }
           </div>
         </article>
