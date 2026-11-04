@@ -27,13 +27,13 @@ public class Comment {
     @Column(nullable = false, columnDefinition = "text")
     private String content;
 
+    private Instant hiddenAt;
+
     @Column(nullable = false)
     private Instant createdAt;
 
     @Column(nullable = false)
     private Instant updatedAt;
-
-    private Instant hiddenAt;
 
     protected Comment() {
     }
@@ -53,8 +53,12 @@ public class Comment {
         this.updatedAt = Instant.now();
     }
 
-    public void hide() {
-        this.hiddenAt = Instant.now();
+    public void setHidden(boolean hidden) {
+        this.hiddenAt = hidden ? Instant.now() : null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
     }
 
     public Long getId() { return id; }
@@ -65,5 +69,4 @@ public class Comment {
     public String getContent() { return content; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
-    public Instant getHiddenAt() { return hiddenAt; }
 }

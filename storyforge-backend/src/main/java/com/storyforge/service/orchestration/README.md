@@ -16,6 +16,7 @@
 - 생성 요청 전 상태 확인 (예: 챕터 생성 시 BIBLE_CONFIRMED, OUTLINE_CONFIRMED 여부, §7.2)
 - 컨텍스트 패키지 조립: Bible 항목 + Outline + 이전 챕터 요약 + 캐릭터 상태 → `client/`로 FastAPI 호출
 - 생성 결과 Draft 저장, 사용자 승인 후 Confirmed 전환
+- 고친 원고(`needsReview`)는 승인 전에 재요약·재검증. 심각한 이슈면 저장 후 409로 한 번 멈추고, AI 실패면 승인하지 않음. 프로젝트 상태 전이는 바꾸지 않음
 
 ## 들어가지 않을 것
 

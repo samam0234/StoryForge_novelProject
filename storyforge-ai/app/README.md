@@ -17,7 +17,9 @@ services → prompts (템플릿)
 | `main.py` | FastAPI 앱, 라우터 등록, `/health`, `LLMError` → 502 |
 | `api/v1/__init__.py` | `/internal/generate` prefix로 라우터 묶음 |
 | `api/v1/bible.py`, `outline.py` | `POST /internal/generate/bible`, `/outline` |
-| `api/v1/chapter.py` | `POST /internal/generate/chapter` — SSE (`token` → `done` 또는 `error`) |
+| `api/v1/chapter.py` | `POST /internal/generate/chapter` — SSE (`token` → `done` 또는 `error`), `POST /internal/generate/review` — 재요약·재검증 |
+| `api/v1/package.py` | `POST /internal/package/continuity` — 패키지 작품 사이의 검사 |
+| `api/v1/guide.py` | `POST /internal/guide/chat` — AI 가이드챗 |
 | `core/config.py` | 환경 변수 설정 (`LLM_PROVIDER`, `LLM_MODEL`, `LLM_EFFORT` 등) |
 | `core/llm.py` | LLM 추상화. `MockLLM`, `AnthropicLLM`(refusal fallback, 프로젝트별 모델, 거절·잘림 감지) |
 | `models/schemas.py` | Pydantic 스키마. JSON은 camelCase이며 백엔드 `AiDtos.java`와 짝 |

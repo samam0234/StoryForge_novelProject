@@ -11,6 +11,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { map } from 'rxjs';
 import { AuthService } from '../core/auth/auth.service';
 import { GuideChatComponent } from '../features/guide/guide-chat.component';
+import { NotificationBellComponent } from './notification-bell.component';
 import { ThemeService } from './theme.service';
 
 /** 헤더 + 사이드 내비게이션 + 본문 (기획서 §9.5 대시보드 목업). 게시판은 로그인 없이 볼 수 있습니다. */
@@ -27,6 +28,7 @@ import { ThemeService } from './theme.service';
     MatButtonModule,
     MatTooltipModule,
     GuideChatComponent,
+    NotificationBellComponent,
   ],
   template: `
     <mat-toolbar class="topbar">
@@ -40,6 +42,7 @@ import { ThemeService } from './theme.service';
       <span class="sf-spacer"></span>
       @if (auth.user(); as u) {
         <a class="user" [routerLink]="['/users', u.id]" [matTooltip]="u.email">{{ u.displayName }}</a>
+        <sf-notification-bell />
         <button
           mat-icon-button
           (click)="guideOpen.set(!guideOpen())"
@@ -67,6 +70,14 @@ import { ThemeService } from './theme.service';
       }
     </mat-toolbar>
 
+    @if (auth.user(); as u) {
+      @if (u.termsAccepted === false) {
+        <div class="terms-banner" role="status">
+          이용약관이 바뀌었습니다. 동의해야 새 글을 게시할 수 있습니다.
+          <a routerLink="/terms">약관 보기</a>
+        </div>
+      }
+    }
     <div class="body">
     <mat-sidenav-container class="container">
       <mat-sidenav [mode]="narrow() ? 'over' : 'side'" [opened]="navVisible()" (closedStart)="navOpen.set(false)" class="sidenav">
@@ -96,17 +107,14 @@ import { ThemeService } from './theme.service';
               <mat-icon matListItemIcon>settings</mat-icon>
               <span matListItemTitle>계정 설정</span>
             </a>
-            @if (u.role === 'ADMIN') {
-              <a mat-list-item routerLink="/admin/reports" routerLinkActive="active" (click)="closeIfNarrow()">
+            @if (u.admin) {
+              <h2 class="nav-title">관리</h2>
+              <a mat-list-item routerLink="/admin" routerLinkActive="active" (click)="closeIfNarrow()">
                 <mat-icon matListItemIcon>gavel</mat-icon>
-                <span matListItemTitle>신고 처리</span>
+                <span matListItemTitle>신고 관리</span>
               </a>
             }
           }
-          <a mat-list-item routerLink="/terms" routerLinkActive="active" (click)="closeIfNarrow()">
-            <mat-icon matListItemIcon>policy</mat-icon>
-            <span matListItemTitle>이용약관</span>
-          </a>
         </mat-nav-list>
       </mat-sidenav>
       <mat-sidenav-content>
@@ -131,6 +139,12 @@ import { ThemeService } from './theme.service';
       border-bottom: 1px solid var(--sf-border);
       background: var(--sf-surface);
     }
+    .terms-banner {
+      padding: 8px 16px;
+      font-size: 14px;
+      background: color-mix(in srgb, var(--sf-accent) 22%, var(--sf-surface));
+      border-bottom: 1px solid var(--sf-border);
+    }
     .brand {
       display: flex;
       align-items: center;
@@ -147,6 +161,11 @@ import { ThemeService } from './theme.service';
     }
     .user:hover {
       text-decoration: underline;
+    }
+    @media (max-width: 600px) {
+      .user {
+        display: none;
+      }
     }
     .body {
       position: relative;
@@ -208,6 +227,11 @@ export class ShellComponent {
   protected readonly navOpen = signal(false);
   protected readonly navVisible = computed(() => !this.narrow() || this.navOpen());
   protected readonly guideOpen = signal(false);
+
+  constructor() {
+    // 세션에 저장한 내 정보가 오래됐을 수 있습니다 (약관 동의, 관리자 여부).
+    if (this.auth.token()) this.auth.refreshUser().subscribe({ error: () => undefined });
+  }
 
   protected closeIfNarrow(): void {
     if (this.narrow()) this.navOpen.set(false);

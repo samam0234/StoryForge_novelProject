@@ -55,18 +55,21 @@ public class RateLimitFilter extends OncePerRequestFilter {
             if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/register")) {
                 key = "auth:" + ClientAddresses.resolve(request, trustedProxies);
                 limit = properties.authPerMinute();
-            } else if (path.startsWith("/api/v1/") && (path.endsWith("/generate") || path.equals("/api/v1/guide/chat"))) {
+            } else if (path.startsWith("/api/v1/") && (path.endsWith("/generate") || path.endsWith("/continuity") || path.equals("/api/v1/guide/chat"))) {
                 key = "generate:" + principal(request);
                 limit = properties.generatePerMinute();
             } else if (path.matches("/api/v1/shares/[^/]+/visit")) {
                 key = "visit:" + ClientAddresses.resolve(request, trustedProxies);
                 limit = properties.communityPerMinute();
-            } else if (path.equals("/api/v1/posts") || path.equals("/api/v1/reports") || path.equals("/api/v1/blocks")
+            } else if (path.equals("/api/v1/posts") || path.equals("/api/v1/reports")
                     || path.matches("/api/v1/(works|posts)/[^/]+/comments")
                     || path.matches("/api/v1/works/[^/]+/(shares|clone)")) {
                 key = "community:" + principal(request);
                 limit = properties.communityPerMinute();
             }
+        } else if ("PUT".equals(request.getMethod()) && path.matches("/api/v1/users/[^/]+/block")) {
+            key = "community:" + principal(request);
+            limit = properties.communityPerMinute();
         }
         if (key != null && !tryAcquire(key, limit)) {
             reject(response);

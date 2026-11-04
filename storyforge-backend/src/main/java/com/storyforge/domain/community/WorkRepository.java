@@ -17,35 +17,34 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
 
     @Query(value = """
             select w from Work w join fetch w.author
-            where w.hiddenAt is null
-              and w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
+            where w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
               and w.kind = :kind
+              and w.hiddenAt is null
+              and w.author.id not in (select b.blockedId from com.storyforge.domain.moderation.UserBlock b where b.blockerId = :viewer)
               and (:genre = '' or w.genre = :genre)
               and (:like = '' or lower(w.title) like :like escape '\\'
                    or lower(coalesce(w.synopsis, '')) like :like escape '\\'
                    or lower(coalesce(w.tags, '')) like :like escape '\\')
-              and (:blockedEmpty = true or w.author.id not in :blocked)
             """,
             countQuery = """
             select count(w) from Work w
-            where w.hiddenAt is null
-              and w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
+            where w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
               and w.kind = :kind
+              and w.hiddenAt is null
+              and w.author.id not in (select b.blockedId from com.storyforge.domain.moderation.UserBlock b where b.blockerId = :viewer)
               and (:genre = '' or w.genre = :genre)
               and (:like = '' or lower(w.title) like :like escape '\\'
                    or lower(coalesce(w.synopsis, '')) like :like escape '\\'
                    or lower(coalesce(w.tags, '')) like :like escape '\\')
-              and (:blockedEmpty = true or w.author.id not in :blocked)
             """)
     Page<Work> board(@Param("kind") Work.Kind kind, @Param("genre") String genre, @Param("like") String like,
-                     @Param("blockedEmpty") boolean blockedEmpty, @Param("blocked") Collection<Long> blocked,
-                     Pageable pageable);
+                     @Param("viewer") Long viewer, Pageable pageable);
 
     @EntityGraph(attributePaths = "author")
     List<Work> findByAuthorIdOrderByUpdatedAtDesc(Long authorId);
 
     @EntityGraph(attributePaths = "author")
-    List<Work> findByAuthorIdAndVisibilityOrderByPublishedAtDesc(Long authorId, Work.Visibility visibility);
+    List<Work> findByAuthorIdAndVisibilityAndHiddenAtIsNullOrderByPublishedAtDesc(Long authorId, Work.Visibility visibility);
 
     @EntityGraph(attributePaths = "author")
     @Query("select w from Work w where w.id = :id")
@@ -64,7 +63,7 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
     Optional<Long> findIdByProjectId(@Param("projectId") Long projectId);
 
     @EntityGraph(attributePaths = "author")
-    List<Work> findTop12ByVisibilityOrderByPublishedAtDesc(Work.Visibility visibility);
+    List<Work> findTop12ByVisibilityAndHiddenAtIsNullOrderByPublishedAtDesc(Work.Visibility visibility);
 
     @Query("select coalesce(sum(w.likeCount), 0) from Work w where w.author.id = :authorId")
     long sumLikes(@Param("authorId") Long authorId);
@@ -74,7 +73,7 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
 
     long countByAuthorIdAndKind(Long authorId, Work.Kind kind);
 
-    long countByAuthorIdAndVisibility(Long authorId, Work.Visibility visibility);
+    long countByAuthorIdAndVisibilityAndHiddenAtIsNull(Long authorId, Work.Visibility visibility);
 
     @Modifying
     @Query("update Work w set w.likeCount = w.likeCount + :delta where w.id = :id")
@@ -117,6 +116,7 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
                      LEFT JOIN (SELECT work_id, count(*) c FROM work_clone WHERE created_at > :since GROUP BY work_id) k ON k.work_id = w.id
                      LEFT JOIN (SELECT work_id, count(*) c FROM work_share WHERE created_at > :since GROUP BY work_id) s ON s.work_id = w.id
             WHERE w.visibility = 'PUBLIC'
+              AND w.hidden_at IS NULL
               AND COALESCE(l.c, 0) + COALESCE(m.c, 0) + COALESCE(k.c, 0) + COALESCE(s.c, 0) > 0
             ORDER BY COALESCE(l.c, 0) * 3 + COALESCE(m.c, 0) * 2 + COALESCE(k.c, 0) * 5 + COALESCE(s.c, 0) * 2 DESC, w.published_at DESC
             LIMIT 12

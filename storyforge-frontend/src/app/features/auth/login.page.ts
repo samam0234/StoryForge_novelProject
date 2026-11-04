@@ -13,7 +13,7 @@ import { AuthService } from '../../core/auth/auth.service';
 /** 로그인 / 회원가입 (docs/plan/auth.md) */
 @Component({
   selector: 'sf-login-page',
-  imports: [FormsModule, RouterLink, MatButtonModule, MatCardModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [FormsModule, RouterLink, MatCheckboxModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule],
   template: `
     <div class="wrap">
       <mat-card appearance="outlined" class="card">
@@ -49,10 +49,9 @@ import { AuthService } from '../../core/auth/auth.service';
               }
             </mat-form-field>
             @if (mode() === 'register') {
-              <label class="terms">
-                <mat-checkbox name="terms" [(ngModel)]="termsAccepted">이용약관에 동의합니다.</mat-checkbox>
-                <a routerLink="/terms">약관 보기</a>
-              </label>
+              <mat-checkbox name="acceptTerms" [(ngModel)]="acceptTerms">
+                <a routerLink="/terms" target="_blank">이용약관</a>에 동의합니다
+              </mat-checkbox>
             }
             @if (error()) {
               <p class="error" role="alert">{{ error() }}</p>
@@ -91,13 +90,6 @@ import { AuthService } from '../../core/auth/auth.service';
       color: var(--sf-severity-high);
       margin: 4px 0 8px;
     }
-    .terms {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin: 0 0 12px;
-      font-size: 14px;
-    }
   `,
 })
 export class LoginPage {
@@ -112,11 +104,11 @@ export class LoginPage {
   protected email = '';
   protected password = '';
   protected displayName = '';
-  protected termsAccepted = false;
+  protected acceptTerms = false;
 
   protected canSubmit(): boolean {
     if (!this.email.trim() || !this.password) return false;
-    return this.mode() === 'login' || (this.password.length >= 8 && !!this.displayName.trim() && this.termsAccepted);
+    return this.mode() === 'login' || (this.password.length >= 8 && !!this.displayName.trim() && this.acceptTerms);
   }
 
   protected toggle(): void {
@@ -132,12 +124,7 @@ export class LoginPage {
     const request =
       this.mode() === 'login'
         ? this.auth.login({ email, password: this.password })
-        : this.auth.register({
-            email,
-            password: this.password,
-            displayName: this.displayName.trim(),
-            termsAccepted: this.termsAccepted,
-          });
+        : this.auth.register({ email, password: this.password, displayName: this.displayName.trim(), acceptTerms: this.acceptTerms });
     request.subscribe({
       next: () => this.router.navigateByUrl(this.returnUrl() || '/'),
       error: (e) => {

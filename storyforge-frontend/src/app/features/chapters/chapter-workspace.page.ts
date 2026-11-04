@@ -156,6 +156,9 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
         <!-- 우측: Continuity + 캐릭터 상태 -->
         <aside class="col right">
           <h3>Continuity Check</h3>
+          @if (current()?.needsReview) {
+            <p class="stale" role="status">본문이 바뀌었습니다. 승인할 때 요약과 검증을 다시 하며, 아래 결과는 이전 본문 기준입니다.</p>
+          }
           @if (current()?.continuityReport; as r) {
             <div class="score" [class.low]="r.score < 70">
               <span class="value">{{ r.score }}</span><span class="sf-muted">/ 100</span>
@@ -174,7 +177,7 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
             </ul>
           } @else {
             @if (current()) {
-              <p class="sf-muted">Clone한 원고라 이 프로젝트 기준의 검증 결과가 없습니다. 승인 전에 직접 확인하거나, 재생성하면 검증합니다.</p>
+              <p class="sf-muted">이 프로젝트 기준의 검증 결과가 아직 없습니다. 승인할 때 검증합니다.</p>
             } @else {
               <p class="sf-muted">챕터를 생성하면 검증 결과가 여기에 표시됩니다.</p>
             }
@@ -317,6 +320,14 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
     }
     .actions {
       padding-top: 4px;
+    }
+    .stale {
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      border-radius: 6px;
+      border-left: 3px solid var(--sf-severity-medium);
+      background: var(--sf-surface-2);
     }
     .score {
       display: flex;
@@ -525,10 +536,9 @@ export class ChapterWorkspacePage {
   protected approve(): void {
     const c = this.current();
     if (!c) return;
-    const high = c.continuityReport?.issues.filter((i) => i.severity === 'high').length ?? 0;
+    // 다시 검증할 원고의 이전 결과로는 묻지 않습니다. 서버가 새 결과로 판단합니다.
+    const high = c.needsReview ? 0 : (c.continuityReport?.issues.filter((i) => i.severity === 'high').length ?? 0);
     if (high && !confirm(`심각한 연속성 이슈가 ${high}건 있습니다. 그래도 승인할까요?`)) return;
-    // Clone한 원고에는 이 프로젝트 기준의 검증 결과가 없습니다. 조용히 통과시키지 않습니다.
-    if (!c.continuityReport && !confirm('Continuity 검증을 거치지 않은 Clone 원고입니다. 직접 확인했다면 승인하세요.')) return;
     this.busy.set(true);
     this.api.confirmChapter(c.id).subscribe({
       next: (confirmed) => {
@@ -541,6 +551,8 @@ export class ChapterWorkspacePage {
       error: (e) => {
         this.busy.set(false);
         this.toast(e);
+        // 재검증 결과가 저장되었을 수 있어 리포트를 다시 읽습니다.
+        this.api.getChapter(c.id).subscribe((fresh) => this.replace(fresh));
       },
     });
   }

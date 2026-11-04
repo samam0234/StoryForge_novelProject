@@ -5,10 +5,14 @@ import com.storyforge.domain.bible.BibleDtos.BibleSnapshot;
 import com.storyforge.domain.bible.BibleDtos.CharacterSnapshot;
 import com.storyforge.domain.community.*;
 import com.storyforge.domain.community.CommunityDtos.*;
+import com.storyforge.domain.moderation.UserBlockRepository;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
+import com.storyforge.service.auth.AccountPolicy;
+import com.storyforge.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +31,16 @@ public class PackageService {
     private final PackageLinkRepository links;
     private final AppUserRepository users;
     private final ActivityService activity;
+    private final AccountPolicy policy;
+    private final UserBlockRepository blocks;
+    private final NotificationService notifications;
 
     public PackageService(WorkRepository works, PackageItemRepository items, PackageLinkRepository links,
-                          AppUserRepository users, ActivityService activity) {
+                          AppUserRepository users, ActivityService activity, AccountPolicy policy,
+                          UserBlockRepository blocks, NotificationService notifications) {
+        this.policy = policy;
+        this.blocks = blocks;
+        this.notifications = notifications;
         this.works = works;
         this.items = items;
         this.links = links;
@@ -40,6 +51,7 @@ public class PackageService {
     /** 내가 직접 게시한 작품이 하나 이상 있어야 패키지를 만들 수 있습니다. */
     @Transactional
     public WorkCard create(CreatePackageRequest request, Long userId) {
+        policy.requireTerms(userId);
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         List<Work> members = new ArrayList<>();
@@ -73,11 +85,19 @@ public class PackageService {
         }
         Work member = member(request.memberWorkId(), userId);
         boolean mine = member.getAuthor().getId().equals(userId);
+        if (!mine && blocks.existsByBlockerIdAndBlockedId(member.getAuthor().getId(), userId)) {
+            throw new InvalidStateException("이 작가에게는 편입을 요청할 수 없습니다.");
+        }
         int position = items.findWithMembers(packageId).size() + 1;
         PackageItem item = items.save(new PackageItem(packageId, member, position, request.role(),
                 WorkService.blankToNull(request.note()), mine ? PackageItem.Status.APPROVED : PackageItem.Status.PENDING));
         recount(pkg);
         activity.recordWork(userId, null, pkg, ActivityType.PACKAGE_UPDATED, mine ? "패키지에 작품 추가" : "패키지 편입 요청", 0);
+        if (!mine) {
+            notifications.notify(member.getAuthor().getId(), userId, Notification.Type.PACKAGE_REQUEST,
+                    pkg.getAuthor().getDisplayName() + "님이 「" + member.getTitle() + "」을(를) 패키지 「" + pkg.getTitle() + "」에 넣고 싶어 합니다.",
+                    "/me/works");
+        }
         return PackageItemView.from(item);
     }
 
@@ -156,7 +176,10 @@ public class PackageService {
         PackageItem item = items.findById(Objects.requireNonNull(itemId))
                 .filter(i -> i.getMember().getAuthor().getId().equals(userId))
                 .orElseThrow(() -> new NotFoundException("요청을 찾을 수 없습니다: " + itemId));
-        Work pkg = works.findById(item.getPackageWorkId()).orElseThrow();
+        Work pkg = works.findWithAuthor(item.getPackageWorkId()).orElseThrow();
+        notifications.notify(pkg.getAuthor().getId(), userId, Notification.Type.PACKAGE_DECISION,
+                "「" + item.getMember().getTitle() + "」의 패키지 편입 요청이 " + (approve ? "승인" : "거절") + "되었습니다.",
+                "/package-forge/" + pkg.getId());
         if (approve) {
             item.approve();
         } else {
@@ -172,7 +195,8 @@ public class PackageService {
         List<PackageItem> all = items.findWithMembers(pkg.getId());
         List<PackageItem> visible = all.stream()
                 .filter(i -> owner || i.getStatus() == PackageItem.Status.APPROVED)
-                .filter(i -> i.getMember().getVisibility() != Work.Visibility.PRIVATE || i.getMember().getAuthor().getId().equals(viewerId))
+                .filter(i -> (i.getMember().getVisibility() != Work.Visibility.PRIVATE && !i.getMember().isHidden())
+                        || i.getMember().getAuthor().getId().equals(viewerId))
                 .toList();
         Set<Long> ids = new HashSet<>();
         visible.forEach(i -> ids.add(i.getId()));
@@ -218,7 +242,7 @@ public class PackageService {
     /** 패키지는 패키지를 담지 못합니다. 다른 사람의 작품은 공개 작품만 고를 수 있습니다. */
     private Work member(Long workId, Long userId) {
         Work member = works.findWithAuthor(Objects.requireNonNull(workId))
-                .filter(w -> w.getAuthor().getId().equals(userId) || w.getVisibility() == Work.Visibility.PUBLIC)
+                .filter(w -> w.getAuthor().getId().equals(userId) || w.isListed())
                 .orElseThrow(() -> new NotFoundException("작품을 찾을 수 없습니다: " + workId));
         if (member.getKind() == Work.Kind.PACKAGE) {
             throw new InvalidStateException("패키지 안에 패키지를 넣을 수 없습니다.");

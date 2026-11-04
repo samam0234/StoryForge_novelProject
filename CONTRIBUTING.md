@@ -36,7 +36,8 @@ type(scope): 한국어 요약
 - LLM 호출과 Continuity 검사는 FastAPI에서만 합니다. 상태 전이는 Spring Boot(`PipelineStateMachine`)에서만 합니다.
 - 챕터 생성에는 Story Bible + Outline + 이전 챕터 요약을 반드시 넣고, Continuity 결과를 임의로 통과시키지 않으며, 사용자 검토(`CHAPTER_REVIEW`)를 건너뛰지 않습니다.
 - 포트, 버전, 환경 변수의 기준값은 [docs/plan/CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)입니다. 코드에 하드코딩하지 않습니다.
-- 새 엔드포인트는 소유자 검사(경로 변수 `{projectId}`, `{chapterId}`)를 따르고, 다른 사용자 404 테스트를 함께 추가합니다.
+- 새 엔드포인트는 소유자 검사(경로 변수 `{projectId}`, `{chapterId}`)를 따르고, 다른 사용자 404 테스트를 함께 추가합니다. 공개 작품·게시글을 고치는 API는 서비스에서 작성자를 확인합니다.
+- 작품·글을 목록에 내보내는 쿼리는 숨김(`hidden_at`)과 차단을 함께 거릅니다. 다른 사람에게 보이는 응답에 이메일을 넣지 않습니다.
 - 비밀 값(API 키, JWT 키, 비밀번호)을 커밋하지 않습니다. [SECURITY.md](SECURITY.md)를 보세요.
 
 ## 테스트
@@ -49,7 +50,7 @@ type(scope): 한국어 요약
 | AI | `cd storyforge-ai && .venv/Scripts/python -m pytest -q` |
 | 프론트 | `cd storyforge-frontend && npx ng test --watch=false && npx ng build` |
 
-화면을 바꿨다면 브라우저에서 직접 눌러 확인합니다. 실제 Claude API를 호출하는 테스트는 기본 테스트에 넣지 않습니다.
+**프론트는 `ng build`까지 확인합니다.** 단위 테스트는 spec이 가져오는 파일만 컴파일하므로 화면 템플릿 오류를 놓칠 수 있습니다. 화면을 바꿨다면 브라우저에서 직접 눌러 확인합니다. 실제 Claude API를 호출하는 테스트는 기본 테스트에 넣지 않습니다.
 
 ## 문서
 

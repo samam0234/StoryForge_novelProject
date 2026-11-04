@@ -1,19 +1,19 @@
 package com.storyforge.controller;
 
-import com.storyforge.domain.moderation.ModerationDtos.BlockRequest;
-import com.storyforge.domain.moderation.ModerationDtos.LlmNotice;
-import com.storyforge.domain.moderation.ModerationDtos.ReportRequest;
-import com.storyforge.domain.moderation.ModerationDtos.ReportView;
+import com.storyforge.domain.community.CommunityDtos.PageResponse;
+import com.storyforge.domain.community.CommunityDtos.UserSummary;
+import com.storyforge.domain.moderation.ContentReport;
+import com.storyforge.domain.moderation.ModerationDtos.*;
 import com.storyforge.service.auth.CurrentUser;
 import com.storyforge.service.community.LlmDisclosure;
-import com.storyforge.service.community.ModerationService;
+import com.storyforge.service.moderation.ModerationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** 신고, 차단, 관리자 처리, 외부 언어 모델 안내 */
+/** 신고, 차단, 관리자 처리. 관리자 여부는 서비스에서 확인합니다. */
 @RestController
 @RequestMapping("/api/v1")
 public class ModerationController {
@@ -35,34 +35,36 @@ public class ModerationController {
 
     @PostMapping("/reports")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReportView report(@Valid @RequestBody ReportRequest request) {
+    public ReportReceipt report(@Valid @RequestBody ReportRequest request) {
         return moderation.report(request, currentUser.id());
     }
 
-    @PostMapping("/blocks")
+    @PutMapping("/users/{userId}/block")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void block(@Valid @RequestBody BlockRequest request) {
-        moderation.block(request, currentUser.id());
+    public void block(@PathVariable Long userId) {
+        moderation.block(currentUser.id(), userId);
     }
 
-    @DeleteMapping("/blocks/{userId}")
+    @DeleteMapping("/users/{userId}/block")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void unblock(@PathVariable Long userId) {
-        moderation.unblock(userId, currentUser.id());
+        moderation.unblock(currentUser.id(), userId);
+    }
+
+    @GetMapping("/me/blocks")
+    public List<UserSummary> blocks() {
+        return moderation.blockedUsers(currentUser.id());
     }
 
     @GetMapping("/admin/reports")
-    public List<ReportView> reports() {
-        return moderation.openReports(currentUser.id());
+    public PageResponse<ReportView> reports(@RequestParam(defaultValue = "OPEN") ContentReport.Status status,
+                                            @RequestParam(defaultValue = "0") int page,
+                                            @RequestParam(defaultValue = "20") int size) {
+        return moderation.list(status, page, size, currentUser.id());
     }
 
-    @PostMapping("/admin/reports/{reportId}/dismiss")
-    public ReportView dismiss(@PathVariable Long reportId) {
-        return moderation.dismiss(reportId, currentUser.id());
-    }
-
-    @PostMapping("/admin/reports/{reportId}/hide")
-    public ReportView hide(@PathVariable Long reportId) {
-        return moderation.hide(reportId, currentUser.id());
+    @PutMapping("/admin/reports/{reportId}")
+    public ReportView decide(@PathVariable Long reportId, @Valid @RequestBody DecideRequest request) {
+        return moderation.decide(reportId, request, currentUser.id());
     }
 }

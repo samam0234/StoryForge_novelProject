@@ -1,0 +1,38 @@
+하나로 묶인 소설 패키지 「{{ request.title }}」의 작품들이 서로 어긋나는지 검증하세요.
+
+{% if request.world_note %}
+<world_note>
+{{ request.world_note }}
+</world_note>
+{% endif %}
+
+{% for work in request.works %}
+<work title="{{ work.title }}" role="{{ work.role or '' }}">
+세계관: {{ work.bible.world_setting or "" }}
+테마: {{ work.bible.theme or "" }}
+인물:
+{% for c in work.bible.characters %}
+- {{ c.name }}: {{ c.description or "" }} / {{ c.personality or "" }} / {{ c.relationships or "" }}
+{% endfor %}
+챕터 요약:
+{% for p in work.chapters %}
+{{ p.number }}장: {{ p.summary or "" }}
+{% endfor %}
+</work>
+{% endfor %}
+
+<links>
+{% for link in request.links %}
+{{ link.from_title }} → {{ link.to_title }} ({{ link.type }}) {{ link.label or "" }}
+{% else %}
+(지정된 연결 없음)
+{% endfor %}
+</links>
+
+작품 사이의 문제만 찾습니다. 한 작품 안의 문제는 다루지 않습니다. 없으면 빈 목록을 반환합니다.
+- setting_conflict: 공용 세계관 노트나 다른 작품의 규칙과 충돌
+- character_consistency: 같은 인물로 보이는데 성격·관계·상태가 맞지 않음
+- timeline: 지정된 연결이나 사건 순서와 시간이 맞지 않음
+- plot_thread: 연결한 사건이 양쪽에서 다르게 서술됨
+severity는 독자가 바로 알아챌 모순이면 high, 어색하지만 설명 가능하면 medium, 사소하면 low입니다.
+description에는 어느 작품의 무엇이 어긋나는지 구체적으로 적고, work_titles에는 관련 작품 제목을 넣습니다.

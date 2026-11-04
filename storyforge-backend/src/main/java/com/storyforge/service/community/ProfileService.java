@@ -2,10 +2,12 @@ package com.storyforge.service.community;
 
 import com.storyforge.domain.community.*;
 import com.storyforge.domain.community.CommunityDtos.*;
+import com.storyforge.domain.moderation.UserBlockRepository;
 import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.domain.user.AuthDtos.UserResponse;
 import com.storyforge.exception.InvalidStateException;
+import com.storyforge.service.auth.AccountPolicy;
 import com.storyforge.exception.NotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -27,29 +29,32 @@ public class ProfileService {
     private final CommentRepository comments;
     private final AchievementService achievements;
     private final PasswordEncoder passwordEncoder;
-    private final BlockQuery blocks;
+    private final AccountPolicy policy;
+    private final UserBlockRepository blocks;
     private final ContentPolicy contentPolicy;
 
     public ProfileService(AppUserRepository users, WorkRepository works, PostRepository posts, CommentRepository comments,
                           AchievementService achievements, PasswordEncoder passwordEncoder,
-                          BlockQuery blocks, ContentPolicy contentPolicy) {
+                          AccountPolicy policy, UserBlockRepository blocks, ContentPolicy contentPolicy) {
+        this.contentPolicy = contentPolicy;
+        this.policy = policy;
+        this.blocks = blocks;
         this.users = users;
         this.works = works;
         this.posts = posts;
         this.comments = comments;
         this.achievements = achievements;
         this.passwordEncoder = passwordEncoder;
-        this.blocks = blocks;
-        this.contentPolicy = contentPolicy;
     }
 
     public Profile profile(Long userId, Long viewerId) {
         AppUser user = load(userId);
-        ProfileStats stats = new ProfileStats(works.countByAuthorIdAndVisibility(userId, Work.Visibility.PUBLIC),
+        ProfileStats stats = new ProfileStats(works.countByAuthorIdAndVisibilityAndHiddenAtIsNull(userId, Work.Visibility.PUBLIC),
                 works.sumLikes(userId), works.sumClones(userId), posts.countByAuthorId(userId),
                 comments.countByAuthorId(userId), achievements.earnedCount(userId));
         return new Profile(UserSummary.from(user), user.getBio(), user.getWebsite(), user.getCreatedAt(),
-                userId.equals(viewerId), blocks.blockedByViewer(viewerId, userId), stats);
+                userId.equals(viewerId),
+                viewerId != null && blocks.existsByBlockerIdAndBlockedId(viewerId, userId), user.isSuspended(), stats);
     }
 
     public void requireExists(Long userId) {
@@ -58,11 +63,19 @@ public class ProfileService {
 
     @Transactional
     public UserResponse update(Long userId, UpdateProfileRequest request) {
-        AppUser user = load(userId);
         contentPolicy.check(request.displayName(), request.bio());
+        AppUser user = load(userId);
         user.updateProfile(request.displayName().strip(), WorkService.blankToNull(request.bio()),
                 WorkService.blankToNull(request.website()), WorkService.blankToNull(request.avatarColor()));
-        return UserResponse.from(user);
+        return policy.view(user);
+    }
+
+    /** 현재 버전의 이용약관에 동의합니다. */
+    @Transactional
+    public UserResponse acceptTerms(Long userId) {
+        AppUser user = load(userId);
+        user.acceptTerms(policy.termsVersion());
+        return policy.view(user);
     }
 
     @Transactional
