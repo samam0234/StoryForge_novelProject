@@ -42,6 +42,8 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-11-04 20:55 | `377d6fe` | fix(api): VS Code Java 경고 정리 | `feature/auth` | [기록](commits/261104_2055_377d6fe_java-warnings_feature-auth.md) |
+| 2026-11-04 20:52 | `0770835` | docs(docs): 재검증, 신고·관리, 패키지 검사를 반영해 문서 전체 갱신 | `feature/auth` | [기록](commits/261104_2052_0770835_docs-overhaul_feature-auth.md) |
 | 2026-11-04 20:44 | `dad7fd2` | feat(web): 알림, 신고, 관리자, 이용약관, 차단, 패키지 검사, 원본 가져오기 화면 추가 | `feature/auth` | [기록](commits/261104_2044_dad7fd2_moderation-web_feature-auth.md) |
 | 2026-11-04 20:40 | `edbc036` | fix(web): 창작하기 화면의 남는 닫는 태그로 빌드가 깨지던 문제 수정 | `feature/auth` | [기록](commits/261104_2040_edbc036_fix-create-page-build_feature-auth.md) |
 | 2026-11-04 20:34 | `79f61af` | feat(api): 패키지 전체 Continuity 검사와 원본 변경 가져오기 추가 | `feature/auth` | [기록](commits/261104_2034_79f61af_package-continuity_feature-auth.md) |
