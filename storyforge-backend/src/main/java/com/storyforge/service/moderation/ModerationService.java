@@ -8,7 +8,6 @@ import com.storyforge.domain.moderation.ContentReport.Status;
 import com.storyforge.domain.moderation.ContentReport.TargetType;
 import com.storyforge.domain.moderation.ContentReportRepository;
 import com.storyforge.domain.moderation.ModerationDtos.*;
-import com.storyforge.domain.moderation.UserBlock;
 import com.storyforge.domain.moderation.UserBlockRepository;
 import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.user.AppUser;
