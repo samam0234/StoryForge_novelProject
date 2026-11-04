@@ -116,8 +116,6 @@ public class Work {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    private Instant hiddenAt;
-
     protected Work() {
     }
 

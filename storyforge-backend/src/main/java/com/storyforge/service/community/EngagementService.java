@@ -128,7 +128,7 @@ public class EngagementService {
         contentPolicy.check(request.content());
         Comment parent = checkParent(request.parentId(), workId, null);
         Comment saved = comments.save(new Comment(workId, null, user(userId), request.parentId(), request.content().strip()));
-        works.setCommentCount(workId, comments.countByWorkId(workId));
+        works.setCommentCount(workId, comments.countByWorkIdAndHiddenAtIsNull(workId));
         activity.recordWork(userId, null, work, ActivityType.COMMENT_WRITTEN, "작품에 댓글 작성", 0);
         notifyComment(saved, parent, work.getAuthor().getId(), "「" + work.getTitle() + "」", "/works/" + workId);
         return view(saved, userId, work.getAuthor().getId());
@@ -141,7 +141,7 @@ public class EngagementService {
         contentPolicy.check(request.content());
         Comment parent = checkParent(request.parentId(), null, postId);
         Comment saved = comments.save(new Comment(null, postId, user(userId), request.parentId(), request.content().strip()));
-        posts.setCommentCount(postId, comments.countByPostId(postId));
+        posts.setCommentCount(postId, comments.countByPostIdAndHiddenAtIsNull(postId));
         activity.recordPost(userId, post, ActivityType.COMMENT_WRITTEN, "게시글에 댓글 작성");
         notifyComment(saved, parent, post.getAuthor().getId(), "「" + post.getTitle() + "」", "/posts/" + postId);
         return view(saved, userId, post.getAuthor().getId());
@@ -171,9 +171,9 @@ public class EngagementService {
         comments.delete(comment);
         comments.flush();
         if (workId != null) {
-            works.setCommentCount(workId, comments.countByWorkId(workId));
+            works.setCommentCount(workId, comments.countByWorkIdAndHiddenAtIsNull(workId));
         } else {
-            posts.setCommentCount(postId, comments.countByPostId(postId));
+            posts.setCommentCount(postId, comments.countByPostIdAndHiddenAtIsNull(postId));
         }
     }
 
