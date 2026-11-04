@@ -16,10 +16,14 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = "author")
     @Query("""
             select p from Post p
-            where p.category in :categories
+            where p.hiddenAt is null
+              and p.category in :categories
               and (:like = '' or lower(p.title) like :like escape '\\' or lower(p.content) like :like escape '\\')
+              and (:blockedEmpty = true or p.author.id not in :blocked)
             """)
-    Page<Post> search(@Param("categories") Collection<Post.Category> categories, @Param("like") String like, Pageable pageable);
+    Page<Post> search(@Param("categories") Collection<Post.Category> categories, @Param("like") String like,
+                      @Param("blockedEmpty") boolean blockedEmpty, @Param("blocked") Collection<Long> blocked,
+                      Pageable pageable);
 
     @EntityGraph(attributePaths = "author")
     @Query("select p from Post p where p.id = :id")

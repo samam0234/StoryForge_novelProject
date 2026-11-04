@@ -5,6 +5,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -25,20 +27,27 @@ public class JwtConfig {
     private static final int MIN_SECRET_BYTES = 32;
 
     @Bean
-    SecretKey jwtSecretKey(JwtProperties properties) {
-        String secret = properties.secret();
-        byte[] key;
+    SecretKey jwtSecretKey(JwtProperties properties, Environment environment) {
+        boolean production = environment.acceptsProfiles(Profiles.of("prod"));
+        return new SecretKeySpec(keyMaterial(properties.secret(), production), "HmacSHA256");
+    }
+
+    /** 비어 있으면 개발에서만 무작위 키를 만듭니다. 운영이거나 32바이트보다 짧으면 시작하지 않습니다. */
+    static byte[] keyMaterial(String secret, boolean production) {
         if (secret == null || secret.isBlank()) {
-            key = new byte[MIN_SECRET_BYTES];
-            new SecureRandom().nextBytes(key);
-            log.warn("JWT_SECRET이 없어 무작위 키를 만들었습니다. 재시작하면 기존 토큰이 무효가 됩니다. 운영에서는 반드시 지정하세요.");
-        } else {
-            key = secret.getBytes(StandardCharsets.UTF_8);
-            if (key.length < MIN_SECRET_BYTES) {
-                throw new IllegalStateException("JWT_SECRET은 " + MIN_SECRET_BYTES + "바이트 이상이어야 합니다.");
+            if (production) {
+                throw new IllegalStateException("운영에서는 JWT_SECRET이 필요합니다. 32바이트 이상이어야 합니다.");
             }
+            byte[] generated = new byte[MIN_SECRET_BYTES];
+            new SecureRandom().nextBytes(generated);
+            log.warn("JWT_SECRET이 없어 무작위 키를 만들었습니다. 재시작하면 기존 토큰이 무효가 됩니다. 운영에서는 반드시 지정하세요.");
+            return generated;
         }
-        return new SecretKeySpec(key, "HmacSHA256");
+        byte[] key = secret.getBytes(StandardCharsets.UTF_8);
+        if (key.length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException("JWT_SECRET은 " + MIN_SECRET_BYTES + "바이트 이상이어야 합니다.");
+        }
+        return key;
     }
 
     @Bean

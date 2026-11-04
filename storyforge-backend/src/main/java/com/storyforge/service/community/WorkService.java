@@ -60,11 +60,14 @@ public class WorkService {
     private final IssueService issues;
     private final ExportService exports;
     private final JdbcTemplate jdbc;
+    private final BlockQuery blocks;
+    private final ContentPolicy contentPolicy;
 
     public WorkService(WorkRepository works, WorkChapterRepository workChapters, WorkRevisionRepository revisions,
                        ProjectService projects, ChapterRepository chapters, BibleService bibles, OutlineRepository outlines,
                        AppUserRepository users, PackageItemRepository packageItems, PackageService packages,
-                       ActivityService activity, IssueService issues, ExportService exports, JdbcTemplate jdbc) {
+                       ActivityService activity, IssueService issues, ExportService exports, JdbcTemplate jdbc,
+                       BlockQuery blocks, ContentPolicy contentPolicy) {
         this.works = works;
         this.workChapters = workChapters;
         this.revisions = revisions;
@@ -79,13 +82,17 @@ public class WorkService {
         this.issues = issues;
         this.exports = exports;
         this.jdbc = jdbc;
+        this.blocks = blocks;
+        this.contentPolicy = contentPolicy;
     }
 
     // ───────────── 게시판 ─────────────
 
-    public PageResponse<WorkCard> board(Work.Kind kind, String genre, String q, String sort, int page, int size) {
+    public PageResponse<WorkCard> board(Work.Kind kind, String genre, String q, String sort, int page, int size, Long viewerId) {
         Sort order = SORTS.getOrDefault(sort == null ? "latest" : sort, SORTS.get("latest"));
+        java.util.Collection<Long> excluded = blocks.excludedAuthorIds(viewerId);
         Page<Work> result = works.board(kind, genre == null ? "" : genre.strip(), likePattern(q),
+                excluded.isEmpty(), excluded.isEmpty() ? List.of(-1L) : excluded,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50), order));
         return new PageResponse<>(result.stream().map(WorkCard::from).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
@@ -104,8 +111,12 @@ public class WorkService {
         return works.findByAuthorIdOrderByUpdatedAtDesc(userId).stream().map(WorkCard::from).toList();
     }
 
-    public List<WorkCard> publicWorksOf(Long userId) {
+    public List<WorkCard> publicWorksOf(Long userId, Long viewerId) {
+        if (blocks.separated(viewerId, userId)) {
+            return List.of();
+        }
         return works.findByAuthorIdAndVisibilityOrderByPublishedAtDesc(userId, Work.Visibility.PUBLIC).stream()
+                .filter(w -> w.getHiddenAt() == null)
                 .map(WorkCard::from).toList();
     }
 
@@ -116,6 +127,12 @@ public class WorkService {
         Work work = works.findWithAuthor(Objects.requireNonNull(workId))
                 .orElseThrow(() -> new NotFoundException("작품을 찾을 수 없습니다: " + workId));
         if (work.getVisibility() == Work.Visibility.PRIVATE && !work.getAuthor().getId().equals(viewerId)) {
+            throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
+        }
+        if (work.getHiddenAt() != null && !work.getAuthor().getId().equals(viewerId)) {
+            throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
+        }
+        if (blocks.separated(viewerId, work.getAuthor().getId())) {
             throw new NotFoundException("작품을 찾을 수 없습니다: " + workId);
         }
         return work;
@@ -148,6 +165,7 @@ public class WorkService {
         boolean sourceVisible = !modes.isEmpty();
         List<Long> packageIds = packageItems.findPackageIdsOf(workId);
         List<WorkCard> inPackages = packageIds.isEmpty() ? List.of() : works.findAllWithAuthor(packageIds).stream()
+                .filter(p -> p.getHiddenAt() == null)
                 .filter(p -> p.getVisibility() == Work.Visibility.PUBLIC || p.getAuthor().getId().equals(viewerId))
                 .map(WorkCard::from).toList();
         return new WorkDetail(WorkCard.from(work), owned, liked, work.isDownloadable(), owned ? work.getProjectId() : null,
@@ -207,6 +225,7 @@ public class WorkService {
         if (confirmed.isEmpty()) {
             throw new InvalidStateException("승인된 챕터가 있어야 게시할 수 있습니다.");
         }
+        contentPolicy.check(request.title(), request.synopsis());
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         Work work = new Work(author, request.kind(), request.title().strip());
@@ -247,6 +266,7 @@ public class WorkService {
     @Transactional
     public WorkCard update(Long workId, UpdateWorkRequest request, Long userId) {
         Work work = loadOwned(workId, userId);
+        contentPolicy.check(request.title(), request.synopsis(), request.worldNote());
         work.updateMeta(request.title().strip(), blankToNull(request.synopsis()), blankToNull(request.genre()),
                 blankToNull(request.tags()), request.visibility(), request.clonePolicy(), request.downloadable());
         if (work.getKind() == Work.Kind.PACKAGE) {
@@ -263,6 +283,7 @@ public class WorkService {
         Work work = loadOwned(workId, userId);
         WorkChapter chapter = workChapters.findByWorkIdAndNumber(workId, number)
                 .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + number));
+        contentPolicy.check(request.title(), request.content());
         int changed = ActivityService.changedChars(chapter.getContent(), request.content())
                 + ActivityService.changedChars(chapter.getTitle(), request.title());
         if (changed > 0) {
@@ -297,7 +318,8 @@ public class WorkService {
             for (PackageItem item : packageItems.findWithMembers(workId)) {
                 Work member = item.getMember();
                 boolean memberOwned = member.getAuthor().getId().equals(viewerId);
-                if (item.getStatus() == PackageItem.Status.APPROVED && member.getVisibility() != Work.Visibility.PRIVATE
+                if (item.getStatus() == PackageItem.Status.APPROVED && member.getHiddenAt() == null
+                        && member.getVisibility() != Work.Visibility.PRIVATE
                         && (member.isDownloadable() || memberOwned)) {
                     sections.addAll(sectionsOf(member, member.getTitle() + " — "));
                 }

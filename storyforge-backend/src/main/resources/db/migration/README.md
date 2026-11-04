@@ -11,6 +11,8 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 | `V3__project_version.sql` | 프로젝트 낙관적 락 |
 | `V4__project_settings_and_versions.sql` | 프로젝트 설정 컬럼, Bible·챕터 이력 테이블 |
 | `V5__community.sql` | 게시 작품, Clone, 공유, 패키지, 게시글, 댓글, 활동 기록, 업적, 달성, 프로필 컬럼. 기존 챕터 이력을 활동 기록으로 옮김 |
+| `V6__collaboration.sql` | 함께 창작 초대와 작업 커밋 |
+| `V7__moderation.sql` | 약관 동의, 관리자 역할, 신고, 차단, 숨김 |
 
 ## 들어갈 것
 

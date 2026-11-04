@@ -54,11 +54,14 @@ public class IssueService {
         List<Long> ids = works.trendingIds(Instant.now().minus(Duration.ofDays(7)));
         Map<Long, Work> found = ids.isEmpty() ? Map.of()
                 : works.findAllWithAuthor(ids).stream().collect(Collectors.toMap(w -> w.getId(), Function.identity()));
-        List<WorkCard> trending = ids.stream().map(found::get).filter(w -> w != null).map(WorkCard::from).toList();
+        List<WorkCard> trending = ids.stream().map(found::get)
+                .filter(w -> w != null && w.getHiddenAt() == null).map(WorkCard::from).toList();
         List<Celebration> celebrations = issues.recent().stream()
+                .filter(e -> e.getWork().getHiddenAt() == null)
                 .map(e -> new Celebration(e.getId(), e.getMetric(), e.getThreshold(), message(e), WorkCard.from(e.getWork()), e.getCreatedAt()))
                 .toList();
         List<WorkCard> fresh = works.findTop12ByVisibilityOrderByPublishedAtDesc(Work.Visibility.PUBLIC).stream()
+                .filter(w -> w.getHiddenAt() == null)
                 .map(WorkCard::from).toList();
         return new IssueBoard(trending, celebrations, fresh);
     }

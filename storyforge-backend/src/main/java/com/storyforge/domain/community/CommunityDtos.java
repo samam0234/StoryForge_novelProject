@@ -257,7 +257,7 @@ public final class CommunityDtos {
                                long achievements) {
     }
 
-    public record Profile(UserSummary user, String bio, String website, Instant joinedAt, boolean self, ProfileStats stats) {
+    public record Profile(UserSummary user, String bio, String website, Instant joinedAt, boolean self, boolean blocked, ProfileStats stats) {
     }
 
     public record UpdateProfileRequest(

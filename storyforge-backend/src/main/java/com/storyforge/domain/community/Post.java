@@ -47,6 +47,8 @@ public class Post {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    private Instant hiddenAt;
+
     protected Post() {
     }
 
@@ -66,6 +68,10 @@ public class Post {
         this.updatedAt = Instant.now();
     }
 
+    public void hide() {
+        this.hiddenAt = Instant.now();
+    }
+
     public Long getId() { return id; }
     public AppUser getAuthor() { return author; }
     public Category getCategory() { return category; }
@@ -76,4 +82,5 @@ public class Post {
     public long getViewCount() { return viewCount; }
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getHiddenAt() { return hiddenAt; }
 }

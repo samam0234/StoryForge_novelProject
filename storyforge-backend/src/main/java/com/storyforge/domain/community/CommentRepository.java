@@ -20,9 +20,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     @Query("select c from Comment c where c.id = :id")
     Optional<Comment> findWithAuthor(@Param("id") Long id);
 
-    int countByWorkId(Long workId);
+    int countByWorkIdAndHiddenAtIsNull(Long workId);
 
-    int countByPostId(Long postId);
+    int countByPostIdAndHiddenAtIsNull(Long postId);
 
     long countByAuthorId(Long authorId);
 }

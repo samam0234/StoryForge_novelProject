@@ -27,15 +27,20 @@ public class ProfileService {
     private final CommentRepository comments;
     private final AchievementService achievements;
     private final PasswordEncoder passwordEncoder;
+    private final BlockQuery blocks;
+    private final ContentPolicy contentPolicy;
 
     public ProfileService(AppUserRepository users, WorkRepository works, PostRepository posts, CommentRepository comments,
-                          AchievementService achievements, PasswordEncoder passwordEncoder) {
+                          AchievementService achievements, PasswordEncoder passwordEncoder,
+                          BlockQuery blocks, ContentPolicy contentPolicy) {
         this.users = users;
         this.works = works;
         this.posts = posts;
         this.comments = comments;
         this.achievements = achievements;
         this.passwordEncoder = passwordEncoder;
+        this.blocks = blocks;
+        this.contentPolicy = contentPolicy;
     }
 
     public Profile profile(Long userId, Long viewerId) {
@@ -44,7 +49,7 @@ public class ProfileService {
                 works.sumLikes(userId), works.sumClones(userId), posts.countByAuthorId(userId),
                 comments.countByAuthorId(userId), achievements.earnedCount(userId));
         return new Profile(UserSummary.from(user), user.getBio(), user.getWebsite(), user.getCreatedAt(),
-                userId.equals(viewerId), stats);
+                userId.equals(viewerId), blocks.blockedByViewer(viewerId, userId), stats);
     }
 
     public void requireExists(Long userId) {
@@ -54,6 +59,7 @@ public class ProfileService {
     @Transactional
     public UserResponse update(Long userId, UpdateProfileRequest request) {
         AppUser user = load(userId);
+        contentPolicy.check(request.displayName(), request.bio());
         user.updateProfile(request.displayName().strip(), WorkService.blankToNull(request.bio()),
                 WorkService.blankToNull(request.website()), WorkService.blankToNull(request.avatarColor()));
         return UserResponse.from(user);

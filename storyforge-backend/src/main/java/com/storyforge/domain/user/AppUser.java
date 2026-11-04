@@ -27,6 +27,12 @@ public class AppUser {
 
     private String avatarColor;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role = Role.USER;
+
+    private Instant termsAcceptedAt;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -51,6 +57,14 @@ public class AppUser {
         this.passwordHash = passwordHash;
     }
 
+    public void acceptTerms() {
+        this.termsAcceptedAt = Instant.now();
+    }
+
+    public void grantAdmin() {
+        this.role = Role.ADMIN;
+    }
+
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
@@ -58,5 +72,7 @@ public class AppUser {
     public String getBio() { return bio; }
     public String getWebsite() { return website; }
     public String getAvatarColor() { return avatarColor; }
+    public Role getRole() { return role; }
+    public Instant getTermsAcceptedAt() { return termsAcceptedAt; }
     public Instant getCreatedAt() { return createdAt; }
 }
