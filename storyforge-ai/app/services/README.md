@@ -8,8 +8,9 @@
 |------|------|
 | `bible_generator.py` | Story Bible 생성 |
 | `outline_generator.py` | Outline 생성, order 재번호 |
-| `chapter_generator.py` | 본문 스트리밍 → 요약 → Continuity 검증 → 결과 |
+| `chapter_generator.py` | 본문 스트리밍 → 요약 → Continuity 검증 → 결과. 고친 본문의 재요약·재검증 |
 | `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
+| `package_continuity.py` | 패키지 작품 사이의 규칙 검사 + LLM 검증 ([규칙](../../../docs/novel/continuity-rules.md)) |
 | `guide_assistant.py` | AI 가이드챗: 명령어 안내, 키워드 매칭, 자유 질문. 이동 버튼은 이 파일의 표에서만 만듦 |
 | `mock_writer.py` | `LLM_PROVIDER=mock`용 결정적 생성기 (mock 표시 포함) |
 

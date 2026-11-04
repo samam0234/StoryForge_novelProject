@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 import { CommunityApi } from '../../core/api/community-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { UserSummary } from '../../core/models/community';
 
 const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00', '#d95926', '#455a64'];
 
@@ -81,6 +82,24 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
 
       <mat-card appearance="outlined" class="card">
         <mat-card-header>
+          <mat-card-title>차단한 사용자</mat-card-title>
+          <mat-card-subtitle>차단한 사람의 작품, 글, 댓글은 보이지 않고, 그 사람은 내 글에 댓글을 달 수 없습니다.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="blocks">
+          @for (u of blocked(); track u.id) {
+            <div class="sf-row">
+              <a [routerLink]="['/users', u.id]">{{ u.displayName }}</a>
+              <span class="sf-spacer"></span>
+              <button mat-button (click)="unblock(u.id)">차단 해제</button>
+            </div>
+          } @empty {
+            <p class="sf-muted">차단한 사용자가 없습니다.</p>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card appearance="outlined" class="card">
+        <mat-card-header>
           <mat-card-title>계정 삭제</mat-card-title>
           <mat-card-subtitle>프로젝트, 게시 작품, 댓글, 활동 기록이 모두 삭제되며 되돌릴 수 없습니다. 다른 사람이 Clone한 프로젝트는 남습니다.</mat-card-subtitle>
         </mat-card-header>
@@ -115,6 +134,9 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
     .label {
       font-size: 13px;
     }
+    .blocks {
+      margin-top: 8px;
+    }
     .colors {
       display: flex;
       flex-wrap: wrap;
@@ -144,6 +166,7 @@ export class AccountSettingsPage {
 
   protected readonly colors = COLORS;
   protected readonly busy = signal(false);
+  protected readonly blocked = signal<UserSummary[]>([]);
   protected displayName = this.auth.user()?.displayName ?? '';
   protected bio = this.auth.user()?.bio ?? '';
   protected website = this.auth.user()?.website ?? '';
@@ -153,12 +176,20 @@ export class AccountSettingsPage {
   protected deletePassword = '';
 
   constructor() {
+    this.api.blockedUsers().subscribe((list) => this.blocked.set(list));
     // 세션에 저장한 값이 오래됐을 수 있어 서버 값으로 채웁니다.
     this.auth.refreshUser().subscribe((u) => {
       this.displayName = u.displayName;
       this.bio = u.bio ?? '';
       this.website = u.website ?? '';
       this.avatarColor = u.avatarColor ?? null;
+    });
+  }
+
+  protected unblock(userId: number): void {
+    this.api.block(userId, false).subscribe({
+      next: () => this.blocked.update((list) => list.filter((u) => u.id !== userId)),
+      error: (e) => this.fail(e),
     });
   }
 

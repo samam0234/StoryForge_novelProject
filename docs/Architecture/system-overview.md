@@ -94,6 +94,20 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 
 프로젝트(비공개 작업실)와 작품(공개 스냅샷)을 나눕니다. 게시는 승인된 챕터를 복사하며 파이프라인 상태를 바꾸지 않습니다. 작업 기록(`activity_event`)이 작업 그래프와 활동 잔디의 원본이고, 업적은 커밋 뒤에 계산합니다. 함께 창작은 `project_collaborator`와 `work_commit`으로 두고, 인용 문장은 참여자에게만 돌려줍니다. 커뮤니티 읽기 API만 로그인 없이 열려 있습니다. 가이드챗의 LLM 호출도 FastAPI에서만 합니다. [community.md](../plan/community.md)
 
+## 안전장치와 알림 (2026-11-04)
+
+요청은 `RateLimitFilter`(보안 필터) → `AccountGuardInterceptor`(쓰기 요청의 정지·삭제 계정 차단) → `OwnershipInterceptor`(프로젝트·챕터 접근) 순서로 지납니다. 신고와 관리자 조치는 글을 지우지 않고 숨깁니다. 알림은 원래 작업과 같은 트랜잭션에 묶입니다. [moderation.md](../plan/moderation.md)
+
+```
+승인 요청 ─▶ needsReview?
+              ├ 아니오 ──────────────────────────────▶ 승인
+              └ 예 ─▶ FastAPI /internal/generate/review
+                        ├ 실패 ─▶ 502, 승인하지 않음
+                        └ 성공 ─▶ 요약·리포트 저장
+                                  ├ high 이슈 ─▶ 409, 사용자가 보고 다시 승인
+                                  └ 없음 ─────▶ 승인
+```
+
 ## 구현 메모 (2026-10-22)
 
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)

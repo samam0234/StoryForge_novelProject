@@ -68,8 +68,6 @@ import { PostEditDialog } from './post-edit.dialog';
         }
       </div>
 
-      </div>
-
       @if (auth.isLoggedIn()) {
         <h2>함께 창작</h2>
         <p class="sf-muted">다른 사람과 쓰고 있는 작품을 공유하려면 프로젝트의 작업 기록에서 이메일로 초대합니다. 수락한 사람들만 원고를 보고, 작업 커밋으로 고친 구간을 글로 남깁니다.</p>

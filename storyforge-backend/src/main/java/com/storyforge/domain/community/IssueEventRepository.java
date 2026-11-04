@@ -12,6 +12,7 @@ public interface IssueEventRepository extends JpaRepository<IssueEvent, Long> {
     @Query("""
             select e from IssueEvent e join fetch e.work w join fetch w.author
             where w.visibility = com.storyforge.domain.community.Work$Visibility.PUBLIC
+              and w.hiddenAt is null
             order by e.createdAt desc, e.id desc
             limit 30
             """)

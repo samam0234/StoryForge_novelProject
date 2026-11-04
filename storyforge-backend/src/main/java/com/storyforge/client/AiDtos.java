@@ -1,6 +1,7 @@
 package com.storyforge.client;
 
 import com.storyforge.domain.chapter.ContinuityIssue;
+import com.storyforge.domain.community.PackageReport;
 import com.storyforge.domain.outline.OutlineChapter;
 
 import java.util.List;
@@ -49,6 +50,26 @@ public final class AiDtos {
     }
 
     public record ContinuityResult(List<ContinuityIssue> issues, int score) {
+    }
+
+    // POST /internal/generate/review
+    public record ChapterReviewRequest(ChapterContext context, String title, String content) {
+    }
+
+    public record ChapterReviewResult(String summary, ContinuityResult report) {
+    }
+
+    // POST /internal/package/continuity
+    public record PackageWorkInfo(String title, String role, BibleInfo bible, List<PreviousChapter> chapters) {
+    }
+
+    public record PackageLinkInfo(String fromTitle, String toTitle, String type, String label) {
+    }
+
+    public record PackageContinuityRequest(String title, String worldNote, List<PackageWorkInfo> works, List<PackageLinkInfo> links) {
+    }
+
+    public record PackageContinuityResult(List<PackageReport.Issue> issues, int score) {
     }
 
     // POST /internal/guide/chat

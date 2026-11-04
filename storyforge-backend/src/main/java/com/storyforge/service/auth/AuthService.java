@@ -7,6 +7,7 @@ import com.storyforge.domain.user.AuthDtos.LoginRequest;
 import com.storyforge.domain.user.AuthDtos.RegisterRequest;
 import com.storyforge.domain.user.AuthDtos.UserResponse;
 import com.storyforge.exception.AuthenticationFailedException;
+import com.storyforge.exception.ForbiddenException;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,8 +27,10 @@ public class AuthService {
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokens;
+    private final AccountPolicy policy;
 
-    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens) {
+    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens, AccountPolicy policy) {
+        this.policy = policy;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
@@ -43,6 +46,7 @@ public class AuthService {
             throw new InvalidStateException("이미 가입된 이메일입니다.");
         }
         AppUser user = new AppUser(email, passwordEncoder.encode(request.password()), request.displayName().trim());
+        user.acceptTerms(policy.termsVersion());
         return tokens.issue(Objects.requireNonNull(users.save(user)));
     }
 
@@ -50,12 +54,15 @@ public class AuthService {
         AppUser user = users.findByEmail(normalizeEmail(request.email()))
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new AuthenticationFailedException("이메일 또는 비밀번호가 올바르지 않습니다."));
+        if (user.isSuspended()) {
+            throw new ForbiddenException("이용이 정지된 계정입니다." + (user.getSuspendedReason() == null ? "" : " 사유: " + user.getSuspendedReason()));
+        }
         return tokens.issue(user);
     }
 
     public UserResponse me(Long userId) {
         return users.findById(Objects.requireNonNull(userId))
-                .map(UserResponse::from)
+                .map(policy::view)
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
     }
 

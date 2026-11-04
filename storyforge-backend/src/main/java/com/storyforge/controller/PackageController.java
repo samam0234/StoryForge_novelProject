@@ -2,6 +2,7 @@ package com.storyforge.controller;
 
 import com.storyforge.domain.community.CommunityDtos.*;
 import com.storyforge.service.auth.CurrentUser;
+import com.storyforge.service.community.PackageContinuityService;
 import com.storyforge.service.community.PackageService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,11 @@ import java.util.List;
 public class PackageController {
 
     private final PackageService packages;
+    private final PackageContinuityService continuity;
     private final CurrentUser currentUser;
 
-    public PackageController(PackageService packages, CurrentUser currentUser) {
+    public PackageController(PackageService packages, PackageContinuityService continuity, CurrentUser currentUser) {
+        this.continuity = continuity;
         this.packages = packages;
         this.currentUser = currentUser;
     }
@@ -62,6 +65,18 @@ public class PackageController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLink(@PathVariable Long packageId, @PathVariable Long linkId) {
         packages.removeLink(packageId, linkId, currentUser.id());
+    }
+
+    /** 패키지 전체 Continuity 검사. AI를 호출하므로 생성과 같은 요청 제한을 받습니다. */
+    @PostMapping("/packages/{packageId}/continuity")
+    public PackageReportView checkContinuity(@PathVariable Long packageId) {
+        return continuity.run(packageId, currentUser.id());
+    }
+
+    /** 최근 검사 결과. 없으면 본문이 비어 있습니다. */
+    @GetMapping("/packages/{packageId}/continuity")
+    public PackageReportView latestContinuity(@PathVariable Long packageId) {
+        return continuity.latest(packageId, currentUser.id());
     }
 
     /** 내 작품을 넣고 싶다는 다른 작가의 요청 */

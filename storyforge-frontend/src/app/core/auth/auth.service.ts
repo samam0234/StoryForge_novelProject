@@ -39,7 +39,7 @@ export class AuthService {
     return this.http.post<AuthResponse>(`${this.base}/login`, body).pipe(tap((r) => this.store(r)));
   }
 
-  register(body: { email: string; password: string; displayName: string }): Observable<AuthResponse> {
+  register(body: { email: string; password: string; displayName: string; acceptTerms: boolean }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.base}/register`, body).pipe(tap((r) => this.store(r)));
   }
 

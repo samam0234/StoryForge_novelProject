@@ -595,7 +595,7 @@ class CommunityIntegrationTest extends IntegrationTestBase {
     @Test
     void accountSettingsValidateAndDeleteCascades() throws Exception {
         String email = "acc" + UUID.randomUUID() + "@example.com";
-        String token = call("POST", "/auth/register", Map.of("email", email, "password", "password123", "displayName", "이전"), null)
+        String token = call("POST", "/auth/register", Map.of("email", email, "acceptTerms", true, "password", "password123", "displayName", "이전"), null)
                 .json().get("accessToken").asString();
         long user = userId(call("GET", "/auth/me", null, token));
 
@@ -658,7 +658,7 @@ class CommunityIntegrationTest extends IntegrationTestBase {
     void collaboratorsShareTheDraftAndSeeTheCommitSpan() throws Exception {
         String email = "mate" + UUID.randomUUID() + "@example.com";
         String mate = call("POST", "/auth/register", Map.of(
-                "email", email, "password", "password123", "displayName", "동료"), null).json().get("accessToken").asString();
+                "email", email, "acceptTerms", true, "password", "password123", "displayName", "동료"), null).json().get("accessToken").asString();
         String owner = newUser();
         long project = call("POST", "/projects", Map.of("title", "함께", "genre", "판타지"), owner).json().get("id").asLong();
         assertThat(call("GET", "/projects/" + project, null, mate).status()).isEqualTo(404);
