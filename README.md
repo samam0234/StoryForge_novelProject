@@ -169,7 +169,7 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 | 상태 | 항목 |
 |------|------|
-| ✅ 동작 | JWT 인증(가입·로그인·소유자 검사), 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), TipTap 에디터, Continuity 리포트, 사용자 승인, 내보내기(MD·DOCX·PDF), 버전 이력·Diff, 프로젝트 설정, Rate Limiting·Circuit Breaker, 다크/라이트 테마 |
+| ✅ 동작 | JWT 인증(가입 때 약관 동의·로그인·소유자 검사), 프로젝트 CRUD, Story Bible 생성·편집·확정, Outline 생성·재배치·확정, 챕터 순차 생성(스트리밍), TipTap 에디터, Continuity 리포트, 사용자 승인, 내보내기(MD·DOCX·PDF), 버전 이력·Diff, 프로젝트 설정, Rate Limiting·Circuit Breaker, 다크/라이트 테마, 신고·차단·관리자 숨김, 외부 언어 모델 안내 |
 | ⏸ 보류 | 실제 Claude API 연동 검증 (현재 mock 공급자로 동작) |
 
 ## 저장소 구조

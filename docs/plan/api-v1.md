@@ -89,6 +89,11 @@
 | PUT | `/me/profile`, `/me/password` | 프로필, 비밀번호 |
 | POST | `/me/delete` | 계정 삭제 (본문에 비밀번호) |
 | POST | `/guide/chat` | AI 가이드챗 |
+| GET 🌐 | `/llm-notice` | 외부 언어 모델 사용 여부. `external`이면 원고가 밖으로 나감을 알림 |
+| POST | `/reports` | 게시글·작품·댓글·사용자 신고 |
+| POST / DELETE | `/blocks`, `/blocks/{userId}` | 차단, 해제. 막은 사이는 글이 서로 안 보임 |
+| GET | `/admin/reports` | 관리자의 열린 신고. 관리자가 아니면 404 |
+| POST | `/admin/reports/{id}/dismiss`, `/admin/reports/{id}/hide` | 기각, 공개 목록에서 숨김 |
 
 ### 챕터 생성 규칙
 
