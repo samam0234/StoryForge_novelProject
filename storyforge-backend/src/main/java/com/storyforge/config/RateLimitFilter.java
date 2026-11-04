@@ -57,7 +57,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             } else if (path.matches("/api/v1/shares/[^/]+/visit")) {
                 key = "visit:" + request.getRemoteAddr();
                 limit = properties.communityPerMinute();
-            } else if (path.equals("/api/v1/posts") || path.matches("/api/v1/(works|posts)/[^/]+/comments")
+            } else if (path.equals("/api/v1/posts") || path.equals("/api/v1/reports") || path.matches("/api/v1/(works|posts)/[^/]+/comments")
                     || path.matches("/api/v1/works/[^/]+/(shares|clone)")) {
                 key = "community:" + principal(request);
                 limit = properties.communityPerMinute();

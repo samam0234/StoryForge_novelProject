@@ -2,6 +2,8 @@ package com.storyforge.service.project;
 
 import com.storyforge.domain.activity.ActivityType;
 import com.storyforge.domain.community.CommunityDtos.UserSummary;
+import com.storyforge.domain.moderation.UserBlockRepository;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.project.CollabDtos.CollaboratorView;
 import com.storyforge.domain.project.CollabDtos.CommitRequest;
 import com.storyforge.domain.project.CollabDtos.CommitView;
@@ -15,6 +17,7 @@ import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
 import com.storyforge.service.community.ActivityService;
+import com.storyforge.service.notification.NotificationService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,9 +41,14 @@ public class CollaborationService {
     private final WorkCommitRepository commits;
     private final AppUserRepository users;
     private final ActivityService activity;
+    private final UserBlockRepository blocks;
+    private final NotificationService notifications;
 
     public CollaborationService(ProjectService projects, ProjectCollaboratorRepository members,
-                                WorkCommitRepository commits, AppUserRepository users, ActivityService activity) {
+                                WorkCommitRepository commits, AppUserRepository users, ActivityService activity,
+                                UserBlockRepository blocks, NotificationService notifications) {
+        this.blocks = blocks;
+        this.notifications = notifications;
         this.projects = projects;
         this.members = members;
         this.commits = commits;
@@ -69,7 +77,12 @@ public class CollaborationService {
         if (members.findByProjectIdAndUserId(projectId, invitee.getId()).isPresent()) {
             throw new InvalidStateException("이미 초대했거나 함께 쓰고 있는 사용자입니다.");
         }
+        if (blocks.existsByBlockerIdAndBlockedId(invitee.getId(), ownerId)) {
+            throw new InvalidStateException("이 사용자를 초대할 수 없습니다.");
+        }
         ProjectCollaborator row = members.save(new ProjectCollaborator(projectId, invitee.getId(), ownerId));
+        notifications.notify(invitee.getId(), ownerId, Notification.Type.COLLAB_INVITE,
+                "「" + project.getTitle() + "」에 함께 쓰자는 초대가 왔습니다.", "/create");
         return view(row, project.getTitle(), invitee);
     }
 
@@ -107,6 +120,8 @@ public class CollaborationService {
         Project project = projects.load(row.getProjectId());
         AppUser me = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+        notifications.notify(project.getOwnerId(), userId, Notification.Type.COLLAB_ACCEPT,
+                me.getDisplayName() + "님이 「" + project.getTitle() + "」 초대를 수락했습니다.", "/projects/" + project.getId() + "/activity");
         return view(row, project.getTitle(), me);
     }
 

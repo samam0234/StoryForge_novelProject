@@ -7,6 +7,7 @@ import com.storyforge.domain.chapter.Chapter;
 import com.storyforge.domain.chapter.ChapterRepository;
 import com.storyforge.domain.community.*;
 import com.storyforge.domain.community.CommunityDtos.*;
+import com.storyforge.domain.notification.Notification;
 import com.storyforge.domain.project.Project;
 import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.domain.project.ProjectStatus;
@@ -16,6 +17,7 @@ import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
 import com.storyforge.service.bible.BibleService;
 import com.storyforge.service.chapter.ChapterService;
+import com.storyforge.service.notification.NotificationService;
 import com.storyforge.service.project.OutlineService;
 import com.storyforge.service.project.ProjectService;
 import org.springframework.stereotype.Service;
@@ -49,11 +51,14 @@ public class CloneService {
     private final AppUserRepository users;
     private final ActivityService activity;
     private final IssueService issues;
+    private final NotificationService notifications;
 
     public CloneService(WorkService workService, WorkRepository works, WorkChapterRepository workChapters,
                         WorkCloneRepository clones, ProjectRepository projects, ProjectService projectService,
                         BibleService bibles, OutlineService outlines, ChapterService chapterService,
-                        ChapterRepository chapters, AppUserRepository users, ActivityService activity, IssueService issues) {
+                        ChapterRepository chapters, AppUserRepository users, ActivityService activity, IssueService issues,
+                        NotificationService notifications) {
+        this.notifications = notifications;
         this.workService = workService;
         this.works = works;
         this.workChapters = workChapters;
@@ -106,6 +111,8 @@ public class CloneService {
         activity.recordWork(userId, project.getId(), work, ActivityType.PROJECT_CLONED,
                 modeLabel(request.mode()) + " 범위로 Clone (r" + work.getRevision() + ")", 0);
         activity.touchAchievements(work.getAuthor().getId());
+        notifications.notify(work.getAuthor().getId(), userId, Notification.Type.CLONE,
+                user.getDisplayName() + "님이 「" + work.getTitle() + "」을(를) Clone했습니다.", "/works/" + work.getId());
         return new CloneResponse(project.getId(), request.mode(), work.getRevision());
     }
 
@@ -124,7 +131,7 @@ public class CloneService {
         Set<Long> seen = new HashSet<>(List.of(work.getId()));
         while (root.getParentWorkId() != null && seen.add(root.getParentWorkId())) {
             Work parent = works.findWithAuthor(root.getParentWorkId()).orElse(null);
-            if (parent == null || parent.getVisibility() != Work.Visibility.PUBLIC) {
+            if (parent == null || !parent.isListed()) {
                 break;
             }
             root = parent;
@@ -136,7 +143,7 @@ public class CloneService {
         while (!frontier.isEmpty() && nodes.size() < MAX_NODES) {
             List<Long> next = new ArrayList<>();
             for (Work child : works.findByParentWorkIdIn(frontier)) {
-                boolean listed = child.getVisibility() == Work.Visibility.PUBLIC || child.getId().equals(workId);
+                boolean listed = child.isListed() || child.getId().equals(workId);
                 if (listed && visited.add(child.getId()) && nodes.size() < MAX_NODES) {
                     nodes.add(node(child, child.getParentWorkId(), workId));
                     next.add(child.getId());
@@ -148,7 +155,7 @@ public class CloneService {
         Set<Long> projectIds = recent.stream().map(c -> c.getProjectId()).filter(Objects::nonNull).collect(Collectors.toSet());
         Map<Long, Long> derived = new HashMap<>();
         for (Long projectId : projectIds) {
-            works.findByProjectId(projectId).filter(w -> w.getVisibility() == Work.Visibility.PUBLIC)
+            works.findByProjectId(projectId).filter(Work::isListed)
                     .ifPresent(w -> derived.put(projectId, w.getId()));
         }
         List<CloneEntry> entries = recent.stream()
@@ -174,7 +181,7 @@ public class CloneService {
         WorkClone.Mode mode = WorkClone.Mode.valueOf(project.getCloneMode());
         Work upstream = project.getClonedFromWorkId() == null ? null
                 : works.findWithAuthor(project.getClonedFromWorkId())
-                .filter(w -> w.getVisibility() != Work.Visibility.PRIVATE || w.getAuthor().getId().equals(userId))
+                .filter(w -> (w.getVisibility() != Work.Visibility.PRIVATE && !w.isHidden()) || w.getAuthor().getId().equals(userId))
                 .orElse(null);
         if (upstream == null) {
             return new UpstreamCompare(null, project.getClonedFromTitle(), mode, project.getClonedFromRevision(),

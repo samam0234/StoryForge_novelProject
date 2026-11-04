@@ -3,7 +3,6 @@ package com.storyforge.service.auth;
 import com.storyforge.config.JwtProperties;
 import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AuthDtos.AuthResponse;
-import com.storyforge.domain.user.AuthDtos.UserResponse;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -17,10 +16,13 @@ import java.time.Instant;
 @Service
 public class TokenService {
 
+    private final AccountPolicy policy;
+
     private final JwtEncoder encoder;
     private final JwtProperties properties;
 
-    public TokenService(JwtEncoder encoder, JwtProperties properties) {
+    public TokenService(JwtEncoder encoder, JwtProperties properties, AccountPolicy policy) {
+        this.policy = policy;
         this.encoder = encoder;
         this.properties = properties;
     }
@@ -36,6 +38,6 @@ public class TokenService {
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         String token = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
-        return new AuthResponse(token, "Bearer", expiresAt, UserResponse.from(user));
+        return new AuthResponse(token, "Bearer", expiresAt, policy.view(user));
     }
 }

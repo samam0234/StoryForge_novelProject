@@ -31,7 +31,7 @@ public class PostController {
                                        @RequestParam(required = false) String q,
                                        @RequestParam(defaultValue = "0") int page,
                                        @RequestParam(defaultValue = "20") int size) {
-        return posts.list(category, q, page, size);
+        return posts.list(category, q, page, size, currentUser.idOrNull());
     }
 
     @GetMapping("/{postId}")

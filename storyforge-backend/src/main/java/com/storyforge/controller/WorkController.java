@@ -45,7 +45,7 @@ public class WorkController {
                                         @RequestParam(required = false) String sort,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(defaultValue = "20") int size) {
-        return workService.board(kind, genre, q, sort, page, size);
+        return workService.board(kind, genre, q, sort, page, size, currentUser.idOrNull());
     }
 
     @GetMapping("/works/{workId}")

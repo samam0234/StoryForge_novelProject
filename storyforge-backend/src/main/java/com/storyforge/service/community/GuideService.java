@@ -57,7 +57,7 @@ public class GuideService {
         String name = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다.")).getDisplayName();
         List<Project> mine = projects.findByOwnerIdOrderByUpdatedAtDesc(userId);
-        long published = works.countByAuthorIdAndVisibility(userId, Work.Visibility.PUBLIC);
+        long published = works.countByAuthorIdAndVisibilityAndHiddenAtIsNull(userId, Work.Visibility.PUBLIC);
         if (mine.isEmpty()) {
             return new GuideContext(name, 0, published, null, null, null, null);
         }
