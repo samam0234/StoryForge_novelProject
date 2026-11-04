@@ -57,6 +57,10 @@ export interface User {
   bio?: string | null;
   website?: string | null;
   avatarColor?: string | null;
+  /** 관리자 (ADMIN_EMAILS 설정) */
+  admin?: boolean;
+  /** 현재 버전의 이용약관에 동의했는지 */
+  termsAccepted?: boolean;
 }
 
 export interface AuthResponse {
@@ -158,6 +162,8 @@ export interface Chapter {
   generationContext: Record<string, unknown> | null;
   createdAt: string;
   continuityReport: ContinuityReport | null;
+  /** 생성 뒤 고쳤거나 Clone한 원고. 승인할 때 다시 요약·검증합니다. */
+  needsReview: boolean;
 }
 
 export interface ChapterVersion {

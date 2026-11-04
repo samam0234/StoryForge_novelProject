@@ -41,6 +41,17 @@ public class ProjectCommunityController {
         return activity.projectGraph(projectId);
     }
 
+    /** 원본 최신 게시본의 챕터를 내 Draft로 가져옵니다. 이전 내용은 이력에 남습니다. */
+    @PostMapping("/upstream/chapters/{number}/pull")
+    public UpstreamCompare pull(@PathVariable Long projectId, @PathVariable int number) {
+        return cloneService.pullChapter(projectId, number, currentUser.id());
+    }
+
+    @PutMapping("/upstream/acknowledge")
+    public UpstreamCompare acknowledge(@PathVariable Long projectId) {
+        return cloneService.acknowledge(projectId, currentUser.id());
+    }
+
     @GetMapping("/upstream")
     public UpstreamCompare upstream(@PathVariable Long projectId) {
         return cloneService.compare(projectId, currentUser.id());

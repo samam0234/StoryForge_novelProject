@@ -97,6 +97,9 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 | `POST /internal/generate/bible` | `{worldSetting, theme, tone, characters[]}` |
 | `POST /internal/generate/outline` | `{chapters[]}` |
 | `POST /internal/generate/chapter` | SSE: `token`(본문 조각) → `done`(`{title, content, summary, report}`) 또는 `error` |
+| `POST /internal/generate/review` | `{summary, report}`. 사람이 고친 본문의 재요약·재검증 |
+| `POST /internal/package/continuity` | `{issues[], score}`. 패키지 작품 사이의 충돌 검사 |
+| `POST /internal/guide/chat` | `{reply, actions[]}`. 명령어는 LLM 없이 답함. 이동 버튼은 서버의 표에서만 만듦 |
 | `GET /health` | `{status, provider, model}` |
 
 JSON 필드는 camelCase이며, 백엔드 [AiDtos.java](../storyforge-backend/src/main/java/com/storyforge/client/AiDtos.java)와 [schemas.py](app/models/schemas.py)가 짝입니다. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다. 상세 형식은 [docs/plan/api-v1.md](../docs/plan/api-v1.md)에 있습니다.
@@ -112,6 +115,8 @@ JSON 필드는 camelCase이며, 백엔드 [AiDtos.java](../storyforge-backend/sr
   → done 이벤트
 ```
 
+사람이 본문을 고치면 승인할 때 `review`가 같은 요약·검증을 그 본문으로 다시 합니다. mock에서는 요약이 본문 앞부분으로 만들어져, 내용이 바뀌면 요약도 바뀝니다.
+
 Claude 모드에서는 서버 측 refusal fallback(`fallbacks: "default"`)을 켜 두었습니다. 모델이 거절하거나 출력이 잘리면 `error` 이벤트를 보내고, 백엔드는 프로젝트 상태를 되돌립니다.
 
 ## 폴더 구조
@@ -122,12 +127,12 @@ storyforge-ai/
 ├── requirements-dev.txt    # 테스트 의존성 (pytest, httpx)
 ├── app/
 │   ├── main.py             # 앱, /health
-│   ├── api/v1/             # /internal/generate/*
+│   ├── api/v1/             # /internal/generate/*, /internal/package/*, /internal/guide/*
 │   ├── core/               # 설정, LLM 추상화
-│   ├── services/           # 생성기, Continuity 검사, mock
+│   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # mock 모드 테스트
+└── tests/                  # 29건. mock과 가짜 LLM (실제 API 호출 없음)
 ```
 
 ## 문제 해결
@@ -143,7 +148,7 @@ storyforge-ai/
 
 - 인증, 프로젝트 상태 관리, DB 저장은 하지 않습니다 (Spring Boot 담당).
 - Continuity 실패를 임의로 통과시키지 않습니다.
-- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다.
+- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 그래서 **실제 모델 호출은 아직 검증하지 못했습니다.**
 
 ## 관련 문서
 

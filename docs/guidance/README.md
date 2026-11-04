@@ -38,6 +38,7 @@
 | 문서 | 내용 |
 |------|------|
 | [local-dev-setup.md](local-dev-setup.md) | DB·AI·백엔드·프론트 로컬 실행, 테스트 |
+| [community-guide.md](community-guide.md) | 관리자 지정, 환경 변수, 게시·Clone·신고·패키지 검사 확인 절차 |
 
 ## 들어가지 않을 것
 

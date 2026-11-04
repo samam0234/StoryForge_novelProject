@@ -107,6 +107,9 @@ public class Work {
     @Column(nullable = false)
     private long viewCount;
 
+    /** 관리자가 숨긴 시각. 비어 있지 않으면 작가와 관리자만 봅니다. */
+    private Instant hiddenAt;
+
     @Column(nullable = false)
     private Instant publishedAt;
 
@@ -168,6 +171,19 @@ public class Work {
         this.revision++;
         this.updatedAt = Instant.now();
         return this.revision;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hiddenAt = hidden ? Instant.now() : null;
+    }
+
+    public boolean isHidden() {
+        return hiddenAt != null;
+    }
+
+    /** 게시판과 프로필에 보여도 되는 상태 */
+    public boolean isListed() {
+        return visibility == Visibility.PUBLIC && hiddenAt == null;
     }
 
     public Long getId() { return id; }

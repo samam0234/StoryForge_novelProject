@@ -10,7 +10,7 @@
 
 - [ ] 백엔드 `./mvnw test` (건너뜀 없이 통과)
 - [ ] AI `pytest`
-- [ ] 프론트 `npx ng test --watch=false`, `npx ng build`
+- [ ] 프론트 `npx ng test --watch=false`, **`npx ng build`** (테스트만으로는 화면 템플릿 오류를 놓칩니다)
 - [ ] 화면을 바꿨다면 브라우저에서 직접 확인
 
 <!-- 실행한 명령과 결과, 확인하지 못한 부분을 적어 주세요 -->

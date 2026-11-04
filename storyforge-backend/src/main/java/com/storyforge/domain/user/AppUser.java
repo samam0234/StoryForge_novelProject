@@ -27,6 +27,15 @@ public class AppUser {
 
     private String avatarColor;
 
+    private Instant suspendedAt;
+
+    private String suspendedReason;
+
+    @SuppressWarnings("unused") // 언제 동의했는지 남기는 기록. 판단에는 약관 버전을 씁니다.
+    private Instant termsAcceptedAt;
+
+    private String termsVersion;
+
     @Column(nullable = false)
     private Instant createdAt;
 
@@ -47,6 +56,21 @@ public class AppUser {
         this.avatarColor = avatarColor;
     }
 
+    public void suspend(String reason) {
+        this.suspendedAt = Instant.now();
+        this.suspendedReason = reason;
+    }
+
+    public void unsuspend() {
+        this.suspendedAt = null;
+        this.suspendedReason = null;
+    }
+
+    public void acceptTerms(String version) {
+        this.termsAcceptedAt = Instant.now();
+        this.termsVersion = version;
+    }
+
     public void changePassword(String passwordHash) {
         this.passwordHash = passwordHash;
     }
@@ -55,6 +79,9 @@ public class AppUser {
     public String getEmail() { return email; }
     public String getPasswordHash() { return passwordHash; }
     public String getDisplayName() { return displayName; }
+    public boolean isSuspended() { return suspendedAt != null; }
+    public String getSuspendedReason() { return suspendedReason; }
+    public String getTermsVersion() { return termsVersion; }
     public String getBio() { return bio; }
     public String getWebsite() { return website; }
     public String getAvatarColor() { return avatarColor; }

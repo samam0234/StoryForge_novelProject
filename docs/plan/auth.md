@@ -19,11 +19,11 @@ sequenceDiagram
 
 | 메서드 | 경로 | 인증 | 설명 |
 |--------|------|------|------|
-| POST | `/api/v1/auth/register` | 없음 | `{email, password, displayName}` → 토큰. 이메일 중복 409 |
-| POST | `/api/v1/auth/login` | 없음 | `{email, password}` → 토큰. 실패 401 |
-| GET | `/api/v1/auth/me` | 필요 | 현재 사용자 |
+| POST | `/api/v1/auth/register` | 없음 | `{email, password, displayName, acceptTerms}` → 토큰. 약관 동의 필수, 이메일 중복 409 |
+| POST | `/api/v1/auth/login` | 없음 | `{email, password}` → 토큰. 실패 401, 정지된 계정 403 |
+| GET | `/api/v1/auth/me` | 필요 | 현재 사용자. 관리자 여부(`admin`), 현재 약관 동의 여부(`termsAccepted`) 포함 |
 
-그 밖의 `/api/v1/**`는 모두 인증이 필요합니다. 토큰이 없거나 만료되면 401(ProblemDetail)입니다.
+커뮤니티 읽기([api-v1.md](api-v1.md)의 🌐)를 뺀 그 밖의 `/api/v1/**`는 모두 인증이 필요합니다. 토큰이 없거나 만료되면 401(ProblemDetail)입니다. 정지와 관리자는 [moderation.md](moderation.md)에 있습니다.
 
 ## 결정
 
@@ -34,7 +34,9 @@ sequenceDiagram
 | 비밀 키 | `JWT_SECRET` (32바이트 이상, 짧으면 시작 실패). 비우면 시작할 때 무작위 생성하고 경고 로그 | 저장소에 기본 키를 넣지 않기 위해. 무작위 키는 재시작하면 기존 토큰이 무효가 되므로 **운영에서는 반드시 지정** |
 | 비밀번호 | BCrypt, 8~72바이트 | BCrypt가 72바이트까지만 처리 |
 | 이메일 | 앞뒤 공백 제거, 소문자로 저장 | 대소문자 중복 가입 방지 |
-| 소유자 검사 | `OwnershipInterceptor`가 경로 변수 `{projectId}`, `{chapterId}`로 일괄 검사 | 새 엔드포인트에서 검사를 빠뜨리지 않도록 |
+| 소유자 검사 | `OwnershipInterceptor`가 경로 변수 `{projectId}`, `{chapterId}`로 일괄 검사. 주인과 초대를 수락한 참여자만 통과 (`ProjectAccess`) | 새 엔드포인트에서 검사를 빠뜨리지 않도록. 삭제·설정·게시·초대는 서비스가 주인인지 다시 확인 |
+| 작품·게시글 수정 권한 | 서비스에서 작성자인지 확인. 아니면 404 | 경로 변수로 일괄 검사할 수 없는 공개 리소스 |
+| 정지·삭제된 계정의 토큰 | `AccountGuardInterceptor`가 쓰기 요청마다 확인 | JWT는 만료 전까지 유효하므로 |
 | 다른 사용자의 리소스 | 403이 아니라 **404** | 존재 여부를 알려 주지 않기 위해 |
 | 프론트 토큰 저장 | `localStorage` | 새로고침 유지. XSS에 노출되는 대신, 입력값을 HTML로 넣지 않는 Angular 기본 이스케이프와 짧은 만료로 완화 |
 

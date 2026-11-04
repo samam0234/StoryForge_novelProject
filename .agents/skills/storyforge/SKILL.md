@@ -116,6 +116,12 @@ BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED
 - Must: Story Bible, Outline, 순차 챕터 생성, 기본 Continuity, 에디터, 인증
 - Phase 1에서 임의로 추가하지 말 것: 고급 벡터 검색, 협업, 문체 분석, 이미지 생성 연동
 - 기획서 Phase 1~3 로드맵을 존중합니다.
+- 커뮤니티와 관리 기능은 사용자 요청으로 추가한 범위입니다. 기준은 `docs/plan/community.md`, `docs/plan/moderation.md`입니다.
+
+### 완료 전 확인 (v1.4 추가)
+
+- 프론트를 바꾸면 `ng test`와 **`ng build`** 를 모두 확인합니다. 단위 테스트는 화면 템플릿 오류를 놓칠 수 있습니다.
+- 화면을 바꾸면 브라우저에서 직접 확인합니다.
 
 포트와 인프라 확정값은 코드에서 정하지 않고 `docs/plan/CURRENT_STACK.md`에서 관리합니다.
 
@@ -128,7 +134,7 @@ BIBLE_DRAFT → BIBLE_CONFIRMED → OUTLINE_DRAFT → OUTLINE_CONFIRMED
 src/app/
 ├── core/          # auth, api, models
 ├── shared/        # components, ui
-├── features/      # projects, story-bible, outline, chapters, dashboard
+├── features/      # projects, story-bible, outline, chapters, dashboard, board, lounge, issues, packages, profile, moderation, legal, guide
 ├── layout/
 └── app.routes.ts
 ```
@@ -138,7 +144,7 @@ src/app/
 src/main/java/com/storyforge/
 ├── controller/
 ├── service/orchestration/   # 상태 머신
-├── domain/                  # project, bible, outline, chapter
+├── domain/                  # project, bible, outline, chapter, user, community, activity, moderation, notification
 ├── client/                  # FastAPI WebClient
 ├── config/
 └── db/migration/            # Flyway
@@ -149,7 +155,7 @@ src/main/java/com/storyforge/
 app/
 ├── api/v1/
 ├── core/llm.py
-├── services/                # bible_generator, outline_generator, chapter_generator, continuity_checker
+├── services/                # bible_generator, outline_generator, chapter_generator, continuity_checker, package_continuity, guide_assistant
 ├── prompts/
 ├── models/
 └── main.py
@@ -233,8 +239,8 @@ README를 두지 않는 곳: 파일이 한두 개뿐인 폴더, 패키지 경로
 
 ---
 
-**문서 버전**: 1.3 (1.2 → 1.3: 폴더 README를 모든 폴더에서 필요한 곳만으로 변경. 1.1 → 1.2: 커밋 기록은 필요할 때만, 브랜치·main 병합 제한, 변경 사유 문서화, 기획서 v1.3 반영)  
-**최종 갱신**: 2026-11-03  
+**문서 버전**: 1.4 (1.3 → 1.4: 커뮤니티 범위 기준 문서, 완료 전 `ng build` 확인, 폴더 구조 갱신. 1.2 → 1.3: 폴더 README를 모든 폴더에서 필요한 곳만으로 변경. 1.1 → 1.2: 커밋 기록은 필요할 때만, 브랜치·main 병합 제한, 변경 사유 문서화, 기획서 v1.3 반영)  
+**최종 갱신**: 2026-11-04  
 **상태**: 정본 (Canonical)  
 **프로젝트**: StoryForge  
 **기준 문서**: StoryForge_기획서_v1.2.md (문서 버전 1.3, 파일명은 유지)  

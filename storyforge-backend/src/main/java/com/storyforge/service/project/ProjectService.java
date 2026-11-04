@@ -68,7 +68,7 @@ public class ProjectService {
         List<Project> mine = new ArrayList<>(projects.findByOwnerIdOrderByUpdatedAtDesc(ownerId));
         List<Long> sharedIds = collaborators.findByUserIdOrderByCreatedAtDesc(ownerId).stream()
                 .filter(c -> c.getStatus() == ProjectCollaborator.Status.ACCEPTED)
-                .map(ProjectCollaborator::getProjectId)
+                .map(item -> item.getProjectId())
                 .toList();
         if (!sharedIds.isEmpty()) {
             mine.addAll(projects.findAllById(sharedIds));
@@ -76,7 +76,7 @@ public class ProjectService {
         mine.sort((a, b) -> b.getUpdatedAt().compareTo(a.getUpdatedAt()));
         Map<Long, long[]> chars = new HashMap<>();
         if (!mine.isEmpty()) {
-            for (ActivityEventRepository.ProjectChars c : events.charsByProject(mine.stream().map(Project::getId).toList())) {
+            for (ActivityEventRepository.ProjectChars c : events.charsByProject(mine.stream().map(item -> item.getId()).toList())) {
                 chars.computeIfAbsent(c.getProjectId(), k -> new long[2])[c.getActor() == ActivityType.Actor.AGENT ? 1 : 0] = c.getChars();
             }
         }

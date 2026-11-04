@@ -13,7 +13,7 @@
 |--------|------|------------------------------|
 | PostgreSQL | 5433 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` |
 | storyforge-ai | 8001 (127.0.0.1) | `LLM_PROVIDER=mock`, `LLM_MODEL`, `LLM_EFFORT`, `ANTHROPIC_API_KEY` |
-| storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN`, `JWT_SECRET`, `JWT_TTL` |
+| storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN`, `JWT_SECRET`, `JWT_TTL`, `ADMIN_EMAILS` (전체는 [CURRENT_STACK.md](../plan/CURRENT_STACK.md)) |
 | storyforge-frontend | 4200 | (없음. `/api`는 프록시) |
 
 기본값으로 바로 실행됩니다. 바꾸려면 `.env.example`을 `.env`로 복사해 고칩니다.
@@ -52,7 +52,7 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 
 - `curl localhost:8001/health` → `{"status":"ok","provider":"mock",...}`
 - `curl localhost:8080/actuator/health` → `{"status":"UP"}`
-- 브라우저 `http://localhost:4200` → 로그인 화면. 회원가입하면 다크 테마 대시보드로 이동
+- 브라우저 `http://localhost:4200` → 로그인 화면. 이용약관에 동의하고 회원가입하면 내 프로젝트(`/`)로 이동
 - 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 탭에서 생성 시 "AI writing..."과 함께 본문이 흘러나오고, 우측에 Continuity 점수가 표시됩니다
 - mock 모드 생성물에는 "※ 개발용 mock 생성기 출력입니다" 표시가 붙습니다
 

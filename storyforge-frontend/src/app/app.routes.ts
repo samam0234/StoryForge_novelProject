@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './core/auth/auth.guard';
+import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
@@ -37,6 +37,15 @@ export const routes: Routes = [
   {
     path: 'users/:userId',
     loadComponent: () => import('./features/profile/profile.page').then((m) => m.ProfilePage),
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./features/legal/terms.page').then((m) => m.TermsPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    loadComponent: () => import('./features/moderation/admin-reports.page').then((m) => m.AdminReportsPage),
   },
   {
     path: 'package-forge',
