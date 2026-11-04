@@ -25,6 +25,8 @@
 | `profile/` | `profile.page.ts` | 프로필, 활동 잔디, 업적 (`/users/:id`) | |
 | | `account-settings.page.ts`, `my-works.page.ts`, `work-edit.page.ts` | 계정 설정, 내 작품 관리, 게시 작품 수정 (`/me/...`) | |
 | `guide/` | `guide-chat.component.ts` | AI 가이드챗 패널 (상단 버튼) | |
+| `moderation/` | `report.dialog.ts`, `admin-reports.page.ts` | 신고 창, 신고 관리 (`/admin`) | |
+| `legal/` | `terms.page.ts` | 이용약관 (`/terms`). 문구를 바꾸면 `TERMS_VERSION`도 올립니다 | |
 
 스펙은 [docs/plan/community.md](../../../../docs/plan/community.md)에 있습니다.
 

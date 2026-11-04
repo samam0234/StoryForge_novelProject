@@ -2,7 +2,7 @@
 
 > 기준: 기획서 v1.2 §7.2, §10, §11
 > 실행 중인 백엔드의 OpenAPI 문서: `http://localhost:8080/swagger-ui.html`
-> **`/auth/register`, `/auth/login`을 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404입니다.
+> **가입, 로그인, 커뮤니티 읽기(아래 🌐)를 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404, 정지된 계정의 쓰기와 관리자 전용 API는 403입니다.
 > 오류 응답은 모두 RFC 9457 ProblemDetail(`application/problem+json`)이며, 사용자 메시지는 `detail`에 있습니다.
 
 ## 외부 API (Spring Boot, `/api/v1`)
@@ -11,7 +11,7 @@
 
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
-| POST | `/auth/register` | 가입 → 토큰 |
+| POST | `/auth/register` | 가입 → 토큰. `acceptTerms: true` 필수 |
 | POST | `/auth/login` | 로그인 → 토큰 |
 | GET | `/auth/me` | 내 정보 |
 
@@ -86,15 +86,42 @@
 | GET 🌐 | `/issues` | 이슈 게시판 |
 | GET 🌐 | `/users/{id}`, `/users/{id}/works`, `/users/{id}/contributions`, `/users/{id}/activity?date=`, `/users/{id}/achievements` | 프로필, 작품, 활동 잔디, 활동 내역, 업적 |
 | GET | `/me/works` | 내 작품 (비공개 포함) |
-| PUT | `/me/profile`, `/me/password` | 프로필, 비밀번호 |
+| PUT | `/me/profile`, `/me/password`, `/me/terms` | 프로필, 비밀번호, 현재 약관 동의 |
 | POST | `/me/delete` | 계정 삭제 (본문에 비밀번호) |
 | POST | `/guide/chat` | AI 가이드챗 |
+| POST | `/projects/{id}/upstream/chapters/{n}/pull` | 원본 챕터를 내 Draft로 가져오기 (전체 원고 Clone, 검토 단계) |
+| PUT | `/projects/{id}/upstream/acknowledge` | 원본 현재 리비전까지 확인 표시 |
+| POST / GET | `/packages/{id}/continuity` | 패키지 전체 검사 실행 / 최근 결과. 패키지 주인만 |
+
+### 함께 창작 ([community.md](community.md))
+
+| 메서드 | 경로 | 설명 | 누가 |
+|--------|------|------|------|
+| GET / POST | `/projects/{id}/collaborators` | 참여자 목록 / 이메일로 초대 | 참여자 / 주인 |
+| DELETE | `/projects/{id}/collaborators/{userId}` | 초대 취소, 내보내기 | 주인 |
+| GET / POST | `/projects/{id}/commits` | 작업 커밋 목록 / 남기기 | 참여자 |
+| GET | `/projects/{id}/commits/{commitId}` | 작업 커밋 하나 | 참여자 |
+| GET | `/me/invitations` | 받은 초대 | 본인 |
+| POST / DELETE | `/me/invitations/{id}/accept`, `/me/invitations/{id}` | 수락 / 거절 | 본인 |
+
+### 신고·관리·알림 ([moderation.md](moderation.md))
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| POST | `/reports` | 신고 |
+| PUT / DELETE | `/users/{id}/block` | 차단, 해제 |
+| GET | `/me/blocks` | 차단 목록 |
+| GET | `/admin/reports?status=&page=&size=` | 신고 목록. 관리자만 |
+| PUT | `/admin/reports/{id}` | 처리 `{action, note}`. `HIDE`, `RESTORE`, `DISMISS`, `SUSPEND`, `UNSUSPEND` |
+| GET | `/me/notifications`, `/me/notifications/unread-count` | 알림 목록, 안 읽은 수 |
+| PUT | `/me/notifications/{id}/read`, `/me/notifications/read-all` | 읽음 처리 |
 
 ### 챕터 생성 규칙
 
 - 생성할 수 있는 챕터는 **확정된 챕터 수 + 1**뿐입니다. 이전 챕터를 승인하지 않으면 다음 챕터를 만들 수 없습니다.
 - 검토 중(Draft)인 챕터는 같은 번호로 다시 생성(재생성)할 수 있습니다.
 - 마지막 챕터를 승인하면 `COMPLETED`가 됩니다.
+- 생성 뒤 본문을 고쳤거나 Clone·원본 가져오기로 들어온 챕터는 `needsReview: true`입니다. 승인할 때 먼저 요약과 Continuity를 다시 만듭니다. 심각한 이슈가 나오면 결과를 저장하고 **409**로 멈추며, 다시 승인하면 진행합니다. AI가 실패하면 **502**이고 승인되지 않습니다.
 
 ### 챕터 생성 SSE 이벤트
 
@@ -113,11 +140,12 @@
 | POST | `/internal/generate/bible` | `{project, prompt}` | `{worldSetting, theme, tone, characters[]}` |
 | POST | `/internal/generate/outline` | `{project, bible, chapterCount}` | `{chapters[]}` |
 | POST | `/internal/generate/chapter` | ChapterContext `{project, bible, chapterNumber, outlineChapter, previousChapters[]}` | SSE: `token`(텍스트), `done`(`{title, content, summary, report{issues[], score}}`), `error`(메시지) |
+| POST | `/internal/generate/review` | `{context, title, content}` | `{summary, report}` |
+| POST | `/internal/package/continuity` | `{title, worldNote, works[], links[]}` | `{issues[], score}` |
+| POST | `/internal/guide/chat` | `{message, context}` | `{reply, actions[{label, kind, target}]}` |
 | GET | `/health` | — | `{status, provider, model}` |
 
 계약 정의 위치: 백엔드 `client/AiDtos.java` ↔ AI `app/models/schemas.py`. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다.
-
-내부 API에 `POST /internal/guide/chat`(가이드챗)이 추가되었습니다. 요청 `{message, context}`, 응답 `{reply, actions[{label, kind, target}]}`.
 
 ## Continuity 리포트
 
