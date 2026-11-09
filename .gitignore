@@ -44,3 +44,6 @@ storyforge-backend/uploads/
 # 로그
 *.log
 logs/
+
+# 외부 에이전트 보고서 (이 저장소 산출물 아님)
+JULES_REPORT.md

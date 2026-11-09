@@ -51,13 +51,15 @@
 | `RATE_LIMIT_COMMUNITY_PER_MINUTE` | backend | `60` | 사용자당 글·댓글·공유·Clone, IP당 공유 방문 |
 | `ADMIN_EMAILS` | backend | (없음) | 관리자 이메일. 쉼표로 구분. [moderation.md](moderation.md) |
 | `TERMS_VERSION` | backend | `2026-11-04` | 이용약관 버전. 올리면 기존 사용자는 다시 동의해야 게시 가능 |
+| `TRUSTED_PROXIES` | backend | (없음) | 이 주소에서 온 요청만 `X-Forwarded-For`를 신뢰. 비우면 접속 주소만 사용 |
+| `CONTENT_BLOCKLIST` | backend | (없음) | 쉼표로 구분한 금지 표현. 비우면 검사하지 않음 |
 | `COMMUNITY_ZONE` | backend | `Asia/Seoul` | 작업 그래프와 활동 잔디의 날짜 기준 |
 | `CODICOMPERCHAT_URL` | backend | (없음) | 가이드챗 콜라보 이동 주소. 비우면 이동 버튼을 표시하지 않음 |
-| `LLM_PROVIDER` | ai | `mock` | 테스트만 `mock`. 일반 실행은 `ollama`(Gemma 4 E4B). 강력 출력은 프로젝트 모델이 `claude-*`일 때 Anthropic |
-| `LLM_MODEL` | ai | `claude-opus-5-5` | 강력 출력 기본 모델. effort는 모델별로 고정 (Haiku high, Sonnet·Opus medium) |
+| `LLM_PROVIDER` | ai, backend | `mock` | 테스트만 `mock`. 일반 실행은 `ollama`(Gemma 4 E4B). 강력 출력은 프로젝트 모델이 `claude-*`일 때 Anthropic. 백엔드는 외부 전송 안내에 같은 값을 씀 |
+| `LLM_MODEL` | ai | `claude-opus-5-5` | 강력 출력 기본 모델 |
 | `OLLAMA_BASE_URL` | ai | `http://127.0.0.1:11434` | 일반 출력 |
 | `OLLAMA_MODEL` | ai | `gemma4:e4b` | 일반 출력 모델 |
-| `LLM_EFFORT` | ai | `high` | 소설 생성·이어쓰기 추론. Claude 기본값은 medium |
+| `LLM_EFFORT` | ai | `high` | 소설 생성·이어쓰기 추론. Claude 선택 모델은 Haiku high, Sonnet·Opus medium |
 | `ANTHROPIC_API_KEY` | ai | (없음) | 비우면 SDK 표준 자격 증명 경로 사용 |
 
 ## 4. 서비스 간 통신
@@ -83,3 +85,4 @@
 | 2026-11-02 | Spring Boot 4.1.2 전환, AI 기본 포트 8001 | [roadmap-progress.md](roadmap-progress.md) |
 | 2026-11-03 | 커뮤니티 환경 변수, 내보내기 형식 추가 | [community.md](community.md) |
 | 2026-11-04 | `ADMIN_EMAILS`, `TERMS_VERSION`, 내부 API 2개 추가 | [moderation.md](moderation.md) |
+| 2026-11-05 | 운영 프로필 잠금, `TRUSTED_PROXIES`, `CONTENT_BLOCKLIST`, 외부 모델 안내 | 원격 develop과 병합 |

@@ -34,7 +34,7 @@
 ## 호출 규칙 (정본 "호출 및 책임 규칙")
 
 - Angular는 FastAPI를 직접 호출하지 않습니다. 모든 요청은 Spring Boot를 거칩니다.
-- FastAPI는 내부망 전용입니다.
+- FastAPI는 내부망 전용입니다. 로컬 실행은 `127.0.0.1`에만 묶고, 운영에서는 8001 포트를 밖에 열지 않습니다.
 - 상태 머신과 오케스트레이션은 Spring Boot가 맡습니다.
 - LLM 호출과 Continuity Check는 FastAPI에서만 합니다.
 

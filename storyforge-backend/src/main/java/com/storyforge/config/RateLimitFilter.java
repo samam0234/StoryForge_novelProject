@@ -16,11 +16,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 1분 고정 창 Rate Limiting (기획서 §13). 메모리 기반이라 서버 한 대 기준입니다.
  * 로그인·가입은 IP별, AI 생성·가이드챗과 커뮤니티 작성은 사용자별로 셉니다. 공유 방문은 IP별로 셉니다.
+ * 신뢰하는 프록시 뒤에서만 X-Forwarded-For의 실제 클라이언트를 씁니다.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -34,11 +36,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimitProperties properties;
     private final ObjectMapper objectMapper;
     private final Clock clock;
+    private final Set<String> trustedProxies;
 
-    public RateLimitFilter(RateLimitProperties properties, ObjectMapper objectMapper, Clock clock) {
+    public RateLimitFilter(RateLimitProperties properties, ObjectMapper objectMapper, Clock clock, Set<String> trustedProxies) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.clock = clock;
+        this.trustedProxies = trustedProxies == null ? Set.of() : Set.copyOf(trustedProxies);
     }
 
     @Override
@@ -49,19 +53,23 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         if ("POST".equals(request.getMethod())) {
             if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/register")) {
-                key = "auth:" + request.getRemoteAddr();
+                key = "auth:" + ClientAddresses.resolve(request, trustedProxies);
                 limit = properties.authPerMinute();
             } else if (path.startsWith("/api/v1/") && (path.endsWith("/generate") || path.endsWith("/continuity") || path.equals("/api/v1/guide/chat"))) {
                 key = "generate:" + principal(request);
                 limit = properties.generatePerMinute();
             } else if (path.matches("/api/v1/shares/[^/]+/visit")) {
-                key = "visit:" + request.getRemoteAddr();
+                key = "visit:" + ClientAddresses.resolve(request, trustedProxies);
                 limit = properties.communityPerMinute();
-            } else if (path.equals("/api/v1/posts") || path.equals("/api/v1/reports") || path.matches("/api/v1/(works|posts)/[^/]+/comments")
+            } else if (path.equals("/api/v1/posts") || path.equals("/api/v1/reports")
+                    || path.matches("/api/v1/(works|posts)/[^/]+/comments")
                     || path.matches("/api/v1/works/[^/]+/(shares|clone)")) {
                 key = "community:" + principal(request);
                 limit = properties.communityPerMinute();
             }
+        } else if ("PUT".equals(request.getMethod()) && path.matches("/api/v1/users/[^/]+/block")) {
+            key = "community:" + principal(request);
+            limit = properties.communityPerMinute();
         }
         if (key != null && !tryAcquire(key, limit)) {
             reject(response);
@@ -70,9 +78,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    private static String principal(HttpServletRequest request) {
+    private String principal(HttpServletRequest request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return auth != null && auth.isAuthenticated() ? auth.getName() : request.getRemoteAddr();
+        return auth != null && auth.isAuthenticated() ? auth.getName() : ClientAddresses.resolve(request, trustedProxies);
     }
 
     private boolean tryAcquire(String key, int limit) {
