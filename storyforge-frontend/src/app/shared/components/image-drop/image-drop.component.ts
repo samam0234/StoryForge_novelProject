@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, input, output, signal } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 
 /** 파일 선택, 끌어다 놓기, 클립보드 이미지로 표지를 올립니다. */
 @Component({
