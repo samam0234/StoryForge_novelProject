@@ -35,4 +35,8 @@ public final class ActivityDtos {
     public record AchievementView(String code, String name, String description, String icon, String tier, long progress,
                                   long target, Instant earnedAt) {
     }
+
+    /** 작업 한 건의 앞뒤 본문. 공개 그래프 응답에는 넣지 않습니다. */
+    public record ReviewView(Long eventId, String summary, String beforeText, String afterText) {
+    }
 }

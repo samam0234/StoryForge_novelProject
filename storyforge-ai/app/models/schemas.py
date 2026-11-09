@@ -204,3 +204,13 @@ class GuideAction(Schema):
 class GuideChatResponse(Schema):
     reply: str
     actions: list[GuideAction] = Field(default_factory=list)
+
+
+class CompleteRequest(Schema):
+    before: str = Field(default="", max_length=8000)
+    after: str = Field(default="", max_length=2000)
+    tone: str | None = None
+
+
+class CompleteResponse(Schema):
+    suggestion: str

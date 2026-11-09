@@ -34,14 +34,14 @@ public final class CommunityDtos {
             List<String> tags, UserSummary author, Work.Visibility visibility, Work.ClonePolicy clonePolicy,
             int revision, int chapterCount, int charCount, int likeCount, int commentCount, int cloneCount,
             int shareCount, long viewCount, Long parentWorkId, String parentTitle,
-            boolean hidden, Instant publishedAt, Instant updatedAt) {
+            boolean hidden, Instant publishedAt, Instant updatedAt, String coverUrl) {
 
         public static WorkCard from(Work w) {
             return new WorkCard(w.getId(), w.getKind(), w.getPackageType(), w.getTitle(), w.getSynopsis(), w.getGenre(),
                     splitTags(w.getTags()), UserSummary.from(w.getAuthor()), w.getVisibility(), w.getClonePolicy(),
                     w.getRevision(), w.getChapterCount(), w.getCharCount(), w.getLikeCount(), w.getCommentCount(),
                     w.getCloneCount(), w.getShareCount(), w.getViewCount(), w.getParentWorkId(), w.getParentTitle(),
-                    w.isHidden(), w.getPublishedAt(), w.getUpdatedAt());
+                    w.isHidden(), w.getPublishedAt(), w.getUpdatedAt(), w.getCoverUrl());
         }
 
         private static List<String> splitTags(String tags) {
@@ -119,7 +119,14 @@ public final class CommunityDtos {
             @NotNull Work.ClonePolicy clonePolicy,
             boolean downloadable,
             Work.PackageType packageType,
-            @Size(max = 20000) String worldNote) {
+            @Size(max = 20000) String worldNote,
+            @Size(max = 500) String coverUrl) {
+    }
+
+    public record CompleteRequest(@Size(max = 8000) String before, @Size(max = 2000) String after) {
+    }
+
+    public record SuggestionResponse(String suggestion) {
     }
 
     public record UpdateWorkChapterRequest(

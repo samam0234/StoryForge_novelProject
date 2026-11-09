@@ -1,5 +1,6 @@
 package com.storyforge.controller;
 
+import com.storyforge.domain.activity.ActivityDtos.ReviewView;
 import com.storyforge.domain.activity.ActivityDtos.WorkGraph;
 import com.storyforge.domain.community.CommunityDtos.PublishRequest;
 import com.storyforge.domain.community.CommunityDtos.UpstreamCompare;
@@ -34,6 +35,11 @@ public class ProjectCommunityController {
     @ResponseStatus(HttpStatus.CREATED)
     public WorkCard publish(@PathVariable Long projectId, @Valid @RequestBody PublishRequest request) {
         return workService.publish(projectId, request, currentUser.id());
+    }
+
+    @GetMapping("/activity/{eventId}/review")
+    public ReviewView review(@PathVariable Long projectId, @PathVariable Long eventId) {
+        return activity.review(projectId, eventId);
     }
 
     @GetMapping("/activity")

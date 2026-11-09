@@ -81,6 +81,12 @@ public class WorkController {
         workService.delete(workId, currentUser.id());
     }
 
+    @PostMapping("/works/{workId}/chapters/{number}/complete")
+    public SuggestionResponse complete(@PathVariable Long workId, @PathVariable int number,
+                                       @Valid @RequestBody CompleteRequest request) {
+        return workService.complete(workId, number, request, currentUser.id());
+    }
+
     /** 내려받기는 로그인이 필요합니다. 작가가 허용하지 않으면 409입니다. */
     @GetMapping("/works/{workId}/export")
     public ResponseEntity<byte[]> export(@PathVariable Long workId, @RequestParam String format) {

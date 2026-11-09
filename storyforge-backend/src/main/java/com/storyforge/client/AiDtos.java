@@ -90,4 +90,10 @@ public final class AiDtos {
     /** 스트림 마지막 "done" 이벤트 본문 */
     public record ChapterGenerateResult(String title, String content, String summary, ContinuityResult report) {
     }
+
+    public record CompletionRequest(String before, String after, String tone) {
+    }
+
+    public record CompletionResponse(String suggestion) {
+    }
 }

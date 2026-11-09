@@ -124,6 +124,9 @@ type Sort = 'recent' | 'title' | 'progress';
                   }
                 </div>
                 <h3><a [routerLink]="['/projects', p.id]">{{ p.title }}</a></h3>
+                @if (p.coverUrl) {
+                  <img class="cover" [src]="p.coverUrl" alt="" />
+                }
                 <p class="sf-muted sub">{{ p.genre || '장르 미정' }} · 최근 수정 {{ p.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</p>
                 <div class="progress">
                   <mat-progress-bar mode="determinate" [value]="progress(p)" />
@@ -235,6 +238,12 @@ type Sort = 'recent' | 'title' | 'progress';
       border: 1px solid var(--sf-border);
       border-radius: var(--sf-radius);
       background: var(--sf-surface);
+    }
+    .cover {
+      width: 96px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 6px;
     }
     .row:hover {
       border-color: var(--sf-secondary);

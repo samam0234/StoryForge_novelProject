@@ -7,12 +7,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { CommunityApi } from '../../core/api/community-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { CLONE_POLICY_OPTIONS, ClonePolicy, GENRES, VISIBILITY_OPTIONS, Visibility, WorkDetail } from '../../core/models/community';
 import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
+import { ImageDropComponent } from '../../shared/components/image-drop/image-drop.component';
 
 /** 게시 작품 수정: 정보, 본문 직접 수정, 프로젝트에서 업데이트 */
 @Component({
@@ -27,6 +28,7 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
     MatInputModule,
     MatSelectModule,
     RichTextEditorComponent,
+    ImageDropComponent,
   ],
   template: `
     <div class="sf-page">
@@ -35,6 +37,7 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
           <a mat-button routerLink="/me/works"><mat-icon>arrow_back</mat-icon> 내 작품 관리</a>
           <span class="sf-spacer"></span>
           <a mat-button [routerLink]="['/works', d.card.id]">작품 보기 <mat-icon iconPositionEnd>open_in_new</mat-icon></a>
+          <button mat-button class="danger" (click)="remove()">삭제</button>
         </div>
         <h1>{{ d.card.title }} <span class="sf-muted rev">r{{ d.card.revision }}</span></h1>
 
@@ -58,9 +61,10 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
                 }
               </datalist>
             </mat-form-field>
+            <sf-image-drop [url]="coverUrl || null" (uploaded)="coverUrl = $event" />
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>태그 (쉼표로 구분)</mat-label>
-              <input matInput name="tags" [(ngModel)]="tags" maxlength="300" />
+              <mat-label>표지 주소 (올린 파일 또는 https)</mat-label>
+              <input matInput name="coverUrl" [(ngModel)]="coverUrl" maxlength="500" />
             </mat-form-field>
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>공개 범위</mat-label>
@@ -118,6 +122,8 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
                 </mat-form-field>
                 <sf-rich-text-editor [value]="loadedContent()" (valueChange)="chapterContent = $event" />
                 <div class="sf-row">
+                  <button mat-stroked-button type="button" [disabled]="busy()" (click)="complete()"><mat-icon>auto_awesome</mat-icon> 이어 쓰기</button>
+                  <span class="sf-spacer"></span>
                   <mat-form-field appearance="outline" subscriptSizing="dynamic" class="message">
                     <mat-label>변경 내용 (선택)</mat-label>
                     <input matInput name="chapterMessage" [(ngModel)]="chapterMessage" maxlength="300" />
@@ -199,6 +205,9 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
       min-height: 320px;
       flex: none;
     }
+    .danger {
+      color: #b42318;
+    }
     .message {
       flex: 1;
     }
@@ -207,6 +216,7 @@ import { RichTextEditorComponent } from '../../shared/components/rich-text-edito
 export class WorkEditPage {
   private readonly api = inject(CommunityApi);
   private readonly snack = inject(MatSnackBar);
+  private readonly router = inject(Router);
 
   readonly workId = input.required<string>();
 
@@ -226,6 +236,7 @@ export class WorkEditPage {
   protected visibility: Visibility = 'PUBLIC';
   protected clonePolicy: ClonePolicy = 'OPEN';
   protected downloadable = true;
+  protected coverUrl = '';
   protected syncMessage = '';
   protected chapterTitle = '';
   protected chapterContent = '';
@@ -247,6 +258,7 @@ export class WorkEditPage {
           this.visibility = d.card.visibility;
           this.clonePolicy = d.card.clonePolicy;
           this.downloadable = d.downloadable;
+          this.coverUrl = d.card.coverUrl ?? '';
           if (d.chapters.length) this.open(this.number() ?? d.chapters[0].number);
         }
       },
@@ -279,6 +291,7 @@ export class WorkEditPage {
         visibility: this.visibility,
         clonePolicy: this.clonePolicy,
         downloadable: this.downloadable,
+        coverUrl: this.coverUrl.trim(),
       }),
       '저장했습니다.',
       () => this.reload(d.card.id),
@@ -291,6 +304,36 @@ export class WorkEditPage {
     this.run(this.api.syncWork(d.card.id, this.syncMessage.trim() || null), '게시본을 업데이트했습니다.', () => {
       this.syncMessage = '';
       this.reload(d.card.id, true);
+    });
+  }
+
+  protected complete(): void {
+    const number = this.number();
+    if (number === null) return;
+    this.busy.set(true);
+    const text = this.chapterContent;
+    const cut = Math.max(0, text.length - 4000);
+    this.api.completeChapter(this.id(), number, text.slice(cut), '').subscribe({
+      next: (r) => {
+        this.busy.set(false);
+        const suggestion = r.suggestion?.trim();
+        if (!suggestion) return;
+        this.chapterContent = `${text.trimEnd()}\n\n${suggestion}`;
+        this.loadedContent.set(this.chapterContent);
+      },
+      error: (e) => {
+        this.busy.set(false);
+        this.snack.open(errorMessage(e), '닫기', { duration: 4000 });
+      },
+    });
+  }
+
+  protected remove(): void {
+    const d = this.detail();
+    if (!d || !confirm(`"${d.card.title}" 게시를 삭제할까요? 프로젝트 원고는 남습니다.`)) return;
+    this.api.deleteWork(d.card.id).subscribe({
+      next: () => this.router.navigate(['/me/works']),
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
     });
   }
 

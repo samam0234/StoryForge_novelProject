@@ -6,12 +6,24 @@ from fastapi.testclient import TestClient
 from app.core.config import get_settings
 from app.main import app
 from app.models.schemas import ChapterContext, ContinuityIssue
+from app.services import mock_writer
 from app.services.continuity_checker import rule_checks, score
 
 get_settings().mock_stream_delay = 0
 client = TestClient(app)
 
 PROJECT = {"title": "테스트", "genre": "판타지"}
+
+
+def test_complete_does_not_echo_the_previous_sentence():
+    res = client.post(
+        "/internal/generate/complete",
+        json={"before": "한서윤은 이미 상점 문을 닫았다.", "after": ""},
+    )
+    assert res.status_code == 200
+    suggestion = res.json()["suggestion"]
+    assert suggestion.strip()
+    assert "상점 문을 닫았다" not in suggestion
 
 
 def test_bible_and_outline_use_camel_case_contract():
@@ -82,4 +94,30 @@ def test_review_uses_edited_text_for_summary_and_rules():
     assert present["summary"].startswith("2장(수정본): 한서윤")
     assert present["report"]["issues"] == []
     assert present["report"]["score"] == 100
+
+
+def test_later_mock_chapter_does_not_reuse_the_previous_scene():
+    bible = client.post("/internal/generate/bible", json={"project": PROJECT, "prompt": "x"}).json()
+    outline = client.post(
+        "/internal/generate/outline", json={"project": PROJECT, "bible": bible, "chapterCount": 3}
+    ).json()
+    first = ChapterContext.model_validate(
+        {"project": PROJECT, "bible": bible, "chapterNumber": 1, "outlineChapter": outline["chapters"][0]}
+    )
+    second = ChapterContext.model_validate(
+        {
+            "project": PROJECT,
+            "bible": bible,
+            "chapterNumber": 2,
+            "outlineChapter": outline["chapters"][1],
+            "previousChapters": [{"number": 1, "title": "도입", "summary": "서윤이 새벽 도매시장에서 전표를 찾았다"}],
+        }
+    )
+    opening = mock_writer.chapter_text(first)
+    follow = mock_writer.chapter_text(second)
+    assert "지난 일이 아직 끝나지 않았다" not in follow
+    assert "서윤이 새벽 도매시장에서 전표를 찾았다" not in follow
+    assert opening.split("\n\n")[1] not in follow
+    repeated = rule_checks(second, follow)
+    assert not any("그대로" in issue.description for issue in repeated)
 

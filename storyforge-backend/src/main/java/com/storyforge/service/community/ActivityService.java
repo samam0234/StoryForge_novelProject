@@ -3,6 +3,8 @@ package com.storyforge.service.community;
 import com.storyforge.domain.activity.ActivityDtos.*;
 import com.storyforge.domain.activity.ActivityEvent;
 import com.storyforge.domain.activity.ActivityEventRepository;
+import com.storyforge.domain.activity.ActivityReview;
+import com.storyforge.domain.activity.ActivityReviewRepository;
 import com.storyforge.domain.activity.ActivityType;
 import com.storyforge.domain.community.CommunityDtos.PageResponse;
 import com.storyforge.domain.community.Post;
@@ -11,6 +13,7 @@ import com.storyforge.domain.community.WorkRepository;
 import com.storyforge.domain.project.Project;
 import com.storyforge.domain.project.ProjectRepository;
 import com.storyforge.exception.InvalidStateException;
+import com.storyforge.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -40,15 +43,17 @@ public class ActivityService {
     private static final int WEEKS = 53;
 
     private final ActivityEventRepository events;
+    private final ActivityReviewRepository reviews;
     private final WorkRepository works;
     private final ProjectRepository projects;
     private final ApplicationEventPublisher publisher;
     private final ZoneId zone;
 
-    public ActivityService(ActivityEventRepository events, WorkRepository works,
+    public ActivityService(ActivityEventRepository events, ActivityReviewRepository reviews, WorkRepository works,
                            ProjectRepository projects, ApplicationEventPublisher publisher,
                            @Value("${storyforge.community.zone}") String zone) {
         this.events = events;
+        this.reviews = reviews;
         this.works = works;
         this.projects = projects;
         this.publisher = publisher;
@@ -57,27 +62,27 @@ public class ActivityService {
 
     /** 프로젝트 작업 기록. 이미 게시한 프로젝트면 작품 그래프에도 이어집니다. */
     @Transactional
-    public void recordProject(Project project, ActivityType type, String summary, int changedChars) {
+    public ActivityEvent recordProject(Project project, ActivityType type, String summary, int changedChars) {
         Long owner = project.getOwnerId();
         if (owner == null) {
-            return;
+            return null;
         }
-        recordFor(owner, project, type, summary, changedChars);
+        return recordFor(owner, project, type, summary, changedChars);
     }
 
     /** 작업을 한 사람 기준으로 남깁니다. 공동 창작자의 잔디에 집계하려면 이 메서드를 씁니다. */
     @Transactional
-    public void recordFor(Long userId, Project project, ActivityType type, String summary, int changedChars) {
+    public ActivityEvent recordFor(Long userId, Project project, ActivityType type, String summary, int changedChars) {
         if (userId == null) {
-            return;
+            return null;
         }
         Work work = works.findByProjectId(project.getId()).orElse(null);
-        save(new ActivityEvent(userId, project.getId(), work, null, type, summary, changedChars));
+        return save(new ActivityEvent(userId, project.getId(), work, null, type, summary, changedChars));
     }
 
     @Transactional
-    public void recordWork(Long userId, Long projectId, Work work, ActivityType type, String summary, int changedChars) {
-        save(new ActivityEvent(userId, projectId, work, null, type, summary, changedChars));
+    public ActivityEvent recordWork(Long userId, Long projectId, Work work, ActivityType type, String summary, int changedChars) {
+        return save(new ActivityEvent(userId, projectId, work, null, type, summary, changedChars));
     }
 
     @Transactional
@@ -90,9 +95,44 @@ public class ActivityService {
         publisher.publishEvent(new ActivityRecorded(userId));
     }
 
-    private void save(ActivityEvent event) {
-        events.save(event);
-        publisher.publishEvent(new ActivityRecorded(event.getUserId()));
+    private ActivityEvent save(ActivityEvent event) {
+        ActivityEvent saved = events.save(event);
+        publisher.publishEvent(new ActivityRecorded(saved.getUserId()));
+        return saved;
+    }
+
+    /** 앞뒤 본문. 공개 목록에는 내려가지 않고 비교 화면에서만 읽습니다. */
+    @Transactional
+    public void remember(ActivityEvent event, String before, String after) {
+        if (event == null || event.getId() == null) {
+            return;
+        }
+        String left = clip(before);
+        String right = clip(after);
+        if (left == null && right == null) {
+            return;
+        }
+        reviews.save(new ActivityReview(event.getId(), left, right));
+    }
+
+    public ReviewView review(Long projectId, Long eventId) {
+        ActivityEvent event = events.findById(Objects.requireNonNull(eventId))
+                .orElseThrow(() -> new NotFoundException("작업 기록을 찾을 수 없습니다."));
+        if (!Objects.equals(projectId, event.getProjectId())) {
+            throw new NotFoundException("작업 기록을 찾을 수 없습니다.");
+        }
+        ActivityReview review = reviews.findById(eventId).orElse(null);
+        return new ReviewView(event.getId(), event.getSummary(),
+                review == null ? null : review.getBeforeText(),
+                review == null ? null : review.getAfterText());
+    }
+
+    private static String clip(String text) {
+        if (text == null || text.isBlank()) {
+            return null;
+        }
+        String trimmed = text.strip();
+        return trimmed.length() <= 8000 ? trimmed : trimmed.substring(0, 8000);
     }
 
     public WorkGraph projectGraph(Long projectId) {
