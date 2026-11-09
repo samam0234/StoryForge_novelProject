@@ -14,14 +14,15 @@ public final class ProjectDtos {
     public record CreateProjectRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 100) String genre,
-            Project.Form form) {
+            Project.Form form,
+            @Size(max = 500) String coverUrl) {
     }
 
     /** PUT /api/v1/projects/{id} — 프로젝트 설정 (기획서 §9.6-5) */
     public record UpdateProjectRequest(
             @NotBlank @Size(max = 200) String title,
             @Size(max = 100) String genre,
-            @Pattern(regexp = "claude-opus-5-5|claude-sonnet-5-5|claude-haiku-5-5") String model,
+            @Pattern(regexp = "gemma4:e4b|claude-opus-5-5|claude-sonnet-5-5|claude-haiku-5-5") String model,
             @Size(max = 2000) String defaultTone,
             @NotBlank @Pattern(regexp = "md|txt|docx|pdf|html|epub|odt|rtf") String exportFormat) {
     }
@@ -32,7 +33,7 @@ public final class ProjectDtos {
             int totalChapters, int confirmedChapters,
             Project.Form form, Long workId, Long clonedFromWorkId, String clonedFromTitle, String cloneMode,
             long manualChars, long agentChars,
-            Instant createdAt, Instant updatedAt, String role) {
+            Instant createdAt, Instant updatedAt, String role, String coverUrl) {
     }
 
     /** GET /api/v1/projects/{id}/status 응답 */

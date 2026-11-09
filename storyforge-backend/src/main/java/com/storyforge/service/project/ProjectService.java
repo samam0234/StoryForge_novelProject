@@ -60,6 +60,7 @@ public class ProjectService {
     @Transactional
     public ProjectResponse create(CreateProjectRequest request, Long ownerId) {
         Project project = projects.save(new Project(request.title().trim(), request.genre(), ownerId, request.form()));
+        project.setCoverUrl(httpUrl(request.coverUrl()));
         activity.recordProject(project, ActivityType.PROJECT_CREATED, "프로젝트 시작", 0);
         return toResponse(project, "OWNER");
     }
@@ -152,6 +153,20 @@ public class ProjectService {
                 totalChapters(p.getId()), chapters.countByProjectIdAndStatus(p.getId(), ChapterStatus.CONFIRMED),
                 p.getForm(), works.findIdByProjectId(p.getId()).orElse(null), p.getClonedFromWorkId(),
                 p.getClonedFromTitle(), p.getCloneMode(), manualChars, agentChars,
-                p.getCreatedAt(), p.getUpdatedAt(), role);
+                p.getCreatedAt(), p.getUpdatedAt(), role, p.getCoverUrl());
+    }
+
+    public static String httpUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return null;
+        }
+        String trimmed = url.strip();
+        if (trimmed.startsWith("/api/v1/media/")) {
+            return trimmed;
+        }
+        if (!trimmed.startsWith("https://") && !trimmed.startsWith("http://")) {
+            throw new InvalidStateException("이미지는 http 또는 https 주소만 넣을 수 있습니다.");
+        }
+        return trimmed;
     }
 }

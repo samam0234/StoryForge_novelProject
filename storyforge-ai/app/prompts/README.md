@@ -11,7 +11,8 @@
 | `_bible_context.j2` | Story Bible 블록 (include용) |
 | `bible.j2` | Bible 생성 |
 | `outline.j2` | Outline 생성 |
-| `chapter.j2` | 챕터 본문 |
+| `chapter.j2` | 챕터 본문. 이전 장을 다시 쓰지 않고 장면마다 다른 선택으로 진행 |
+| `complete.j2` | 게시본 이어쓰기. 앞 문장을 반복하지 않는 짧은 문단 |
 | `summary.j2` | 다음 챕터용 요약 |
 | `continuity.j2` | Continuity 검증 |
 | `package_continuity.j2` | 패키지 작품 사이의 검증 |

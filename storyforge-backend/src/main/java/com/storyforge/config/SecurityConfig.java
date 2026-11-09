@@ -46,7 +46,8 @@ public class SecurityConfig {
                                 "/api/v1/works/*/comments", "/api/v1/works/*/activity", "/api/v1/works/*/shares",
                                 "/api/v1/works/*/network", "/api/v1/posts", "/api/v1/posts/*", "/api/v1/posts/*/comments",
                                 "/api/v1/users/*", "/api/v1/users/*/works", "/api/v1/users/*/contributions",
-                                "/api/v1/users/*/activity", "/api/v1/users/*/achievements", "/api/v1/issues").permitAll()
+                                "/api/v1/users/*/activity", "/api/v1/users/*/achievements", "/api/v1/issues",
+                                "/api/v1/media/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/shares/*/visit").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().denyAll())

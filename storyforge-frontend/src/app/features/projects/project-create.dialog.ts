@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { GENRES } from '../../core/models/community';
 import { ProjectForm } from '../../core/models/models';
+import { ImageDropComponent } from '../../shared/components/image-drop/image-drop.component';
 
 export interface ProjectCreateData {
   form?: ProjectForm;
@@ -16,7 +17,7 @@ export interface ProjectCreateData {
 /** 프로젝트 생성 폼. 결과({title, genre, form})를 닫을 때 돌려줍니다. */
 @Component({
   selector: 'sf-project-create-dialog',
-  imports: [FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatButtonToggleModule],
+  imports: [FormsModule, MatDialogModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatButtonToggleModule, ImageDropComponent],
   template: `
     <h2 mat-dialog-title>새 프로젝트</h2>
     <mat-dialog-content class="sf-form">
@@ -36,6 +37,11 @@ export interface ProjectCreateData {
             <option [value]="g"></option>
           }
         </datalist>
+      </mat-form-field>
+      <sf-image-drop [url]="coverUrl || null" (uploaded)="coverUrl = $event" />
+      <mat-form-field appearance="outline">
+        <mat-label>또는 이미지 주소</mat-label>
+        <input matInput [(ngModel)]="coverUrl" maxlength="500" placeholder="https:// 또는 올린 파일 주소" />
       </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
@@ -57,8 +63,14 @@ export class ProjectCreateDialog {
   protected title = '';
   protected genre = this.data?.genre ?? '';
   protected form: ProjectForm = this.data?.form ?? 'LONG';
+  protected coverUrl = '';
 
   protected submit(): void {
-    this.ref.close({ title: this.title.trim(), genre: this.genre.trim() || null, form: this.form });
+    this.ref.close({
+      title: this.title.trim(),
+      genre: this.genre.trim() || null,
+      form: this.form,
+      coverUrl: this.coverUrl.trim() || null,
+    });
   }
 }

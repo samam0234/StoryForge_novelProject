@@ -12,6 +12,9 @@ import { UserChipComponent } from '../user-chip/user-chip.component';
   template: `
     <article class="card">
       <a class="main" [routerLink]="['/works', work().id]">
+        @if (work().coverUrl) {
+          <img class="cover" [src]="work().coverUrl!" alt="" />
+        }
         <div class="sf-row meta">
           <span class="sf-badge">{{ kindLabel() }}</span>
           @if (work().genre) {
@@ -72,6 +75,15 @@ import { UserChipComponent } from '../user-chip/user-chip.component';
     .main {
       text-decoration: none;
       flex: 1;
+    }
+    .cover {
+      display: block;
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      background: var(--sf-surface-2);
     }
     .meta {
       font-size: 12px;

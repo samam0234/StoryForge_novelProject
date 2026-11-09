@@ -44,6 +44,8 @@ import {
   WorkDetail,
   WorkGraph,
   WorkKind,
+  ActivityReview,
+  Suggestion,
   Collaborator,
   CommitTarget,
 } from '../models/community';
@@ -94,6 +96,12 @@ export class CommunityApi {
   }
   projectGraph(projectId: number): Observable<WorkGraph> {
     return this.http.get<WorkGraph>(`${this.base}/projects/${projectId}/activity`);
+  }
+  activityReview(projectId: number, eventId: number): Observable<ActivityReview> {
+    return this.http.get<ActivityReview>(`${this.base}/projects/${projectId}/activity/${eventId}/review`);
+  }
+  completeChapter(workId: number, number: number, before: string, after: string): Observable<Suggestion> {
+    return this.http.post<Suggestion>(`${this.base}/works/${workId}/chapters/${number}/complete`, { before, after });
   }
 
   // Clone

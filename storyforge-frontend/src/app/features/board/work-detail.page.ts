@@ -149,6 +149,7 @@ const SHARE_TAB = 3;
                 <a mat-stroked-button [routerLink]="['/package-forge', d.card.id]"><mat-icon>hub</mat-icon> 패키지 편집</a>
               } @else {
                 <a mat-stroked-button [routerLink]="['/me/works', d.card.id, 'edit']"><mat-icon>edit</mat-icon> 작품 수정</a>
+                <button mat-button (click)="removeWork()">삭제</button>
               }
               @if (d.projectId) {
                 <a mat-button [routerLink]="['/projects', d.projectId]">프로젝트 열기</a>
@@ -649,6 +650,15 @@ export class WorkDetailPage {
         // 공유하면 공유 그래프를 바로 보여 줍니다. 일반 작품과 패키지 모두 네 번째 탭입니다.
         this.tabIndex.set(SHARE_TAB);
       });
+  }
+
+  protected removeWork(): void {
+    const d = this.detail();
+    if (!d || !confirm(`"${d.card.title}" 게시를 삭제할까요? 프로젝트 원고는 남습니다.`)) return;
+    this.api.deleteWork(d.card.id).subscribe({
+      next: () => this.router.navigate(['/me/works']),
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
+    });
   }
 
   protected export(format: ExportFormat): void {

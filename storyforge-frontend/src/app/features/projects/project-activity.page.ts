@@ -8,8 +8,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommunityApi } from '../../core/api/community-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
-import { Collaborator, CommitTarget, WorkCommit, WorkGraph } from '../../core/models/community';
+import { ActivityReview, Collaborator, CommitTarget, WorkCommit, WorkGraph } from '../../core/models/community';
 import { CommitGraphComponent } from '../../shared/components/commit-graph/commit-graph.component';
+import { ReviewDiffComponent } from '../../shared/components/review-diff/review-diff.component';
 import { WorkGraphComponent } from '../../shared/components/work-graph/work-graph.component';
 import { ProjectContext } from './project-context';
 
@@ -25,12 +26,16 @@ import { ProjectContext } from './project-context';
     MatSelectModule,
     WorkGraphComponent,
     CommitGraphComponent,
+    ReviewDiffComponent,
   ],
   template: `
     <div class="sf-page">
       <p class="sf-muted hint">막대를 누르면 그날 한 작업이 표에 나옵니다. 기록표의 점을 누르면 그 문단이 열립니다. 게시하면 요약만 작품의 작업 그래프로 공개되고, 인용 구간은 참여자에게만 남습니다.</p>
       @if (graph(); as g) {
-        <sf-work-graph [graph]="g" />
+        <sf-work-graph [graph]="g" (review)="openReview($event)" />
+      }
+      @if (review(); as r) {
+        <sf-review-diff [summary]="r.summary" [before]="r.beforeText" [after]="r.afterText" />
       }
 
       <h2>함께 쓰기</h2>
@@ -142,6 +147,7 @@ export class ProjectActivityPage {
   protected readonly graph = signal<WorkGraph | null>(null);
   protected readonly members = signal<Collaborator[]>([]);
   protected readonly commits = signal<WorkCommit[]>([]);
+  protected readonly review = signal<ActivityReview | null>(null);
   protected readonly isOwner = signal(false);
 
   protected email = '';
@@ -160,6 +166,15 @@ export class ProjectActivityPage {
       this.api.collaborators(id).subscribe((rows) => this.members.set(rows));
       this.api.commits(id).subscribe((rows) => this.commits.set(rows));
       this.isOwner.set(this.ctx.project()?.role !== 'COLLABORATOR');
+    });
+  }
+
+  protected openReview(eventId: number): void {
+    const id = this.ctx.projectId();
+    if (id == null) return;
+    this.api.activityReview(id, eventId).subscribe({
+      next: (row) => this.review.set(row),
+      error: (e) => this.snack.open(errorMessage(e), '닫기', { duration: 4000 }),
     });
   }
 

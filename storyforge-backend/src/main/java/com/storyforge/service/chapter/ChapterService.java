@@ -89,14 +89,15 @@ public class ChapterService {
         }
         boolean changed = !Objects.equals(chapter.getTitle(), title) || !Objects.equals(chapter.getContent(), content);
         int changedChars = ActivityService.changedChars(chapter.getContent(), content);
+        String before = chapter.getContent();
         if (changedChars > 0) {
             chapter.markNeedsReview();
         }
         chapter.edit(title, content);
         if (changed) {
             saveVersion(chapter, ChapterVersion.Source.EDITED);
-            activity.recordProject(chapter.getProject(), ActivityType.CHAPTER_EDITED,
-                    chapter.getNumber() + "장 직접 수정", changedChars);
+            activity.remember(activity.recordProject(chapter.getProject(), ActivityType.CHAPTER_EDITED,
+                    chapter.getNumber() + "장 직접 수정", changedChars), before, content);
         }
         return toResponse(chapter);
     }
