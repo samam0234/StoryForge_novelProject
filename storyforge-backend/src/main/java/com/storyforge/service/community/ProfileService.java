@@ -31,10 +31,12 @@ public class ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final AccountPolicy policy;
     private final UserBlockRepository blocks;
+    private final ContentPolicy contentPolicy;
 
     public ProfileService(AppUserRepository users, WorkRepository works, PostRepository posts, CommentRepository comments,
                           AchievementService achievements, PasswordEncoder passwordEncoder,
-                          AccountPolicy policy, UserBlockRepository blocks) {
+                          AccountPolicy policy, UserBlockRepository blocks, ContentPolicy contentPolicy) {
+        this.contentPolicy = contentPolicy;
         this.policy = policy;
         this.blocks = blocks;
         this.users = users;
@@ -61,6 +63,7 @@ public class ProfileService {
 
     @Transactional
     public UserResponse update(Long userId, UpdateProfileRequest request) {
+        contentPolicy.check(request.displayName(), request.bio());
         AppUser user = load(userId);
         user.updateProfile(request.displayName().strip(), WorkService.blankToNull(request.bio()),
                 WorkService.blankToNull(request.website()), WorkService.blankToNull(request.avatarColor()));

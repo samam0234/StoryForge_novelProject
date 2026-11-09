@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { CommunityApi } from '../../core/api/community-api.service';
+import { LlmNoticeComponent } from './llm-notice.component';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { GuideAction } from '../../core/models/community';
 
@@ -24,7 +25,7 @@ const SHORTCUTS = ['/도움말', '/상태', '/게시', '/클론', '/패키지', 
  */
 @Component({
   selector: 'sf-guide-chat',
-  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule],
+  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, LlmNoticeComponent],
   template: `
     <header class="sf-row head">
       <mat-icon aria-hidden="true">support_agent</mat-icon>
@@ -32,6 +33,7 @@ const SHORTCUTS = ['/도움말', '/상태', '/게시', '/클론', '/패키지', 
       <span class="sf-spacer"></span>
       <button mat-icon-button aria-label="가이드 닫기" (click)="closed.emit()"><mat-icon>close</mat-icon></button>
     </header>
+    <sf-llm-notice />
     <div #log class="log" role="log" aria-live="polite" aria-label="가이드 대화">
       @for (m of messages(); track $index) {
         <div class="msg" [class.me]="m.from === 'me'" [class.err]="m.error">

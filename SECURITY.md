@@ -73,7 +73,9 @@ StoryForge의 보안 취약점을 책임 있게 신고해 주시는 모든 분�
 
 ## 배포 전 체크리스트
 
+- [ ] `spring.profiles.active=prod`로 띄운다. 이 프로필은 JWT·DB 기본값·CORS 기본값·Swagger를 거부한다
 - [ ] `JWT_SECRET`을 32바이트 이상의 무작위 값으로 지정했다
+- [ ] `TRUSTED_PROXIES`에 TLS를 끊는 프록시 주소만 넣었다. 비우면 전달 헤더를 믿지 않는다
 - [ ] `DB_USER`/`DB_PASSWORD`를 바꾸고 DB 포트를 외부에 열지 않았다
 - [ ] `FRONTEND_ORIGIN`을 실제 주소 하나로 지정했다 (CORS)
 - [ ] `ADMIN_EMAILS`를 지정하고 그 계정을 먼저 만들었다. 이용약관을 법률 검토했다

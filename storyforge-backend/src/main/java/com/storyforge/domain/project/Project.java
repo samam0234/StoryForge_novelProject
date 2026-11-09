@@ -27,6 +27,9 @@ public class Project {
     /** 소유자. 인증 도입 전 데이터만 비어 있습니다. */
     private Long ownerId;
 
+    /** 표지 이미지 주소. http(s)만 저장합니다. */
+    private String coverUrl;
+
     /** 생성에 쓸 모델. 비어 있으면 AI 서비스 기본값 (기획서 §9.6-5) */
     private String model;
 
@@ -122,6 +125,8 @@ public class Project {
     public String getGenre() { return genre; }
     public ProjectStatus getStatus() { return status; }
     public Long getOwnerId() { return ownerId; }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
     public String getModel() { return model; }
     public String getDefaultTone() { return defaultTone; }
     public String getExportFormat() { return exportFormat; }

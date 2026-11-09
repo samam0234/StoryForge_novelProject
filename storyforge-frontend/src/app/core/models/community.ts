@@ -117,6 +117,7 @@ export interface WorkCard {
   hidden: boolean;
   publishedAt: string;
   updatedAt: string;
+  coverUrl?: string | null;
 }
 
 export interface ChapterEntry {
@@ -200,6 +201,18 @@ export interface PublishBody {
 export interface UpdateWorkBody extends Omit<PublishBody, 'kind'> {
   packageType?: PackageType | null;
   worldNote?: string | null;
+  coverUrl?: string | null;
+}
+
+export interface Suggestion {
+  suggestion: string;
+}
+
+export interface ActivityReview {
+  eventId: number;
+  summary: string;
+  beforeText: string | null;
+  afterText: string | null;
 }
 
 export interface LikeResponse {

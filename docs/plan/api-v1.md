@@ -108,6 +108,7 @@
 
 | 메서드 | 경로 | 설명 |
 |--------|------|------|
+| GET 🌐 | `/llm-notice` | 외부 언어 모델 사용 여부. `external`이면 원고가 밖으로 나감을 알림 |
 | POST | `/reports` | 신고 |
 | PUT / DELETE | `/users/{id}/block` | 차단, 해제 |
 | GET | `/me/blocks` | 차단 목록 |

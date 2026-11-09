@@ -16,4 +16,16 @@
 - world_setting: 시대, 장소, 사회 구조, 이 세계만의 규칙. 이후 챕터가 지켜야 할 제약을 분명히 적습니다.
 - theme: 작품이 다루는 핵심 질문과 주제.
 - tone: 문체, 분위기, 서술 시점.
-- characters: 주요 캐릭터 3~6명. 각자 description(외모·배경), personality, relationships(다른 캐릭터와의 관계)를 적습니다.
+- characters: 주요 캐릭터. 아래 배정된 이름을 그대로 쓰고, 다른 작품에 이미 쓴 이름과 금지 목록의 인물은 쓰지 않습니다.
+{% if assigned_names|default([]) %}
+배정된 이름:
+{% for row in assigned_names %}
+- {{ row.name }} ({{ row.country }}식 이름, 한글 표기)
+{% endfor %}
+{% endif %}
+{% if avoid_notes|default([]) %}
+이 설명과 비슷한 인물은 만들지 않습니다:
+{% for note in avoid_notes %}
+- {{ note }}
+{% endfor %}
+{% endif %}

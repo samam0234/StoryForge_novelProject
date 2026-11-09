@@ -45,9 +45,10 @@ export const EXPORT_FORMATS: { value: ExportFormat; label: string }[] = [
 
 /** 백엔드 UpdateProjectRequest가 허용하는 모델과 같게 유지합니다. */
 export const MODEL_OPTIONS: { value: string; label: string }[] = [
-  { value: 'claude-opus-5-5', label: 'Claude Opus 5.5' },
-  { value: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
-  { value: 'claude-haiku-5-5', label: 'Claude Haiku 5.5' },
+  { value: 'gemma4:e4b', label: '일반 · Gemma 4 E4B (Ollama)' },
+  { value: 'claude-haiku-5-5', label: '강력 · Haiku 5.5 (high)' },
+  { value: 'claude-sonnet-5-5', label: '강력 · Sonnet 5.5 (medium)' },
+  { value: 'claude-opus-5-5', label: '강력 · Opus 5.5 (medium)' },
 ];
 
 export interface User {
@@ -93,6 +94,7 @@ export interface Project {
   updatedAt: string;
   /** OWNER 또는 함께 쓰는 COLLABORATOR */
   role?: 'OWNER' | 'COLLABORATOR';
+  coverUrl?: string | null;
 }
 
 export interface ProjectStatusInfo {

@@ -43,6 +43,18 @@ async def generate_chapter(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator
     )
 
 
+async def complete_text(llm: LLMClient, before: str, after: str, tone: str | None) -> str:
+    if llm.is_mock:
+        return mock_writer.complete(before)
+    text = await llm.text(
+        system=render("system"),
+        prompt=render("complete", before=before, after=after, tone=tone or ""),
+        max_tokens=600,
+        model=None,
+    )
+    return text.strip()
+
+
 async def review_chapter(llm: LLMClient, request: ChapterReviewRequest) -> ChapterReviewResult:
     """사람이 고친 본문을 기준으로 요약과 Continuity 검증을 다시 합니다."""
     ctx = request.context

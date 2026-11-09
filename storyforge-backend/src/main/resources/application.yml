@@ -24,12 +24,21 @@ storyforge:
   ai:
     base-url: ${AI_SERVICE_URL:http://localhost:8001}
     timeout: 180s
+  # AI 서비스의 LLM_PROVIDER와 같은 값이어야 외부 전송 안내가 맞습니다.
+  llm:
+    provider: ${LLM_PROVIDER:mock}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
   rate-limit:
     auth-per-minute: ${RATE_LIMIT_AUTH_PER_MINUTE:20}
     generate-per-minute: ${RATE_LIMIT_GENERATE_PER_MINUTE:30}
     community-per-minute: ${RATE_LIMIT_COMMUNITY_PER_MINUTE:60}
+  # 비우면 X-Forwarded-For를 믿지 않습니다. rate-limit 설정 객체와 분리해 둡니다.
+  client-ip:
+    trusted-proxies: ${TRUSTED_PROXIES:}
+  moderation:
+    # 쉼표로 구분한 금지 표현. 비우면 검사하지 않습니다.
+    blocklist: ${CONTENT_BLOCKLIST:}
   admin:
     # 관리자 이메일 (쉼표로 구분). 비우면 관리자가 없습니다.
     emails: ${ADMIN_EMAILS:}

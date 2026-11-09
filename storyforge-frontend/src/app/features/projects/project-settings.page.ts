@@ -37,7 +37,7 @@ import { ProjectContext } from './project-context';
                 <mat-option [value]="m.value">{{ m.label }}</mat-option>
               }
             </mat-select>
-            <mat-hint>mock 모드에서는 적용되지 않습니다.</mat-hint>
+            <mat-hint>일반은 이 PC의 Ollama, 강력 출력은 Claude 연결을 사용합니다.</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>기본 톤</mat-label>

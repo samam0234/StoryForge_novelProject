@@ -14,6 +14,8 @@ import com.storyforge.domain.user.AppUser;
 import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.exception.NotFoundException;
+import com.storyforge.client.AiDtos.CompletionRequest;
+import com.storyforge.client.AiServiceClient;
 import com.storyforge.service.auth.AccountPolicy;
 import com.storyforge.service.bible.BibleService;
 import com.storyforge.service.project.ExportService;
@@ -62,11 +64,15 @@ public class WorkService {
     private final ExportService exports;
     private final JdbcTemplate jdbc;
     private final AccountPolicy policy;
+    private final AiServiceClient ai;
+    private final ContentPolicy contentPolicy;
 
     public WorkService(WorkRepository works, WorkChapterRepository workChapters, WorkRevisionRepository revisions,
                        ProjectService projects, ChapterRepository chapters, BibleService bibles, OutlineRepository outlines,
                        AppUserRepository users, PackageItemRepository packageItems, PackageService packages,
-                       ActivityService activity, IssueService issues, ExportService exports, JdbcTemplate jdbc, AccountPolicy policy) {
+                       ActivityService activity, IssueService issues, ExportService exports, JdbcTemplate jdbc,
+                       AccountPolicy policy, ContentPolicy contentPolicy, AiServiceClient ai) {
+        this.contentPolicy = contentPolicy;
         this.policy = policy;
         this.works = works;
         this.workChapters = workChapters;
@@ -82,6 +88,7 @@ public class WorkService {
         this.issues = issues;
         this.exports = exports;
         this.jdbc = jdbc;
+        this.ai = ai;
     }
 
     // ───────────── 게시판 ─────────────
@@ -216,12 +223,15 @@ public class WorkService {
         if (confirmed.isEmpty()) {
             throw new InvalidStateException("승인된 챕터가 있어야 게시할 수 있습니다.");
         }
+        contentPolicy.check(request.title(), request.synopsis());
+        checkChapters(confirmed);
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         Work work = new Work(author, request.kind(), request.title().strip());
         work.updateMeta(request.title().strip(), blankToNull(request.synopsis()), blankToNull(request.genre()),
                 blankToNull(request.tags()), request.visibility(), request.clonePolicy(), request.downloadable());
         work.linkSource(projectId, project.getClonedFromWorkId(), project.getClonedFromTitle());
+        work.setCoverUrl(project.getCoverUrl());
         applySource(work, projectId);
         work = works.save(work);
         int chars = copyChapters(work, confirmed);
@@ -243,6 +253,7 @@ public class WorkService {
         if (confirmed.isEmpty()) {
             throw new InvalidStateException("승인된 챕터가 있어야 업데이트할 수 있습니다.");
         }
+        checkChapters(confirmed);
         applySource(work, work.getProjectId());
         int chars = copyChapters(work, confirmed);
         work.applyCounts(confirmed.size(), chars);
@@ -255,9 +266,13 @@ public class WorkService {
 
     @Transactional
     public WorkCard update(Long workId, UpdateWorkRequest request, Long userId) {
+        contentPolicy.check(request.title(), request.synopsis(), request.worldNote());
         Work work = loadOwned(workId, userId);
         work.updateMeta(request.title().strip(), blankToNull(request.synopsis()), blankToNull(request.genre()),
                 blankToNull(request.tags()), request.visibility(), request.clonePolicy(), request.downloadable());
+        if (request.coverUrl() != null) {
+            work.setCoverUrl(ProjectService.httpUrl(request.coverUrl()));
+        }
         if (work.getKind() == Work.Kind.PACKAGE) {
             work.updatePackage(request.packageType() == null ? work.getPackageType() : request.packageType(),
                     blankToNull(request.worldNote()));
@@ -269,12 +284,14 @@ public class WorkService {
     /** 게시본 본문 직접 수정. 프로젝트 원고는 건드리지 않습니다. */
     @Transactional
     public WorkChapterResponse editChapter(Long workId, int number, UpdateWorkChapterRequest request, Long userId) {
+        contentPolicy.check(request.title(), request.content());
         Work work = loadOwned(workId, userId);
         WorkChapter chapter = workChapters.findByWorkIdAndNumber(workId, number)
                 .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + number));
         int changed = ActivityService.changedChars(chapter.getContent(), request.content())
                 + ActivityService.changedChars(chapter.getTitle(), request.title());
         if (changed > 0) {
+            String before = chapter.getContent();
             chapter.edit(blankToNull(request.title()), request.content());
             List<WorkChapter> all = workChapters.findByWorkIdOrderByNumber(workId);
             int chars = all.stream().mapToInt(c -> ActivityService.length(c.getContent())).sum();
@@ -282,10 +299,22 @@ public class WorkService {
             int revision = work.nextRevision();
             String message = blankToNull(request.message());
             revisions.save(new WorkRevision(workId, revision, message == null ? number + "장 수정" : message, all.size(), chars));
-            activity.recordWork(userId, work.getProjectId(), work, ActivityType.WORK_CHAPTER_EDITED,
-                    "게시본 " + number + "장 직접 수정 (r" + revision + ")", changed);
+            activity.remember(activity.recordWork(userId, work.getProjectId(), work, ActivityType.WORK_CHAPTER_EDITED,
+                    "게시본 " + number + "장 직접 수정 (r" + revision + ")", changed), before, request.content());
         }
         return chapter(workId, number, userId);
+    }
+
+    /** 게시본 편집 중 커서 뒤를 이어서 씁니다. 저장은 하지 않습니다. */
+    public SuggestionResponse complete(Long workId, int number, CompleteRequest request, Long userId) {
+        loadOwned(workId, userId);
+        workChapters.findByWorkIdAndNumber(workId, number)
+                .orElseThrow(() -> new NotFoundException("챕터를 찾을 수 없습니다: " + number));
+        String suggestion = ai.complete(new CompletionRequest(
+                request.before() == null ? "" : request.before(),
+                request.after() == null ? "" : request.after(),
+                null)).suggestion();
+        return new SuggestionResponse(suggestion);
     }
 
     @Transactional
@@ -328,6 +357,12 @@ public class WorkService {
     }
 
     // ───────────── helpers ─────────────
+
+    private void checkChapters(List<Chapter> confirmed) {
+        for (Chapter chapter : confirmed) {
+            contentPolicy.check(chapter.getTitle(), chapter.getContent());
+        }
+    }
 
     private List<Chapter> confirmedChapters(Long projectId) {
         return chapters.findByProjectIdOrderByNumber(projectId).stream()

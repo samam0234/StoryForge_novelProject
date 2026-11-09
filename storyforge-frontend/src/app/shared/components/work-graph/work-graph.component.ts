@@ -1,5 +1,5 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { GraphDay, WorkGraph } from '../../../core/models/community';
@@ -169,6 +169,7 @@ const DAY_MS = 86_400_000;
                     <span class="sf-muted"> ({{ e.changedChars | number }}자)</span>
                   }
                 </p>
+                <button type="button" class="link review-link" (click)="review.emit(e.id)">변경 비교</button>
               }
             </li>
           }
@@ -405,6 +406,7 @@ const DAY_MS = 86_400_000;
 })
 export class WorkGraphComponent {
   readonly graph = input.required<WorkGraph>();
+  readonly review = output<number>();
 
   protected readonly range = signal<Range>('all');
   protected readonly selectedDay = signal<string | null>(null);

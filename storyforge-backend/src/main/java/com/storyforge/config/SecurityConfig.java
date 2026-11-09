@@ -22,6 +22,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.util.List;
+import java.util.Set;
 
 /**
  * JWT 인증 (기획서 §7.1, docs/plan/auth.md). 프로젝트 소유자 검사는 OwnershipInterceptor가 합니다.
@@ -31,7 +32,8 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint,
-                                            RateLimitProperties rateLimit, ObjectMapper objectMapper) throws Exception {
+                                            RateLimitProperties rateLimit, ObjectMapper objectMapper,
+                                            @Value("${storyforge.client-ip.trusted-proxies:}") String trustedProxies) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -41,12 +43,14 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/llm-notice").permitAll()
                         // 커뮤니티 읽기는 공개입니다 (공유 링크를 로그인 없이 열 수 있어야 합니다). 내려받기는 로그인이 필요합니다.
                         .requestMatchers(HttpMethod.GET, "/api/v1/works", "/api/v1/works/*", "/api/v1/works/*/chapters/*",
                                 "/api/v1/works/*/comments", "/api/v1/works/*/activity", "/api/v1/works/*/shares",
                                 "/api/v1/works/*/network", "/api/v1/posts", "/api/v1/posts/*", "/api/v1/posts/*/comments",
                                 "/api/v1/users/*", "/api/v1/users/*/works", "/api/v1/users/*/contributions",
-                                "/api/v1/users/*/activity", "/api/v1/users/*/achievements", "/api/v1/issues").permitAll()
+                                "/api/v1/users/*/activity", "/api/v1/users/*/achievements", "/api/v1/issues",
+                                "/api/v1/media/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/shares/*/visit").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().denyAll())
@@ -55,7 +59,8 @@ public class SecurityConfig {
                         .authenticationEntryPoint(problemEntryPoint))
                 .exceptionHandling(e -> e.authenticationEntryPoint(problemEntryPoint))
                 // 사용자별로 세므로 토큰 인증 뒤에 둡니다. 빈으로 등록하면 서블릿 필터로 한 번 더 걸립니다.
-                .addFilterAfter(new RateLimitFilter(rateLimit, objectMapper, Clock.systemUTC()),
+                .addFilterAfter(new RateLimitFilter(rateLimit, objectMapper, Clock.systemUTC(),
+                                trusted(trustedProxies)),
                         BearerTokenAuthenticationFilter.class)
                 .build();
     }
@@ -82,5 +87,9 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", config);
         return source;
+    }
+
+    private static Set<String> trusted(String raw) {
+        return ClientAddresses.parse(raw);
     }
 }

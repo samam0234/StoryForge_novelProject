@@ -32,4 +32,8 @@ public final class ModerationDtos {
 
     public record DecideRequest(@NotNull Action action, @Size(max = 300) String note) {
     }
+
+    /** 외부 언어 모델로 원고가 나가는지. notice는 external일 때만 있습니다. */
+    public record LlmNotice(String provider, boolean external, String notice) {
+    }
 }

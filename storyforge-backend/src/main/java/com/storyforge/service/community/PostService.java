@@ -29,9 +29,11 @@ public class PostService {
     private final ActivityService activity;
     private final JdbcTemplate jdbc;
     private final AccountPolicy policy;
+    private final ContentPolicy contentPolicy;
 
     public PostService(PostRepository posts, AppUserRepository users, ActivityService activity, JdbcTemplate jdbc,
-                       AccountPolicy policy) {
+                       AccountPolicy policy, ContentPolicy contentPolicy) {
+        this.contentPolicy = contentPolicy;
         this.policy = policy;
         this.posts = posts;
         this.users = users;
@@ -76,6 +78,7 @@ public class PostService {
     @Transactional
     public PostCard create(PostRequest request, Long userId) {
         policy.requireTerms(userId);
+        contentPolicy.check(request.title(), request.content());
         AppUser author = users.findById(Objects.requireNonNull(userId))
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         Post post = posts.save(new Post(author, request.category(), request.title().strip(), request.content().strip()));
@@ -85,6 +88,7 @@ public class PostService {
 
     @Transactional
     public PostCard update(Long postId, PostRequest request, Long userId) {
+        contentPolicy.check(request.title(), request.content());
         Post post = loadOwned(postId, userId);
         post.update(request.category(), request.title().strip(), request.content().strip());
         return PostCard.from(post);
