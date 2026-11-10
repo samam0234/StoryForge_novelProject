@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class StubAiServer {
 
-    public enum ChapterMode { OK, SSE_ERROR, HTTP_500 }
+    public enum ChapterMode { OK, SSE_ERROR, HTTP_500, MISSING_DONE }
 
     private HttpServer server;
     private int boundPort = 0;
@@ -26,6 +26,7 @@ public class StubAiServer {
     private volatile long chapterDelayMillis = 0;
     private volatile boolean reviewFindsHighIssue = false;
     private volatile boolean failReview = false;
+    private volatile Runnable duringReview = () -> {};
     /** 받은 재검증 요청 본문 */
     public final List<String> reviewRequests = new CopyOnWriteArrayList<>();
     /** 받은 패키지 검사 요청 본문 */
@@ -80,6 +81,7 @@ public class StubAiServer {
         chapterRequests.clear();
         reviewFindsHighIssue = false;
         failReview = false;
+        duringReview = () -> {};
         reviewRequests.clear();
         packageRequests.clear();
     }
@@ -90,6 +92,10 @@ public class StubAiServer {
 
     public void failReview(boolean value) {
         this.failReview = value;
+    }
+
+    public void duringReview(Runnable action) {
+        this.duringReview = action;
     }
 
     private void packageContinuity(HttpExchange ex) throws IOException {
@@ -105,6 +111,7 @@ public class StubAiServer {
 
     private void review(HttpExchange ex) throws IOException {
         reviewRequests.add(new String(ex.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+        duringReview.run();
         if (failReview) {
             ex.sendResponseHeaders(500, -1);
             ex.close();
@@ -168,7 +175,7 @@ public class StubAiServer {
         ex.getResponseHeaders().set("Content-Type", "text/event-stream");
         ex.sendResponseHeaders(200, 0);
         String sse = "event: token\ndata: 첫 문단\n\nevent: token\ndata:  이어서\n\n";
-        sse += chapterMode == ChapterMode.SSE_ERROR
+        sse += chapterMode == ChapterMode.MISSING_DONE ? "" : chapterMode == ChapterMode.SSE_ERROR
                 ? "event: error\ndata: 생성 실패\n\n"
                 : """
                 event: done

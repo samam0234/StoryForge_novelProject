@@ -131,7 +131,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 97건 (실제 PostgreSQL·로컬 SMTP)
+    └── test/                     # 단위·통합 테스트 101건 (실제 PostgreSQL·로컬 SMTP)
 ```
 
 ## 문제 해결

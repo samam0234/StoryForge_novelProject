@@ -16,6 +16,10 @@ public class Chapter {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(nullable = false)
+    private long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
@@ -87,6 +91,7 @@ public class Chapter {
     }
 
     public Long getId() { return id; }
+    public long getVersion() { return version; }
     public Project getProject() { return project; }
     public int getNumber() { return number; }
     public String getTitle() { return title; }

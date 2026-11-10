@@ -178,6 +178,8 @@ public class PipelineOrchestrator {
     private record Prepared(Long projectId, int number, ProjectStatus previousStatus, ChapterContext context) {
     }
 
+    private record PreparedReview(ChapterReviewRequest request, long version) {}
+
     /**
      * 챕터 순차 생성 (기획서 §6.3, §7.2). SSE 이벤트: token → done(ChapterResponse) | error.
      * 이전 챕터가 모두 확정되어야 다음 챕터를 생성할 수 있습니다 (CHAPTER_REVIEW를 건너뛰지 않음).
@@ -201,6 +203,8 @@ public class PipelineOrchestrator {
                         default -> Mono.<ServerSentEvent<Object>>empty();
                     };
                 })
+                .concatWith(Mono.defer(() -> finished.get() ? Mono.empty()
+                        : Mono.error(new AiServiceException("AI 스트림이 완료 이벤트 없이 종료되었습니다.", null))))
                 .onErrorResume(e -> {
                     log.warn("chapter generation failed: project={}, chapter={}", projectId, number, e);
                     finished.set(true);
@@ -266,7 +270,7 @@ public class PipelineOrchestrator {
      * AI 호출이 실패하면 승인하지 않습니다. 재검증에서 심각한 이슈가 나오면 결과를 저장하고 승인을 멈춰 사용자에게 보여 줍니다.
      */
     public ChapterResponse confirmChapter(Long chapterId) {
-        ChapterReviewRequest review = tx.execute(s -> {
+        PreparedReview review = tx.execute(s -> {
             Chapter chapter = chapterService.load(chapterId);
             requireConfirmable(chapter);
             if (!chapter.isNeedsReview()) {
@@ -274,12 +278,13 @@ public class PipelineOrchestrator {
             }
             Project p = chapter.getProject();
             ChapterContext context = chapterContext(p, chapter.getNumber(), outlineService.get(p.getId()).getChapters());
-            return new ChapterReviewRequest(context, chapter.getTitle(), chapter.getContent());
+            return new PreparedReview(new ChapterReviewRequest(context, chapter.getTitle(), chapter.getContent()),
+                    chapter.getVersion());
         });
         if (review != null) {
-            ChapterReviewResult result = ai.reviewChapter(review);
+            ChapterReviewResult result = ai.reviewChapter(review.request());
             ContinuityResult report = result.report() == null ? new ContinuityResult(List.of(), 0) : result.report();
-            tx.executeWithoutResult(s -> chapterService.applyReview(chapterId, result.summary(), report.issues(), report.score()));
+            tx.executeWithoutResult(s -> chapterService.applyReview(chapterId, review.version(), result.summary(), report.issues(), report.score()));
             long high = report.issues().stream().filter(i -> "high".equals(i.severity())).count();
             if (high > 0) {
                 throw new InvalidStateException("수정본을 다시 검증했더니 심각한 연속성 이슈가 " + high
