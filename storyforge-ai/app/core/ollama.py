@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 import time
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import TypeVar
 
@@ -118,7 +118,7 @@ class OllamaLLM:
     async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
         return await self._request(self._payload(system, prompt, model, stream=False, max_tokens=max_tokens))
 
-    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
+    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]:
         payload = self._payload(system, prompt, model, stream=True, max_tokens=self._settings.ollama_stream_max_tokens)
         started = time.perf_counter()
         first_token = None

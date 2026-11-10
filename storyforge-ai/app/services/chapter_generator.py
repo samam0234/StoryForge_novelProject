@@ -3,7 +3,7 @@
 컨텍스트(Bible + Outline + 이전 챕터 요약 + 캐릭터 상태)를 프롬프트에 주입해 스트리밍 생성하고,
 생성이 끝나면 요약과 Continuity 검증을 실행합니다.
 """
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import aclosing
 from dataclasses import dataclass
 
@@ -25,7 +25,7 @@ class Done:
     result: ChapterGenerateResult
 
 
-async def generate_chapter(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator[Token | Done]:
+async def generate_chapter(llm: LLMClient, ctx: ChapterContext) -> AsyncGenerator[Token | Done, None]:
     parts: list[str] = []
     # 외부 SSE가 중단되면 모델 연결과 추론 슬롯도 즉시 반환합니다.
     async with aclosing(_stream_body(llm, ctx)) as stream:
@@ -69,7 +69,7 @@ async def review_chapter(llm: LLMClient, request: ChapterReviewRequest) -> Chapt
     return ChapterReviewResult(summary=summary, report=report)
 
 
-def _stream_body(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator[str]:
+def _stream_body(llm: LLMClient, ctx: ChapterContext) -> AsyncGenerator[str, None]:
     if llm.is_mock:
         return mock_writer.stream_text(mock_writer.chapter_text(ctx), get_settings().mock_stream_delay)
     return llm.stream(

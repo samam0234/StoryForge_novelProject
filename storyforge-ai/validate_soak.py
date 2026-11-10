@@ -12,7 +12,7 @@ import time
 
 from app.core.config import Settings
 from app.core.ollama import LLMBusyError, OllamaLLM
-from app.models.schemas import ChapterContext
+from app.models.schemas import ChapterContext, ChapterGenerateResult
 from app.services.chapter_generator import Done, generate_chapter
 
 
@@ -78,11 +78,10 @@ async def validate(duration, timeout):
                         await asyncio.wait_for(cancelled.__anext__(), timeout)
                     cancellations += 1
                 began = time.perf_counter()
-                first = None
-                final = None
-
-                async def collect():
-                    nonlocal first, final, busy
+                async def collect() -> tuple[ChapterGenerateResult, float]:
+                    nonlocal busy
+                    first = None
+                    final = None
                     async with aclosing(generate_chapter(llm, ctx)) as generation:
                         async for event in generation:
                             if isinstance(event, Done):
@@ -96,10 +95,11 @@ async def validate(duration, timeout):
                                     busy += 1
                                 else:
                                     raise AssertionError("포화 요청이 거부되지 않았습니다")
+                    if final is None or first is None or not final.content.strip() or not final.summary.strip():
+                        raise AssertionError("본문·요약·첫 조각·검증 완료가 누락됐습니다")
+                    return final, first
 
-                await asyncio.wait_for(collect(), timeout)
-                if final is None or not final.content.strip() or not final.summary.strip():
-                    raise AssertionError("본문·요약·검증 완료가 누락됐습니다")
+                final, first = await asyncio.wait_for(collect(), timeout)
                 elapsed = time.perf_counter() - began
                 totals.append(elapsed)
                 first_tokens.append(first)

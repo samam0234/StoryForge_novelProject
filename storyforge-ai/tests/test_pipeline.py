@@ -2,10 +2,12 @@
 import json
 import asyncio
 import pytest
+from collections.abc import AsyncGenerator
 
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.llm import MockLLM
 from app.main import app
 from app.models.schemas import ChapterContext, ContinuityIssue
 from app.services import mock_writer
@@ -21,14 +23,14 @@ PROJECT = {"title": "테스트", "genre": "판타지"}
 
 @pytest.mark.parametrize("through_sse", [False, True])
 def test_closing_chapter_releases_upstream_stream_immediately(through_sse):
-    class CancellableLLM:
+    class CancellableLLM(MockLLM):
         is_mock = False
 
         def __init__(self):
             self.closed = False
             self.streams = []
 
-        def stream(self, **kwargs):
+        def stream(self, *, system: str, prompt: str, model: str | None = None):
             async def body():
                 try:
                     yield "첫 문장"
@@ -47,6 +49,7 @@ def test_closing_chapter_releases_upstream_stream_immediately(through_sse):
         })
         chapter = ((await chapter_response(ctx, llm)).body_iterator
                    if through_sse else generate_chapter(llm, ctx))
+        assert isinstance(chapter, AsyncGenerator)
         try:
             await chapter.__anext__()
             await chapter.aclose()

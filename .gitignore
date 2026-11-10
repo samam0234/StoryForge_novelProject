@@ -20,6 +20,8 @@ node_modules/
 dist/
 .angular/
 coverage/
+out-tsc/
+*.tsbuildinfo
 
 # Backend (Spring Boot)
 target/

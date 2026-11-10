@@ -4,6 +4,7 @@
 """
 import argparse
 import asyncio
+from contextlib import aclosing
 import json
 import logging
 import shutil
@@ -15,7 +16,7 @@ from unittest.mock import patch
 from app.core.config import Settings
 from app.core.ollama import OllamaLLM
 from app.models.schemas import (
-    BibleGenerateRequest, BibleInfo, ChapterContext, OutlineGenerateRequest,
+    BibleGenerateRequest, BibleInfo, ChapterContext, ChapterGenerateResult, OutlineGenerateRequest,
     PreviousChapter, ProjectInfo,
 )
 from app.services.bible_generator import generate_bible
@@ -61,20 +62,20 @@ async def validate(chapters: int, timeout: float):
                 ctx = ChapterContext(project=project, bible=bible, chapter_number=chapter.order,
                                      outline_chapter=chapter, previous_chapters=list(previous))
                 started = time.perf_counter()
-                first = None
-                final = None
+                async def collect() -> tuple[ChapterGenerateResult, float]:
+                    first = None
+                    final = None
+                    async with aclosing(generate_chapter(llm, ctx)) as generation:
+                        async for event in generation:
+                            if isinstance(event, Done):
+                                final = event.result
+                            elif first is None:
+                                first = time.perf_counter() - started
+                    if final is None or first is None or not final.content.strip() or not final.summary.strip():
+                        raise ValueError("missing completed chapter, summary or first token")
+                    return final, first
 
-                async def collect():
-                    nonlocal first, final
-                    async for event in generate_chapter(llm, ctx):
-                        if isinstance(event, Done):
-                            final = event.result
-                        elif first is None:
-                            first = time.perf_counter() - started
-
-                await asyncio.wait_for(collect(), timeout)
-                if final is None or not final.content.strip() or not final.summary.strip():
-                    raise ValueError("missing completed chapter or summary")
+                final, first = await asyncio.wait_for(collect(), timeout)
                 emit(stage, first_token_s=first, total_s=time.perf_counter() - started,
                      characters=len(final.content), summary_characters=len(final.summary),
                      previous_chapters=len(previous), score=final.report.score,

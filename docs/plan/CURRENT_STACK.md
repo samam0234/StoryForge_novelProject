@@ -15,6 +15,7 @@
 | Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행 |
 | AI Service | FastAPI, Pydantic v2, httpx / OpenAI SDK | FastAPI 0.158.1, Pydantic 2, anthropic SDK 2.0.0, Jinja2 3 | 패키지 관리: venv + `requirements.txt` |
 | Python | — | 3.10 | |
+| Python 정적 검사 | — | Pyright 1.1.414 | 루트 `pyrightconfig.json`, AI venv의 Python 3.10 기준. AI·테스트·검증 스크립트 포함 |
 | LLM | OpenAI, Anthropic 등 | 개발 기본 `mock`, 일반 출력 Ollama `gemma4:e4b`, 선택 Anthropic `claude-*` | 서버 측 refusal fallback(`fallbacks: "default"`) 사용 |
 | Database | PostgreSQL 16+ | PostgreSQL 16 (Docker 이미지 `postgres:16`) | pgvector는 Phase 3 |
 | 인프라 | Docker Compose (개발), 향후 Kubernetes | Docker Compose (DB만) | 웹·콘솔·백엔드·AI는 로컬 프로세스로 실행 |
@@ -111,6 +112,8 @@ SMTP 활성화 시 `ADMIN_EMAILS`에 지정된 계정도 이메일 인증을 완
 챕터 스트림 수신을 중단하면 FastAPI SSE → 챕터 생성기 → 모델 스트림을 명시적으로 닫아 연결과 추론 슬롯을 즉시 반환합니다. 기존 비동기 생성기의 가비지 컬렉션 시점에 의존하던 정리를 수정했습니다.
 
 백엔드는 `done` 없는 AI 스트림 종료를 오류로 처리해 부분 원고를 저장하지 않고 생성 전 상태로 복귀합니다. V13은 `chapter.version`을 추가하며 재검증 시작 버전과 결과 적용 버전이 다르면 409로 거부합니다. AI 처리 중 DB 트랜잭션을 유지하지 않습니다.
+
+CI의 AI 작업은 `.venv` 생성 → 개발 의존성 설치 → 루트 Pyright 검사 → pytest 순서입니다. 로컬도 같은 venv를 사용합니다. 종료 가능한 스트림 타입과 명시적인 수집 결과를 사용하며 SQL COUNT는 필수 결과로 확인합니다. 예외 클래스는 명시적 직렬화 버전을 둡니다.
 
 | 일자 | 변경 | 커밋 기록 |
 |------|------|-----------|

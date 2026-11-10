@@ -139,12 +139,15 @@ def validate(container):
             def request(method, path, body=None):
                 response = client.request(method, base + path, json=body)
                 response.raise_for_status()
-                return response.json() if response.content else None
+                return response
 
-            account = request("POST", "/auth/register", {"email": "restart@example.test", "password": secrets.token_urlsafe(24),
+            def data(method, path, body=None):
+                return request(method, path, body).json()
+
+            account = data("POST", "/auth/register", {"email": "restart@example.test", "password": secrets.token_urlsafe(24),
                 "displayName": "복구 검증", "acceptTerms": True})
             client.headers["Authorization"] = "Bearer " + account["accessToken"]
-            project = request("POST", "/projects", {"title": "후속 챕터 복구 검증", "genre": "미스터리"})["id"]
+            project = data("POST", "/projects", {"title": "후속 챕터 복구 검증", "genre": "미스터리"})["id"]
             prefix = f"/projects/{project}"
             request("POST", prefix + "/bible/generate", {"prompt": "고립된 등대에서 기록을 함께 찾는 두 사람"})
             request("PUT", prefix + "/bible/confirm")
@@ -158,9 +161,9 @@ def validate(container):
                 assert "event:error" not in response.text, "생성 오류 이벤트가 있습니다"
 
             generate(1)
-            first = request("GET", prefix + "/chapters")[0]
+            first = data("GET", prefix + "/chapters")[0]
             request("PUT", f"/chapters/{first['id']}/confirm")
-            before = request("GET", f"/chapters/{first['id']}")
+            before = data("GET", f"/chapters/{first['id']}")
             entered = threading.Event()
 
             def interrupted_generation():
@@ -179,23 +182,23 @@ def validate(container):
                 interrupted = executor.submit(interrupted_generation)
                 if not entered.wait(timeout=30):
                     raise TimeoutError("둘째 장 스트리밍 시작 실패")
-                assert request("GET", prefix + "/status")["status"] == "CHAPTER_GENERATING"
+                assert data("GET", prefix + "/status")["status"] == "CHAPTER_GENERATING"
                 emit("crashing", backend_pid=backend.pid, chapter=2, first_status=before["status"])
                 stop(backend, crash=True)
                 emit("disconnected", result=interrupted.result(timeout=10))
 
             backend = launch_backend("backend-after.log")
-            recovered = request("GET", prefix + "/status")["status"]
+            recovered = data("GET", prefix + "/status")["status"]
             assert recovered == "CHAPTER_REVIEW", recovered
-            assert request("GET", f"/chapters/{first['id']}") == before, "이전 장이 변경됐습니다"
-            assert len(request("GET", prefix + "/chapters")) == 1, "부분 둘째 장이 저장됐습니다"
+            assert data("GET", f"/chapters/{first['id']}") == before, "이전 장이 변경됐습니다"
+            assert len(data("GET", prefix + "/chapters")) == 1, "부분 둘째 장이 저장됐습니다"
             emit("recovered", status=recovered, first_chapter_preserved=True, partial_chapter_saved=False)
             generate(2)
-            assert request("GET", prefix + "/status")["status"] == "CHAPTER_REVIEW"
-            chapters = request("GET", prefix + "/chapters")
+            assert data("GET", prefix + "/status")["status"] == "CHAPTER_REVIEW"
+            chapters = data("GET", prefix + "/chapters")
             assert len(chapters) == 2
             assert chapters[1]["status"] == "DRAFT"
-            assert request("GET", f"/chapters/{first['id']}") == before
+            assert data("GET", f"/chapters/{first['id']}") == before
             emit("complete", elapsed_s=round(time.perf_counter() - started, 3), second_status=chapters[1]["status"],
                  logs=str(directory), model="mock", browser_verified=False)
     finally:

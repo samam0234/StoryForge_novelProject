@@ -22,6 +22,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Locale;
+import java.util.Objects;
 
 /** 메일 토큰은 원문을 저장하지 않으며 사용자 행 잠금으로 재발급·소비를 직렬화합니다. */
 @Service
@@ -80,9 +81,9 @@ public class AccountMailService {
         AppUser user = lock(id);
         if (user.isSuspended() || (purpose.equals("verify") && user.isEmailVerified())) return;
         Instant now = Instant.now();
-        Integer recent = jdbc.queryForObject("select count(*) from account_mail_token where user_id = ? and purpose = ? and created_at > ?",
-                Integer.class, id, purpose, Timestamp.from(now.minusSeconds(60)));
-        if (recent != null && recent > 0) return;
+        int recent = Objects.requireNonNull(jdbc.queryForObject("select count(*) from account_mail_token where user_id = ? and purpose = ? and created_at > ?",
+                Integer.class, id, purpose, Timestamp.from(now.minusSeconds(60))));
+        if (recent > 0) return;
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
@@ -113,9 +114,9 @@ public class AccountMailService {
         var ids = jdbc.queryForList("select user_id from account_mail_token where token_hash = ? and purpose = ?", Long.class, digest, purpose);
         if (ids.isEmpty()) throw invalid();
         AppUser user = lock(ids.getFirst());
-        Integer valid = jdbc.queryForObject("select count(*) from account_mail_token where token_hash = ? and purpose = ? and expires_at > ? and credential_version = ?",
-                Integer.class, digest, purpose, Timestamp.from(Instant.now()), user.getCredentialVersion());
-        if (valid == null || valid != 1 || user.isSuspended()) throw invalid();
+        int valid = Objects.requireNonNull(jdbc.queryForObject("select count(*) from account_mail_token where token_hash = ? and purpose = ? and expires_at > ? and credential_version = ?",
+                Integer.class, digest, purpose, Timestamp.from(Instant.now()), user.getCredentialVersion()));
+        if (valid != 1 || user.isSuspended()) throw invalid();
         if (purpose.equals("reset")) {
             if (password == null || password.getBytes(StandardCharsets.UTF_8).length > 72) {
                 throw new InvalidStateException("비밀번호는 UTF-8 기준 72바이트 이하여야 합니다.");

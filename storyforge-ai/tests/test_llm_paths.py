@@ -3,7 +3,7 @@
 가짜 LLM으로 프롬프트에 필수 컨텍스트가 들어가는지(정본: Bible + Outline + 이전 챕터 요약),
 오류가 어떻게 전달되는지 확인합니다.
 """
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 
 import pytest
 from fastapi.testclient import TestClient
@@ -70,7 +70,7 @@ class FakeLLM:
         self.prompts.append(prompt)
         return " 요약입니다 "
 
-    async def stream(self, *, system, prompt, model=None) -> AsyncIterator[str]:
+    async def stream(self, *, system, prompt, model=None) -> AsyncGenerator[str, None]:
         self.models.append(model)
         self.prompts.append(prompt)
         yield "본문 "

@@ -112,7 +112,8 @@ class CharacterBank:
         if self._collection is not None:
             return self._collection
         try:
-            import chromadb
+            from importlib import import_module
+            chromadb = import_module("chromadb")
         except Exception:
             return None
         try:
