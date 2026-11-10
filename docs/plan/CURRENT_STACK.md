@@ -9,6 +9,7 @@
 | 레이어 | 기획서 기준 | 확정 버전 | 비고 |
 |--------|-------------|-----------|------|
 | Frontend | Angular 18+, Angular Material, RxJS, TipTap | Angular 21.2, Angular Material 21.2, RxJS 7.8, TypeScript 5.9 | Standalone + signals, zoneless. Angular 22는 Node 24.15+가 필요해 보류. TipTap 3.32 (본문은 Markdown으로 저장) |
+| Console | 독립 Angular 운영 사이트 | Angular 21.2, RxJS 7.8, TypeScript 5.9 | Standalone + signals. 사용자 웹과 별도 package-lock·테스트·빌드 |
 | Node.js (개발) | — | 24.14 | |
 | Main Backend | Spring Boot 4.x, Spring Security, WebClient, Flyway | Spring Boot 4.1.2 (Spring Framework 7, Jackson 3, Hibernate 7), springdoc-openapi 3.2.0 | 빌드 도구: Maven Wrapper (Maven 3.10.0) |
 | Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행 |
@@ -89,12 +90,15 @@
 
 운영 콘솔은 사용자 웹과 동일한 Spring Boot를 사용합니다. Ollama는 프로세스별 추론 슬롯, 대기 시간 제한, 모델 상주, JSON 스키마 검증을 적용합니다. 필수 컨텍스트와 Continuity 검증은 유지합니다. [구조](../Architecture/operations-console.md), [조정 가이드](../guidance/ollama-performance.md).
 
+동일 작성자의 여러 대상을 일괄 정지·해제할 때 계정 변경·작성자 알림을 중복 실행하지 않습니다. 공백뿐인 스트림은 정상 생성으로 저장하지 않습니다. AI 실행 데이터(`storyforge-ai/data/used_characters.json`, `storyforge-ai/data/chroma/`)는 추적하지 않으며 이름 풀 `names.json`은 버전 관리합니다. [재현과 해결](../find_debug/2026-11-10.md).
+
 `prod`에서는 `FRONTEND_ORIGIN`과 `CONSOLE_ORIGIN`을 각각 경로·와일드카드·후행 슬래시 없는 HTTPS 출처 하나로 명시합니다. 두 출처를 정확하게 허용하며, 개발 DB 자격 증명·빈 JWT 키 거부와 API 문서 비활성 정책은 유지합니다.
 
 ## 변경 이력
 
 | 일자 | 변경 | 커밋 기록 |
 |------|------|-----------|
+| 2026-11-10 | 독립 콘솔·명시적 HTTPS 출처, Ollama 연결·동시성 설정, 동일 작성자 일괄 조치·공백 스트림 수정 | [디버깅 일지](../find_debug/2026-11-10.md) |
 | 2026-10-22 | 초안 작성 (기획서 기준값만 기록, 확정값 미정) | — |
 | 2026-10-22 | 첫 구현에 맞춰 버전·포트·환경 변수 확정 | `feature/web-foundation` 커밋 기록 참고 |
 | 2026-11-02 | JWT 인증 환경 변수 추가 | [auth.md](auth.md) |

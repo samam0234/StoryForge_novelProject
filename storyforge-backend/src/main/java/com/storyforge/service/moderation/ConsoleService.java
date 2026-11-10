@@ -101,11 +101,12 @@ public class ConsoleService {
         }
         // 처리 중인 같은 대상은 기존 조치가 모든 대기 신고를 닫으므로 한 번만 조치합니다.
         Set<String> targets = new HashSet<>();
+        Set<Long> changedAccounts = new HashSet<>();
         int processed = 0;
         for (ContentReport report : selected) {
             String key = report.getTargetType() + ":" + report.getTargetId();
             if (!targets.add(key)) continue;
-            moderation.decide(report.getId(), new DecideRequest(request.action(), request.note()), actor);
+            moderation.decideInBatch(report.getId(), new DecideRequest(request.action(), request.note()), actor, changedAccounts);
             processed++;
         }
         return new BatchResult(ids.size(), processed);

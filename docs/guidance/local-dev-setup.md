@@ -14,10 +14,10 @@
 | PostgreSQL | 5433 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` |
 | storyforge-ai | 8001 (127.0.0.1) | `LLM_PROVIDER=mock`, `LLM_MODEL`, `LLM_EFFORT`, `ANTHROPIC_API_KEY` |
 | storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN`, `JWT_SECRET`, `JWT_TTL`, `ADMIN_EMAILS` (전체는 [CURRENT_STACK.md](../plan/CURRENT_STACK.md)) |
-| storyforge-console | 4201 | `CONSOLE_ORIGIN`, 관리자 계정과 `ADMIN_EMAILS` |
+| storyforge-console | 4201 | `/api` 프록시 사용. `CONSOLE_ORIGIN`, `ADMIN_EMAILS`는 백엔드에 주입 |
 | storyforge-frontend | 4200 | (없음. `/api`는 프록시) |
 
-기본값으로 바로 실행됩니다. 바꾸려면 `.env.example`을 `.env`로 복사해 고칩니다.
+개발 기본값으로 실행할 수 있습니다. 변수 키는 루트 `.env.example`을 참고합니다. Compose는 루트 `.env`를 치환에 사용하고 FastAPI는 `.env`를 직접 읽습니다. **Spring Boot는 `.env` 파일을 자동으로 읽지 않습니다.** 백엔드는 실행 셸의 환경 변수 또는 배포 도구로 값을 주입한 뒤 시작합니다. 예를 들어 운영자 지정은 `docs/guidance/operations-console.md`의 PowerShell 설정을 따릅니다. Angular는 `/api` 프록시만 사용하며 DB·모델 자격 증명을 주입하지 않습니다.
 
 ## 명령
 
@@ -53,6 +53,8 @@ npm start
 ```bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
 ```
+
+백엔드의 외부 모델 안내에도 같은 `LLM_PROVIDER` 값을 설정해야 합니다. 로컬 Gemma 실행과 측정은 [Ollama 가이드](ollama-performance.md)를 참고합니다.
 
 ## 기대결과
 
