@@ -41,6 +41,7 @@ StoryForge의 보안 취약점을 책임 있게 신고해 주시는 모든 분�
 | 관리 | 관리자는 서버 설정으로만 지정. 독립 콘솔의 서버 권한 검사, 조치 감사 기록·원자적 일괄 처리 적용. 숨김은 복원 가능. 신고자는 작성자에게 알리지 않음 |
 | 비공개 설정 | 패키지 검사에서 다른 작가가 공개하지 않은 설정은 모델에 보내지 않음 |
 | 장애 격리 | AI 서비스 호출에 타임아웃, 연결 실패 재시도, Circuit Breaker |
+| 원고 일관성 | V13 챕터 낙관적 잠금과 재검증 시작 버전 비교. 동시 편집 시 이전 원고의 검증 결과 적용·승인 거부. AI 완료 이벤트 없는 부분 원고는 저장하지 않음 |
 
 자세한 내용은 [docs/plan/auth.md](docs/plan/auth.md), [docs/plan/stability.md](docs/plan/stability.md)에 있습니다.
 
@@ -52,8 +53,8 @@ StoryForge의 보안 취약점을 책임 있게 신고해 주시는 모든 분�
 | DB 비밀번호 | 개발 기본값 `storyforge/storyforge` | **운영에서는 반드시 변경** |
 | 토큰 저장 | 사용자 웹 `localStorage`, 운영 콘솔 탭 `sessionStorage` | XSS가 생기면 토큰이 노출될 수 있음. Angular 기본 이스케이프와 짧은 만료로 완화 |
 | 리프레시 토큰, 로그아웃 무효화 | 없음 | 로그아웃해도 만료 전 토큰은 유효 |
-| API 문서 | `/swagger-ui`, `/v3/api-docs`가 공개 | 운영에서는 `springdoc.api-docs.enabled=false`, `springdoc.swagger-ui.enabled=false` 권장 |
-| Rate Limiting | 서버 메모리, `getRemoteAddr()` 기준 | 프록시 뒤에서는 모든 요청이 한 IP로 보임. 여러 서버로 늘리면 공유 저장소 필요 |
+| API 문서 | 개발 환경의 `/swagger-ui`, `/v3/api-docs`는 공개, `prod`는 비활성 | 운영 프로필 적용 확인 필요 |
+| Rate Limiting | 서버 메모리. 기본 접속 IP, `TRUSTED_PROXIES`에서 온 요청만 전달 헤더 사용 | 프록시 설정이 없으면 프록시 IP가 기준. 여러 서버로 늘리면 공유 저장소 필요 |
 | 계정 | 이메일 인증·재설정은 SMTP 설정 시 사용 가능. 로그인 실패 잠금 없음 | 일회용 해시 토큰·만료·재발송 간격·IP 제한 적용. 비밀번호 변경 시 기존 JWT 폐기 |
 | HTTPS | 애플리케이션이 직접 처리하지 않음 | 운영에서는 TLS를 종단하는 프록시가 필요 |
 | 감사 기록 | V11부터 운영 조치의 관리자·대상·사유·시각 보존 | DB 관리자 변경을 막는 불변 저장소는 아님. 인증 이벤트 감사는 별도 미구현 |

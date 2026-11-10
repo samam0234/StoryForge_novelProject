@@ -188,6 +188,8 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 이메일 인증과 비밀번호 재설정은 SMTP 설정으로 사용할 수 있습니다. 기본 비활성이며 [설정·로컬 검증 가이드](docs/guidance/account-mail.md)를 따릅니다.
 
+후속 디버깅에서 챕터 스트림 중단·완료 이벤트 누락·재검증 중 동시 편집을 수정했습니다. AI 55건, 백엔드 101건과 패키징이 통과했으며 mock AI를 사용한 실제 JVM 후속 챕터 복구도 확인했습니다. 위의 210건·두 Angular 빌드는 이전 실행 기록입니다. 실제 모델 장시간 시험과 브라우저 확인 상태는 [후속 기록](docs/vaildates/local-followup.md)에 구분해 남깁니다.
+
 ## 저장소 구조
 
 ```
