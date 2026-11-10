@@ -135,7 +135,7 @@ class OllamaLLM:
                         if content:
                             if first_token is None:
                                 first_token = time.perf_counter() - started
-                            received_content = True
+                            received_content = received_content or bool(content.strip())
                             yield content
                         if chunk.get("done") is True:
                             if not received_content:

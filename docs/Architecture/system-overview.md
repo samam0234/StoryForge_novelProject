@@ -121,6 +121,8 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 
 독립 Angular `storyforge-console`도 Spring Boot만 호출합니다. 운영 조치는 공통 DB 잠금으로 직렬화하고 변경·알림·감사를 같은 트랜잭션에 묶습니다. FastAPI는 연결 풀과 추론 슬롯을 재사용하며 모델 상주·예열·스키마 검증을 지원합니다. [상세 구조](operations-console.md).
 
+동일 작성자의 복수 대상 계정 조치는 일괄 트랜잭션 안에서만 공유해 계정 변경·작성자 알림을 중복하지 않습니다. 대상별 신고 처리와 감사 기록은 유지합니다. 공백뿐인 AI 스트림은 정상 완료로 저장하지 않습니다.
+
 ## 관련 문서
 
 - [pipeline-state-machine.md](pipeline-state-machine.md)

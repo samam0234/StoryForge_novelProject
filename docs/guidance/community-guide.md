@@ -35,6 +35,8 @@ ADMIN_EMAILS=admin@example.com ./mvnw spring-boot:run     # PowerShell: $env:ADM
 
 ## 신고 처리
 
+독립 운영 콘솔의 일괄 조치·회원 검색·감사 기록은 [운영 콘솔 가이드](operations-console.md)를 참고하세요. 같은 작성자의 여러 대상을 정지·해제해도 작성자 알림은 한 번씩만 전송됩니다.
+
 1. 다른 계정으로 작품의 **신고** → 사유 선택
 2. 관리자로 **신고 관리** → 메모를 적고 **숨김**
 

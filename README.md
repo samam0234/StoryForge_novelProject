@@ -163,7 +163,7 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 - **Angular는 FastAPI를 직접 호출하지 않습니다.** 모든 요청은 Spring Boot를 거칩니다.
 - 버전·포트·환경 변수의 기준값은 [docs/plan/CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)에 있습니다. 바꿀 때는 이 문서를 먼저 고칩니다.
-- 환경 변수 목록은 [.env.example](.env.example)에 있습니다. 실제 값은 `.env`(커밋 금지)에 둡니다.
+- 환경 변수 목록은 [.env.example](.env.example)에 있습니다. Compose와 FastAPI는 `.env`(커밋 금지)를 읽습니다. Spring Boot는 실행 셸이나 배포 도구로 환경 변수를 주입해야 합니다.
 
 ## 테스트
 
@@ -171,9 +171,10 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 |--------|---------------------------|
 | 백엔드 | `./mvnw test` (통합 테스트에 Docker 필요) |
 | AI 서비스 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` 후 `.venv/Scripts/python -m pytest -q` |
+| 운영 콘솔 | `npm test`, `npm run build` |
 | 프론트엔드 | `npx ng test --watch=false`, **`npx ng build`** (단위 테스트는 화면 템플릿 오류를 놓칠 수 있음) |
 
-2026-11-10 검증: 백엔드 88건, AI 50건, 사용자 웹 50건, 운영 콘솔 8건(총 196건)입니다. 상세 결과와 브라우저 미검증 사항은 [검증 기록](docs/vaildates/operations-console-release.md)을 보세요. `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
+2026-11-10 검증: 백엔드 89건, AI 51건, 사용자 웹 50건, 운영 콘솔 8건(총 198건)입니다. 상세 결과와 브라우저 미검증 사항은 [검증 기록](docs/vaildates/operations-console-release.md)을 보세요. `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
 
 ## 현재 구현 범위
 
