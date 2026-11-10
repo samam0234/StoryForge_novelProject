@@ -44,4 +44,4 @@
 | [community-release.md](community-release.md) | 커뮤니티 공개 배포 전 | 아직 수행 전 |
 | [operations-console-release.md](operations-console-release.md) | 콘솔·운영 API·Ollama | 2026-11-10, 브라우저 미검증 |
 | [local-followup.md](local-followup.md) | SMTP·다중 챕터·긴 입력·회복 | 2026-11-10, 브라우저 미검증·최신 통합 명령 기록 |
-| [diagnostics-integration.md](diagnostics-integration.md) | 코드 진단·218건 테스트·두 빌드·통합 범위 | 2026-11-10, 커밋·병합·푸시 직접 명령 |
+| [diagnostics-integration.md](diagnostics-integration.md) | 코드 진단·이전 전체 검사·AI 실행 계층 64건·통합 범위 | 2026-11-10, 커밋·병합·푸시 직접 명령 |
