@@ -8,7 +8,8 @@ from collections.abc import AsyncGenerator
 import pytest
 from fastapi.testclient import TestClient
 
-from app.core.llm import LLMError, _check_stop, get_llm
+from app.core.llm import LLMError, _check_stop
+from app.core.orchestration import get_llm
 from app.main import app
 from app.models.schemas import (
     BibleGenerateResponse,
@@ -18,7 +19,7 @@ from app.models.schemas import (
     OutlineChapter,
     OutlineGenerateResponse,
 )
-from app.prompts import render
+from app.prompts.orchestration import render
 
 PROJECT = {"title": "기억 상점", "genre": "판타지"}
 BIBLE = {

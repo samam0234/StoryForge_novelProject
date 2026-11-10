@@ -2,7 +2,7 @@
 
 AI 서비스 테스트입니다. `LLM_PROVIDER=mock`(기본값)으로 실행하므로 API 키가 필요 없습니다.
 
-총 57건이며 실제 외부 모델 호출 없이 실행합니다.
+총 64건이며 실제 외부 모델 호출 없이 실행합니다.
 
 ## 들어갈 것
 
@@ -13,6 +13,9 @@ AI 서비스 테스트입니다. `LLM_PROVIDER=mock`(기본값)으로 실행하�
 - `test_package_continuity.py` — 패키지 규칙 검사, 모든 작품이 프롬프트에 들어감
 - `test_llm_paths.py` — 가짜 LLM으로 필수 컨텍스트 주입, LLM 검증 결과 반영, 스트림 중 오류, 내부 메시지 비노출 (실제 API 호출 없음)
 - `test_validation_tools.py` — 예열만으로 0회 성공 방지, scripts 모듈에서 이름 풀을 읽고 mock 다중 챕터 검증까지 완료
+- `test_orchestration.py` — 진입점 호환·API 경로 계약, 예열 실패 후 서비스 유지·종료 정리, 도구 선택·인자 전달·종료 시 복원
+
+`conftest.py`는 `tests.orchestration` 플러그인을 등록합니다. 인물 저장소 격리 fixture는 그 파일에서 관리하며 모든 테스트에 자동 적용합니다.
 
 ## 실행
 

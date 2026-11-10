@@ -1,7 +1,7 @@
 """가이드챗: 명령어, 자유 질문, 이동 버튼 생성 규칙"""
 from fastapi.testclient import TestClient
 
-from app.core.llm import get_llm
+from app.core.orchestration import get_llm
 from app.main import app
 from app.services.guide_assistant import COMMANDS, TOPICS, match_topic
 

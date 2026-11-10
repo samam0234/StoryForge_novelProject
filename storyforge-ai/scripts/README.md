@@ -15,4 +15,6 @@
 
 각 모듈의 `--help`는 모델을 호출하지 않습니다. 실제 실행에는 로컬 Ollama 모델이 필요합니다. `.env`는 서비스 루트 기준으로 읽습니다. 이름 풀은 서비스 `data/names.json`에서 찾고, 파이프라인 시험의 인물 기록은 임시 폴더에 격리합니다. 원고의 DB 저장·사용자 승인·브라우저 확인을 대신하지 않습니다.
 
+통합 진입점은 `python -m scripts <도구> <인자>`입니다. 예: `python -m scripts validate_pipeline --chapters 3`. `__main__.py`가 `orchestration.py`에 위임하며 네 도구만 허용합니다. 인자와 도구의 종료 코드를 유지하고 실행 후 `sys.argv`를 복원합니다. 기존 `python -m scripts.<도구>`도 지원합니다. 파이프라인·반복 생성 도구는 서버와 같은 `AiTaskOrchestrator`를 사용합니다.
+
 설정과 측정 한계는 [Ollama 가이드](../../docs/guidance/ollama-performance.md), 서비스 실행은 [상위 README](../README.md)를 참고합니다.

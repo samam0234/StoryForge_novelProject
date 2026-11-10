@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 from app.core.llm import LLMClient
 from app.models.schemas import GuideAction, GuideChatRequest, GuideChatResponse, GuideContext
-from app.prompts import render
+from app.prompts.orchestration import render
 
 _STATUS_NEXT = {
     "BIBLE_DRAFT": ("Story Bible을 작성하고 확정할 차례입니다.", "bible"),

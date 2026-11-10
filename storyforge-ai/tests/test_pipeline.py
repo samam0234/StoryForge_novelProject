@@ -12,7 +12,7 @@ from app.main import app
 from app.models.schemas import ChapterContext, ContinuityIssue
 from app.services import mock_writer
 from app.services.continuity_checker import rule_checks, score
-from app.services.chapter_generator import generate_chapter
+from app.services.orchestration import AiTaskOrchestrator
 from app.api.v1.chapter import chapter as chapter_response
 
 get_settings().mock_stream_delay = 0
@@ -47,8 +47,8 @@ def test_closing_chapter_releases_upstream_stream_immediately(through_sse):
             "project": PROJECT, "bible": {}, "chapterNumber": 1,
             "outlineChapter": {"order": 1, "title": "중단 검증"},
         })
-        chapter = ((await chapter_response(ctx, llm)).body_iterator
-                   if through_sse else generate_chapter(llm, ctx))
+        chapter = ((await chapter_response(ctx, AiTaskOrchestrator(llm))).body_iterator
+                   if through_sse else AiTaskOrchestrator(llm).generate_chapter(ctx))
         assert isinstance(chapter, AsyncGenerator)
         try:
             await chapter.__anext__()

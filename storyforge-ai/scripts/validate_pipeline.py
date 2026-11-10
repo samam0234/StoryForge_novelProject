@@ -19,10 +19,9 @@ from app.models.schemas import (
     BibleGenerateRequest, BibleInfo, ChapterContext, ChapterGenerateResult, OutlineGenerateRequest,
     PreviousChapter, ProjectInfo,
 )
-from app.services.bible_generator import generate_bible
-from app.services.chapter_generator import Done, generate_chapter
+from app.models.orchestration import Done
+from app.services.orchestration import AiTaskOrchestrator
 from app.services.character_bank import CharacterBank
-from app.services.outline_generator import generate_outline
 
 
 def emit(stage, **values):
@@ -32,6 +31,7 @@ def emit(stage, **values):
 async def validate(chapters: int, timeout: float):
     settings = Settings(llm_provider="ollama")
     llm = OllamaLLM(settings)
+    tasks = AiTaskOrchestrator(llm)
     project = ProjectInfo(title="검증용 등대의 기록", genre="미스터리", model=settings.ollama_model)
     stage = "warmup"
     try:
@@ -43,7 +43,7 @@ async def validate(chapters: int, timeout: float):
             stage = "bible"
             started = time.perf_counter()
             with patch("app.services.character_bank.CharacterBank", return_value=bank):
-                result = await asyncio.wait_for(generate_bible(llm, BibleGenerateRequest(
+                result = await asyncio.wait_for(tasks.generate_bible(BibleGenerateRequest(
                     project=project, prompt="폭풍으로 고립된 등대에서 네 사람이 사라진 항해 일지를 찾는다. "
                     "초자연적 능력은 없고 이동은 도보와 배로만 가능하다. 하루 동안 진행되는 완결된 이야기."
                 )), timeout)
@@ -51,7 +51,7 @@ async def validate(chapters: int, timeout: float):
             emit(stage, total_s=time.perf_counter() - started, characters=len(bible.characters))
             stage = "outline"
             started = time.perf_counter()
-            outline = await asyncio.wait_for(generate_outline(llm, OutlineGenerateRequest(
+            outline = await asyncio.wait_for(tasks.generate_outline(OutlineGenerateRequest(
                 project=project, bible=bible, chapter_count=chapters)), timeout)
             if len(outline.chapters) != chapters:
                 raise ValueError("requested chapter count mismatch")
@@ -65,7 +65,7 @@ async def validate(chapters: int, timeout: float):
                 async def collect() -> tuple[ChapterGenerateResult, float]:
                     first = None
                     final = None
-                    async with aclosing(generate_chapter(llm, ctx)) as generation:
+                    async with aclosing(tasks.generate_chapter(ctx)) as generation:
                         async for event in generation:
                             if isinstance(event, Done):
                                 final = event.result

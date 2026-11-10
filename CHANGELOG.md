@@ -6,6 +6,13 @@
 
 ### 2026-11-10
 
+#### AI 패키지 실행 조정
+
+- 루트 `main.py`를 정식 ASGI 진입점으로 추가하고 기존 `app.main:app`은 같은 앱을 참조하도록 유지
+- API·모델 수명주기·AI 작업·컨텍스트·프롬프트·수동 도구·테스트 격리를 패키지별 `orchestration.py`로 분리
+- 서버와 수동 생성 도구가 같은 `AiTaskOrchestrator`를 사용하며 Spring Boot 상태 머신·검토 단계와 API 계약 유지
+- AI 64건 회귀 테스트와 Pyright 오류·경고 0건 확인, 실행·구조 문서 갱신
+
 #### 보조 도구 폴더 정리
 
 - AI 성능 측정·검증 네 도구를 `storyforge-ai/scripts/`, 백엔드 JVM 검증 도구를 `storyforge-backend/scripts/`로 이동
