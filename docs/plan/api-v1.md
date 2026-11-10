@@ -116,6 +116,18 @@
 | GET | `/me/notifications`, `/me/notifications/unread-count` | 알림 목록, 안 읽은 수 |
 | PUT | `/me/notifications/{id}/read`, `/me/notifications/read-all` | 읽음 처리 |
 
+### 독립 운영 콘솔
+
+| 메서드 | 경로 | 설명 |
+|--------|------|------|
+| GET | `/admin/overview` | 회원·프로젝트·작품·신고 집계 |
+| GET | `/admin/users?q=&suspended=&page=&size=` | 회원 검색·필터·페이지 |
+| PUT | `/admin/users/{id}/suspension` | `{suspended,note}` 직접 정지·해제 |
+| POST | `/admin/reports/batch` | `{reportIds,action,note}` 최대 50건 원자적 조치 |
+| GET | `/admin/audit?actorId=&page=&size=` | 감사 기록 |
+
+모두 관리자만 가능합니다. 상세 필드·충돌·잠금 규칙은 [운영 콘솔 스펙](operations-console.md)을 따릅니다.
+
 ### 챕터 생성 규칙
 
 - 생성할 수 있는 챕터는 **확정된 챕터 수 + 1**뿐입니다. 이전 챕터를 승인하지 않으면 다음 챕터를 만들 수 없습니다.
@@ -152,5 +164,5 @@
 - `issues[].type`: `setting_conflict`(설정 충돌), `character_consistency`(캐릭터 일관성), `timeline`(타임라인), `plot_thread`(플롯 스레드) — §6.3의 네 항목
 - `issues[].severity`: `low` / `medium` / `high`
 - `score`: 100에서 심각도별 감점 (high 30, medium 12, low 4), 최저 0
-- 규칙 기반 검사(Outline 등장 캐릭터 누락 등)는 항상 실행하고, `LLM_PROVIDER=anthropic`이면 LLM 검증을 더합니다.
+- 규칙 기반 검사(Outline 등장 캐릭터 누락 등)는 항상 실행하고, mock 외의 Ollama·Anthropic 경로에서는 LLM 검증을 더합니다.
 - 화면은 high 이슈가 있으면 승인 전에 한 번 더 확인합니다. 결과를 자동으로 통과 처리하지 않습니다.

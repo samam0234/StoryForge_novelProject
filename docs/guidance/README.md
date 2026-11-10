@@ -39,6 +39,8 @@
 |------|------|
 | [local-dev-setup.md](local-dev-setup.md) | DB·AI·백엔드·프론트 로컬 실행, 테스트 |
 | [community-guide.md](community-guide.md) | 관리자 지정, 환경 변수, 게시·Clone·신고·패키지 검사 확인 절차 |
+| [operations-console.md](operations-console.md) | 독립 콘솔 실행, 운영 조치와 오류 확인 |
+| [ollama-performance.md](ollama-performance.md) | Gemma 설정, 지연 측정, 서버 조정 순서와 한계 |
 
 ## 들어가지 않을 것
 

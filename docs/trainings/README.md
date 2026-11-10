@@ -41,6 +41,7 @@
 
 | 문서 | 결정 |
 |------|------|
+| [2026-11-10_console-and-inference.md](2026-11-10_console-and-inference.md) | 독립 콘솔, 공통 운영 잠금과 원자적 감사, 컨텍스트 유지 기반 추론 개선 |
 | [2026-11-04_review-and-moderation.md](2026-11-04_review-and-moderation.md) | 승인 시 재검증, 숨김, 정지 검사, 패키지 검사, 원본 가져오기 |
 | [2026-11-03_community-design.md](2026-11-03_community-design.md) | 게시본 분리, Clone 시작 상태, 공유와 Clone의 구분 |
 | [2026-11-02_chapter-content-markdown.md](2026-11-02_chapter-content-markdown.md) | 챕터 본문 저장 형식은 Markdown |

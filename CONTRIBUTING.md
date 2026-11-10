@@ -7,7 +7,7 @@ StoryForge는 [독점 라이선스](LICENSE)로 공개된 저장소입니다. **
 ## 시작하기
 
 1. [README.md](README.md)의 "빠른 실행"으로 전체 스택을 띄웁니다. 막히면 [docs/guidance/local-dev-setup.md](docs/guidance/local-dev-setup.md)를 보세요.
-2. **기획 원본**([StoryForge_기획서_v1.2.md](StoryForge_기획서_v1.2.md))을 먼저 읽습니다. 설계 의도, 파이프라인 단계, 상태 머신은 임의로 바꾸지 않습니다. 충돌하는 결정이 필요하면 먼저 묻습니다.
+2. **기획 원본**([StoryForge_기획서_v1.2.md](docs/plan/Proposal/StoryForge_기획서_v1.2.md))을 먼저 읽습니다. 설계 의도, 파이프라인 단계, 상태 머신은 임의로 바꾸지 않습니다. 충돌하는 결정이 필요하면 먼저 묻습니다.
 
 ## 브랜치와 병합
 
@@ -48,6 +48,7 @@ type(scope): 한국어 요약
 |--------|------|
 | 백엔드 | `cd storyforge-backend && ./mvnw test` (Docker 필요. 건너뜀이 없는지 확인) |
 | AI | `cd storyforge-ai && .venv/Scripts/python -m pytest -q` |
+| 운영 콘솔 | `cd storyforge-console && npm test && npm run build` |
 | 프론트 | `cd storyforge-frontend && npx ng test --watch=false && npx ng build` |
 
 **프론트는 `ng build`까지 확인합니다.** 단위 테스트는 spec이 가져오는 파일만 컴파일하므로 화면 템플릿 오류를 놓칠 수 있습니다. 화면을 바꿨다면 브라우저에서 직접 눌러 확인합니다. 실제 Claude API를 호출하는 테스트는 기본 테스트에 넣지 않습니다.

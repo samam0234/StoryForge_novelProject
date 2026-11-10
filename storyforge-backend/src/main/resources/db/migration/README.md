@@ -32,4 +32,4 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 
 ## 관련 문서
 
-- [기획서 §8.2, §10, §12](../../../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §8.2, §10, §12](../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)

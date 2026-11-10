@@ -14,13 +14,14 @@
 | PostgreSQL | 5433 | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_PORT` |
 | storyforge-ai | 8001 (127.0.0.1) | `LLM_PROVIDER=mock`, `LLM_MODEL`, `LLM_EFFORT`, `ANTHROPIC_API_KEY` |
 | storyforge-backend | 8080 | `DB_URL`, `AI_SERVICE_URL`, `FRONTEND_ORIGIN`, `JWT_SECRET`, `JWT_TTL`, `ADMIN_EMAILS` (전체는 [CURRENT_STACK.md](../plan/CURRENT_STACK.md)) |
+| storyforge-console | 4201 | `CONSOLE_ORIGIN`, 관리자 계정과 `ADMIN_EMAILS` |
 | storyforge-frontend | 4200 | (없음. `/api`는 프록시) |
 
 기본값으로 바로 실행됩니다. 바꾸려면 `.env.example`을 `.env`로 복사해 고칩니다.
 
 ## 명령
 
-터미널 4개에서 순서대로 실행합니다.
+콘솔까지 실행하려면 터미널 5개에서 순서대로 실행합니다.
 
 ```bash
 # 1. DB
@@ -40,6 +41,11 @@ cd storyforge-backend
 cd storyforge-frontend
 npm install
 npx ng serve
+
+# 5. 운영 콘솔 (선택)
+cd storyforge-console
+npm ci
+npm start
 ```
 
 실제 Claude로 생성하려면 2번을 이렇게 실행합니다.
@@ -62,6 +68,7 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 cd storyforge-backend && ./mvnw test
 cd storyforge-ai && .venv/Scripts/python -m pip install -r requirements-dev.txt && .venv/Scripts/python -m pytest -q
 cd storyforge-frontend && npx ng test --watch=false && npx ng build
+cd storyforge-console && npm test && npm run build
 ```
 
 ## 실패하면

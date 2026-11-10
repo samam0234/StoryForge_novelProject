@@ -20,6 +20,7 @@
 | [should-features.md](should-features.md) | 내보내기, 버전 이력·Diff, 프로젝트 설정 | 첫 구현 기준 |
 | [community.md](community.md) | 게시판, Clone, 공유, 작업 그래프, 패키지포지, 이슈, 프로필, 가이드챗 | 첫 구현 기준 |
 | [moderation.md](moderation.md) | 신고, 관리자 조치, 정지, 차단, 이용약관, 알림 | 첫 구현 기준 |
+| [operations-console.md](operations-console.md) | 독립 운영 콘솔, 현황·회원·일괄 조치·감사 API | 2026-11-10 구현 |
 | [api-v1.md](api-v1.md) | 외부 API, 내부 API, SSE 이벤트, Continuity 리포트 형식 | 첫 구현 기준 |
 
 ## 작성 예정 (기획서 §16 "즉시 다음 단계" 기준)
