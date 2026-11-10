@@ -15,6 +15,8 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 | `V7__chapter_review.sql` | 승인 전 재검증 표시. 검토 중이던 수정본에 적용 |
 | `V8__moderation_notifications.sql` | 신고, 차단, 알림, 계정 정지, 약관 동의, 숨김 |
 | `V9__package_continuity.sql` | 패키지 전체 검사 결과 |
+| `V10__review_and_cover.sql` | 활동 리뷰와 프로젝트·작품 표지 |
+| `V11__operations_console.sql` | 운영 조치 잠금, 감사 기록, 안정적인 페이지 조회 인덱스 |
 
 ## 들어갈 것
 
