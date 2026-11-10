@@ -21,3 +21,4 @@ description: StoryForge 저장소 작업 규칙 어댑터. 정본 .agents/skills
 - 커밋 기록은 평소에는 작성하지 않고 필요할 때만 작성합니다. 브랜치를 임의로 만들지 않고, `main` 반영은 사용자의 직접 명령이 있을 때만 합니다.
 - Angular는 FastAPI를 직접 호출하지 않습니다. 모든 요청은 Spring Boot를 거칩니다.
 - README는 필요한 곳(서비스 루트, 하위 기능을 묶는 폴더, 핵심 폴더)에만 둡니다.
+- 성능 측정·수동 검증·복구 도구는 서비스별 `scripts/`에 두고 Python은 서비스 폴더에서 `python -m scripts.<도구>`로 실행합니다.
