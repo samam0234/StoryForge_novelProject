@@ -1,18 +1,64 @@
 """mock 공급자로 내부 API 계약과 SSE 형식을 확인합니다."""
 import json
+import asyncio
+import pytest
+from collections.abc import AsyncGenerator
 
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.llm import MockLLM
 from app.main import app
 from app.models.schemas import ChapterContext, ContinuityIssue
 from app.services import mock_writer
 from app.services.continuity_checker import rule_checks, score
+from app.services.chapter_generator import generate_chapter
+from app.api.v1.chapter import chapter as chapter_response
 
 get_settings().mock_stream_delay = 0
 client = TestClient(app)
 
 PROJECT = {"title": "테스트", "genre": "판타지"}
+
+
+@pytest.mark.parametrize("through_sse", [False, True])
+def test_closing_chapter_releases_upstream_stream_immediately(through_sse):
+    class CancellableLLM(MockLLM):
+        is_mock = False
+
+        def __init__(self):
+            self.closed = False
+            self.streams = []
+
+        def stream(self, *, system: str, prompt: str, model: str | None = None):
+            async def body():
+                try:
+                    yield "첫 문장"
+                    await asyncio.Event().wait()
+                finally:
+                    self.closed = True
+            stream = body()
+            self.streams.append(stream)
+            return stream
+
+    async def run():
+        llm = CancellableLLM()
+        ctx = ChapterContext.model_validate({
+            "project": PROJECT, "bible": {}, "chapterNumber": 1,
+            "outlineChapter": {"order": 1, "title": "중단 검증"},
+        })
+        chapter = ((await chapter_response(ctx, llm)).body_iterator
+                   if through_sse else generate_chapter(llm, ctx))
+        assert isinstance(chapter, AsyncGenerator)
+        try:
+            await chapter.__anext__()
+            await chapter.aclose()
+            assert llm.closed, "챕터 중단이 모델 스트림까지 즉시 전달되어야 합니다"
+        finally:
+            for stream in llm.streams:
+                await stream.aclose()
+
+    asyncio.run(run())
 
 
 def test_complete_does_not_echo_the_previous_sentence():
@@ -92,8 +138,22 @@ def test_review_uses_edited_text_for_summary_and_rules():
         "/internal/generate/review", json={"context": ctx, "title": "t", "content": "한서윤이 돌아왔다." * 40}
     ).json()
     assert present["summary"].startswith("2장(수정본): 한서윤")
-    assert present["report"]["issues"] == []
-    assert present["report"]["score"] == 100
+    assert len(present["report"]["issues"]) == 1
+    assert "4,000자" in present["report"]["issues"][0]["description"]
+    assert present["report"]["score"] == 96
+
+
+def test_length_warning_uses_chapter_target_and_name_warning_is_not_a_presence_claim():
+    ctx = ChapterContext.model_validate({
+        "project": PROJECT, "bible": {"characters": [{"name": "한서윤"}]}, "chapterNumber": 1,
+        "outlineChapter": {"order": 1, "title": "t", "characters": ["한서윤"]},
+    })
+    short = rule_checks(ctx, "서윤은 창가에 앉았다." + "가" * 300)
+    assert any("전체 이름" in i.description and "다른 호칭" in i.description for i in short)
+    assert any("4,000자" in i.description for i in short)
+    assert any("4,000자" in i.description for i in rule_checks(ctx, "한서윤" + "가" * 3996))
+    exact = "한서윤" + "가" * 3997
+    assert not any("4,000자" in i.description for i in rule_checks(ctx, exact))
 
 
 def test_later_mock_chapter_does_not_reuse_the_previous_scene():

@@ -8,6 +8,8 @@
 |------|------|------|
 | Rate Limiting | 로그인·가입 IP당 분당 20회. AI 호출(생성, 가이드챗, 패키지 검사) 사용자당 분당 30회. 글·댓글·공유·Clone·신고 사용자당 분당 60회, 공유 방문 IP당 분당 60회. 넘으면 **429** + `Retry-After` | `config/RateLimitFilter.java` |
 | 재검증 실패 | 수정본 승인 중 AI가 실패하면 502, 승인하지 않음. 다시 누르면 됨 | `service/orchestration/PipelineOrchestrator.java` |
+| 재검증 중 편집 | 검증을 요청한 챕터 버전과 현재 버전이 다르면 409. 새 본문에 이전 요약·리포트를 적용하지 않음 | `ChapterService`, V13 `chapter.version` |
+| 완료 이벤트 누락 | AI가 `done` 없이 연결을 정상 종료해도 SSE `error`와 생성 전 상태 복귀. 부분 본문 미저장 | `PipelineOrchestrator` |
 | 타임아웃 | 연결 5초, 응답 180초 | `config/WebClientConfig.java` |
 | 재시도 | 동기 호출(Bible, Outline)의 **연결 실패만** 1회 | `client/AiServiceClient.java` |
 | Circuit Breaker | 최근 10회 중 50% 이상 실패(최소 5회)면 30초간 호출 차단, 그동안 바로 502 | `config/WebClientConfig.java` |

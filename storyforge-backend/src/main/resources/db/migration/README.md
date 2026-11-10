@@ -17,6 +17,8 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 | `V9__package_continuity.sql` | 패키지 전체 검사 결과 |
 | `V10__review_and_cover.sql` | 활동 리뷰와 프로젝트·작품 표지 |
 | `V11__operations_console.sql` | 운영 조치 잠금, 감사 기록, 안정적인 페이지 조회 인덱스 |
+| `V12__account_mail_tokens.sql` | 이메일 인증, 일회용 메일 토큰 해시, 자격 증명 버전과 계정 낙관적 잠금 |
+| `V13__chapter_optimistic_lock.sql` | 챕터 낙관적 잠금. 재검증 중 바뀐 원고에 이전 결과 적용 방지 |
 
 ## 들어갈 것
 

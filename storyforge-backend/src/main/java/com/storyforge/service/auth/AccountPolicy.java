@@ -26,20 +26,23 @@ public class AccountPolicy {
     private final AppUserRepository users;
     private final Set<String> adminEmails;
     private final String termsVersion;
+    private final boolean requireAdminVerification;
 
     public AccountPolicy(AppUserRepository users,
                          @Value("${storyforge.admin.emails}") String adminEmails,
-                         @Value("${storyforge.terms.version}") String termsVersion) {
+                         @Value("${storyforge.terms.version}") String termsVersion,
+                         @Value("${storyforge.mail.enabled:false}") boolean requireAdminVerification) {
         this.users = users;
         this.adminEmails = Arrays.stream(adminEmails.split(","))
                 .map(e -> e.strip().toLowerCase(Locale.ROOT))
                 .filter(e -> !e.isEmpty())
                 .collect(Collectors.toSet());
         this.termsVersion = termsVersion;
+        this.requireAdminVerification = requireAdminVerification;
     }
 
     public boolean isAdmin(AppUser user) {
-        return adminEmails.contains(user.getEmail());
+        return adminEmails.contains(user.getEmail()) && (!requireAdminVerification || user.isEmailVerified());
     }
 
     public boolean isAdminId(Long userId) {
@@ -71,7 +74,7 @@ public class AccountPolicy {
 
     public UserResponse view(AppUser u) {
         return new UserResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBio(), u.getWebsite(),
-                u.getAvatarColor(), isAdmin(u), termsCurrent(u));
+                u.getAvatarColor(), isAdmin(u), termsCurrent(u), u.isEmailVerified());
     }
 
     public List<String> adminEmails() {

@@ -6,7 +6,7 @@ API 키 없이 파이프라인 전체(Bible → Outline → 챕터 스트리밍 
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 
 from app.models.schemas import (
     BibleGenerateResponse,
@@ -154,7 +154,7 @@ def review_summary(ctx: ChapterContext, content: str) -> str:
     return f"{ctx.chapter_number}장(수정본): {body[:120]}"
 
 
-async def stream_text(text: str, delay: float) -> AsyncIterator[str]:
+async def stream_text(text: str, delay: float) -> AsyncGenerator[str, None]:
     """실제 스트리밍처럼 몇 글자씩 나눠 보냅니다."""
     step = 6
     for i in range(0, len(text), step):

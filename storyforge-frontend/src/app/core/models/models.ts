@@ -62,6 +62,7 @@ export interface User {
   admin?: boolean;
   /** 현재 버전의 이용약관에 동의했는지 */
   termsAccepted?: boolean;
+  emailVerified?: boolean;
 }
 
 export interface AuthResponse {

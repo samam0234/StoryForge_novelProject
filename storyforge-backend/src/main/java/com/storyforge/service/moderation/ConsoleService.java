@@ -119,14 +119,14 @@ public class ConsoleService {
         String where = actorId == null ? "" : " WHERE actor_id = ?";
         List<Object> args = new ArrayList<>();
         if (actorId != null) args.add(actorId);
-        Long total = jdbc.queryForObject("SELECT count(*) FROM admin_audit" + where, Long.class, args.toArray());
+        long total = Objects.requireNonNull(jdbc.queryForObject("SELECT count(*) FROM admin_audit" + where, Long.class, args.toArray()));
         args.add(boundedSize);
         args.add((long) boundedPage * boundedSize);
         List<AuditView> items = jdbc.query("SELECT * FROM admin_audit" + where + " ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
                 (rs, row) -> new AuditView(rs.getLong("id"), rs.getLong("actor_id"), rs.getString("actor_name"),
                         rs.getString("action"), rs.getString("target_type"), rs.getLong("target_id"),
                         rs.getObject("report_id", Long.class), rs.getString("note"), rs.getTimestamp("created_at").toInstant()), args.toArray());
-        return new PageResponse<>(items, total == null ? 0 : total, boundedPage, boundedSize);
+        return new PageResponse<>(items, total, boundedPage, boundedSize);
     }
 
     private long count(String sql) { return Objects.requireNonNull(jdbc.queryForObject(sql, Long.class)); }

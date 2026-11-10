@@ -56,8 +56,23 @@ public class JwtConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(SecretKey jwtSecretKey) {
-        return NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(SecretKey jwtSecretKey, com.storyforge.domain.user.AppUserRepository users) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSecretKey).macAlgorithm(MacAlgorithm.HS256).build();
+        decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
+                org.springframework.security.oauth2.jwt.JwtValidators.createDefaultWithIssuer("storyforge"),
+                jwt -> {
+                    try {
+                        Number version = jwt.getClaim("cv");
+                        long expected = version == null ? 0 : version.longValue();
+                        if (users.findById(Long.valueOf(jwt.getSubject()))
+                                .filter(u -> u.getCredentialVersion() == expected).isPresent()) {
+                            return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
+                        }
+                    } catch (IllegalArgumentException | ClassCastException ignored) { }
+                    return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
+                            new org.springframework.security.oauth2.core.OAuth2Error("invalid_token"));
+                }));
+        return decoder;
     }
 
     @Bean

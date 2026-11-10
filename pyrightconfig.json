@@ -1,0 +1,15 @@
+{
+  "include": [
+    "storyforge-ai/app",
+    "storyforge-ai/tests",
+    "storyforge-ai/benchmark_ollama.py",
+    "storyforge-ai/validate_load.py",
+    "storyforge-ai/validate_pipeline.py",
+    "storyforge-ai/validate_soak.py",
+    "storyforge-backend/validate_restart.py"
+  ],
+  "venvPath": "storyforge-ai",
+  "venv": ".venv",
+  "pythonVersion": "3.10",
+  "typeCheckingMode": "basic"
+}

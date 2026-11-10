@@ -42,7 +42,7 @@ npx ng serve          # 또는 npm start
 | 다른 포트로 실행 | `npx ng serve --port 4300` | 백엔드 `FRONTEND_ORIGIN`도 맞춰야 합니다 (CORS) |
 | 운영 빌드 | `npx ng build` | `dist/storyforge-frontend/browser/` |
 | 빌드 감시 | `npm run watch` | 변경 시 개발 빌드 |
-| 단위 테스트 | `npx ng test --watch=false` | Vitest 50건 (SSE 파서, 인증, 가드, 공통 컴포넌트, 그래프, 가이드챗, 알림). **화면 템플릿은 모두 컴파일하지 않으므로 `ng build`도 확인합니다** |
+| 단위 테스트 | `npx ng test --watch=false` | Vitest 53건 (메일 복구, SSE 파서, 인증, 가드, 공통 컴포넌트, 그래프, 가이드챗, 알림). **화면 템플릿은 모두 컴파일하지 않으므로 `ng build`도 확인합니다** |
 
 ### 백엔드 주소를 바꾸려면
 
@@ -127,7 +127,9 @@ storyforge-frontend/
 ## 아직 없는 것
 
 - 실제 Claude 연동 검증 (보류). 캐릭터 상태 자동 갱신 (Phase 2)
-- 실시간 알림 (1분마다 확인), 비밀번호 재설정 화면
+- 실시간 알림 (1분마다 확인)
+
+메일 인증·재설정 화면은 `/account-mail`입니다. 계정 설정에서 인증 메일을 요청하고 로그인 화면에서 재설정을 요청합니다. [SMTP 가이드](../docs/guidance/account-mail.md). 자동 테스트·빌드는 통과했고 브라우저 확인은 미완료입니다. 이후 사용자가 제한 기록 후 병합·푸시를 직접 요청했습니다. [최신 검증](../docs/vaildates/diagnostics-integration.md).
 
 ## 규칙
 

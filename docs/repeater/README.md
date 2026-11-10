@@ -37,3 +37,4 @@
 | 문서 | 환경 | 요약 |
 |------|------|------|
 | [local-port-conflicts.md](local-port-conflicts.md) | Windows 로컬 개발 | 5432·8000·8080 포트 충돌, 남은 백엔드 JVM |
+| [browser-automation-host.md](browser-automation-host.md) | Windows 데스크톱 | 브라우저 호스트 사용 불가, 공식 연결 경로와 미검증 경계 |

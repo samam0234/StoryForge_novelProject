@@ -10,6 +10,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AuthIntegrationTest extends IntegrationTestBase {
 
+    @Test
+    void mailIsExplicitlyUnavailableWithoutConfiguration() throws Exception {
+        assertThat(call("GET", "/auth/mail/status", null, null).json().get("enabled").asBoolean()).isFalse();
+        assertThat(call("POST", "/auth/mail/reset-request", Map.of("email", "test@example.test"), null).status()).isEqualTo(503);
+    }
+
     private static String email() {
         return "a" + UUID.randomUUID() + "@example.com";
     }

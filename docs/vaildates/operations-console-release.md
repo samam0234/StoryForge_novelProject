@@ -1,5 +1,7 @@
 # 운영 콘솔·AI 최적화 검증
 
+> 아래는 최초 콘솔 작업의 기록입니다. SMTP·추가 실모델 결과는 [후속 검증](local-followup.md), 최신 진단·통합 명령은 [진단·통합 검증](diagnostics-integration.md)을 따릅니다.
+
 - 확인일: 2026-11-10 (Asia/Seoul)
 - 작업 브랜치: `feature/auth`
 - 범위: 독립 콘솔, 운영 API, V11 마이그레이션, Ollama 호출 경로

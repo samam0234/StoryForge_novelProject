@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.ToLongFunction;
 
 /**
@@ -128,8 +129,7 @@ public class AchievementService {
 
     @Transactional(readOnly = true)
     public long earnedCount(Long userId) {
-        Long count = jdbc.queryForObject("SELECT count(*) FROM user_achievement WHERE user_id = ?", Long.class, userId);
-        return count == null ? 0 : count;
+        return Objects.requireNonNull(jdbc.queryForObject("SELECT count(*) FROM user_achievement WHERE user_id = ?", Long.class, userId));
     }
 
     private Stats stats(Long userId) {

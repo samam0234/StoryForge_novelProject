@@ -2,7 +2,6 @@ package com.storyforge.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -20,10 +19,10 @@ public final class ClientAddresses {
         if (raw == null || raw.isBlank()) {
             return Set.of();
         }
-        Arrays.stream(raw.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .forEach(addresses::add);
+        for (String part : raw.split(",")) {
+            String address = part.trim();
+            if (!address.isEmpty()) addresses.add(address);
+        }
         return Set.copyOf(addresses);
     }
 

@@ -1,7 +1,7 @@
 """LLM 클라이언트 추상화. 서비스 코드는 공급자를 직접 알지 않습니다."""
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from functools import lru_cache
 from typing import Protocol, TypeVar
 
@@ -24,7 +24,7 @@ class LLMClient(Protocol):
 
     async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str: ...
 
-    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]: ...
+    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]: ...
 
 
 class MockLLM:
@@ -38,7 +38,7 @@ class MockLLM:
     async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
         raise NotImplementedError("mock 모드에서는 mock_writer를 사용합니다.")
 
-    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
+    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]:
         raise NotImplementedError("mock 모드에서는 mock_writer를 사용합니다.")
 
 
@@ -88,7 +88,7 @@ class AnthropicLLM:
         _check_stop(response.stop_reason)
         return "".join(b.text for b in response.content if b.type == "text")
 
-    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
+    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]:
         try:
             async with self._client.beta.messages.stream(
                 max_tokens=64000,
@@ -143,7 +143,7 @@ class RoutingLLM:
     async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
         return await self._pick(model).text(system=system, prompt=prompt, max_tokens=max_tokens, model=model)
 
-    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
+    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]:
         return self._pick(model).stream(system=system, prompt=prompt, model=model)
 
 
