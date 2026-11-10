@@ -2,6 +2,8 @@ package com.storyforge.service.orchestration;
 
 import com.storyforge.support.IntegrationTestBase;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
@@ -10,6 +12,42 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /** 생성 뒤 고친 원고는 승인할 때 다시 요약·검증합니다 (설정 어긋남 방지). */
 class ChapterReviewIntegrationTest extends IntegrationTestBase {
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void editingWhileAiReviewsDoesNotApplyStaleSummaryOrApprove(boolean restoreOriginalContent) throws Exception {
+        String token = newUser();
+        long project = projectAtOutlineConfirmed(token, 2);
+        long chapter = generated(project, token);
+        edit(chapter, "재검증을 요청한 본문", token);
+        AI.duringReview(() -> {
+            try {
+                assertThat(call("PUT", "/chapters/" + chapter,
+                        Map.of("title", "제목", "content", "검증 도중 새로 저장한 본문"), token).status()).isEqualTo(200);
+                if (restoreOriginalContent) {
+                    assertThat(call("PUT", "/chapters/" + chapter,
+                            Map.of("title", "제목", "content", "재검증을 요청한 본문"), token).status()).isEqualTo(200);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        });
+
+        assertThat(call("PUT", "/chapters/" + chapter + "/confirm", null, token).status()).isEqualTo(409);
+
+        JsonNode after = call("GET", "/chapters/" + chapter, null, token).json();
+        String expected = restoreOriginalContent ? "재검증을 요청한 본문" : "검증 도중 새로 저장한 본문";
+        assertThat(after.get("content").asString()).isEqualTo(expected);
+        assertThat(after.get("status").asString()).isEqualTo("DRAFT");
+        assertThat(after.get("needsReview").asBoolean()).isTrue();
+        assertThat(after.get("summary").asString()).isEqualTo("요약");
+        assertThat(status(project, token)).isEqualTo("CHAPTER_REVIEW");
+
+        AI.duringReview(() -> {});
+        assertThat(call("PUT", "/chapters/" + chapter + "/confirm", null, token).status()).isEqualTo(200);
+        assertThat(AI.reviewRequests).hasSize(2);
+        assertThat(JSON.readTree(AI.reviewRequests.get(1)).get("content").asString()).isEqualTo(expected);
+    }
 
     private long generated(long project, String token) throws Exception {
         generateChapter(project, 1, token);

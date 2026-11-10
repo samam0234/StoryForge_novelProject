@@ -2,7 +2,7 @@
 
 > 기준: 기획서 v1.2 §7.2, §10, §11
 > 실행 중인 백엔드의 OpenAPI 문서: `http://localhost:8080/swagger-ui.html`
-> **가입, 로그인, 커뮤니티 읽기(아래 🌐)를 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404, 정지된 계정의 쓰기와 관리자 전용 API는 403입니다.
+> **가입, 로그인, 공개 메일 API, 커뮤니티 읽기(아래 🌐)를 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404, 정지된 계정의 쓰기와 관리자 전용 API는 403입니다.
 > 오류 응답은 모두 RFC 9457 ProblemDetail(`application/problem+json`)이며, 사용자 메시지는 `detail`에 있습니다.
 
 ## 외부 API (Spring Boot, `/api/v1`)
@@ -14,6 +14,13 @@
 | POST | `/auth/register` | 가입 → 토큰. `acceptTerms: true` 필수 |
 | POST | `/auth/login` | 로그인 → 토큰 |
 | GET | `/auth/me` | 내 정보 |
+| GET | `/auth/mail/status` | 공개. SMTP 기능 활성 여부 |
+| POST | `/auth/mail/reset-request` | 공개. `{email}`. 가입 여부와 무관한 동일 안내 |
+| POST | `/auth/mail/verify-request` | 로그인 필수. 인증 메일 요청 |
+| POST | `/auth/mail/verify` | 공개. `{token}`. 이메일 인증 |
+| POST | `/auth/mail/reset` | 공개. `{token,password}`. 재설정 및 기존 JWT 폐기 |
+
+메일 링크의 만료·단일 사용·오류 계약은 [auth.md](auth.md)에 있습니다. `UserResponse`에 `emailVerified`가 추가되며 SMTP 활성화 시 미인증 관리자 계정도 `admin=false`입니다.
 
 ### 기획서 §11에 있는 엔드포인트
 
@@ -135,6 +142,7 @@
 - 검토 중(Draft)인 챕터는 같은 번호로 다시 생성(재생성)할 수 있습니다.
 - 마지막 챕터를 승인하면 `COMPLETED`가 됩니다.
 - 생성 뒤 본문을 고쳤거나 Clone·원본 가져오기로 들어온 챕터는 `needsReview: true`입니다. 승인할 때 먼저 요약과 Continuity를 다시 만듭니다. 심각한 이슈가 나오면 결과를 저장하고 **409**로 멈추며, 다시 승인하면 진행합니다. AI가 실패하면 **502**이고 승인되지 않습니다.
+- 재검증 도중 챕터가 수정되면 **409**입니다. 이전 본문의 요약·리포트를 적용하지 않으며 최신 본문을 다시 검증해야 합니다. 본문을 바꿨다가 원래대로 저장해도 내부 버전이 달라지면 거부합니다.
 
 ### 챕터 생성 SSE 이벤트
 
@@ -145,6 +153,8 @@
 | `token` | `{"text": "..."}` | 본문 조각 |
 | `done` | ChapterResponse JSON (Continuity 리포트 포함) | 생성 완료, Draft 저장, 상태 `CHAPTER_REVIEW` |
 | `error` | `{"message": "..."}` | 실패. 상태는 생성 전으로 되돌아감 |
+
+AI SSE가 `done` 없이 종료된 경우도 `error`이며 부분 본문을 저장하지 않습니다. 첫 장은 `OUTLINE_CONFIRMED`, 이후 장은 `CHAPTER_REVIEW`로 돌아갑니다.
 
 ## 내부 API (FastAPI, Spring Boot만 호출)
 

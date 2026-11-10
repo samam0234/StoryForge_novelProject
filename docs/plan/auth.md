@@ -23,7 +23,7 @@ sequenceDiagram
 | POST | `/api/v1/auth/login` | 없음 | `{email, password}` → 토큰. 실패 401, 정지된 계정 403 |
 | GET | `/api/v1/auth/me` | 필요 | 현재 사용자. 관리자 여부(`admin`), 현재 약관 동의 여부(`termsAccepted`) 포함 |
 
-커뮤니티 읽기([api-v1.md](api-v1.md)의 🌐)를 뺀 그 밖의 `/api/v1/**`는 모두 인증이 필요합니다. 토큰이 없거나 만료되면 401(ProblemDetail)입니다. 정지와 관리자는 [moderation.md](moderation.md)에 있습니다.
+커뮤니티 읽기([api-v1.md](api-v1.md)의 🌐)와 아래 공개 메일 인증 API를 뺀 그 밖의 `/api/v1/**`는 모두 인증이 필요합니다. 토큰이 없거나 만료되면 401(ProblemDetail)입니다. 정지와 관리자는 [moderation.md](moderation.md)에 있습니다.
 
 ## 결정
 
@@ -53,3 +53,24 @@ sequenceDiagram
 | `storyforge-backend/.../domain/user/` | 사용자 엔티티 | §8.2 domain에 사용자가 없음 |
 | `storyforge-backend/.../service/auth/` | 가입·로그인·토큰 발급 | §8.2 service에 인증이 없음 |
 | `storyforge-frontend/src/app/features/auth/` | 로그인·가입 화면 | `core/auth`는 싱글톤 서비스 전용 (§8.1) |
+
+## SMTP 이메일 인증·비밀번호 재설정 (2026-11-10)
+
+사용자 요청으로 SMTP 기능을 구현했습니다. 기본 비활성(`MAIL_ENABLED=false`)이며 기존 가입·로그인에는 이메일 인증을 강제하지 않습니다. 계정 설정에서 인증 메일을 요청하고 로그인 화면에서 비밀번호 재설정으로 이동합니다. `UserResponse.emailVerified`는 인증 완료 여부입니다. 관리자는 `ADMIN_EMAILS`에 포함되어야 하며, SMTP 활성화 시 이메일 인증까지 완료해야 권한을 얻습니다. 비활성 환경은 기존 정책을 유지하므로 관리자 계정을 먼저 확보해야 합니다.
+
+| 메서드 | `/api/v1/auth/mail` 아래 경로 | 인증 | 계약 |
+|---|---|---|---|
+| GET | `/status` | 없음 | `{enabled}` |
+| POST | `/reset-request` | 없음 | `{email}`. 가입 여부와 무관하게 같은 안내 응답 |
+| POST | `/verify-request` | 필요 | 로그인 계정의 이메일로 인증 링크 요청 |
+| POST | `/verify` | 없음 | `{token}`. 일회용 인증 링크 소비 |
+| POST | `/reset` | 없음 | `{token,password}`. 비밀번호 재설정과 기존 JWT 폐기 |
+
+- 토큰: SecureRandom 32바이트, URL-safe Base64 43자. DB에는 SHA-256 해시만 보관합니다. 인증은 24시간, 재설정은 30분 유효합니다.
+- 같은 사용자·목적의 발송 간격은 60초입니다. 재발급하면 이전 링크를 폐기합니다. IP별 인증 API 요청 제한도 적용합니다.
+- 사용자 행 잠금으로 재발급·소비를 직렬화합니다. 계정 낙관적 잠금은 동시 프로필 변경이 비밀번호를 덮어쓰는 것을 막습니다.
+- 비밀번호 변경과 재설정은 `credentialVersion`을 올립니다. JWT의 `cv`를 매 요청 DB와 비교하여 이전 토큰을 거부합니다. 기존 `cv` 없는 토큰은 버전 0으로 취급합니다. 계정 삭제 후에도 읽기·쓰기 모두 기존 토큰이 거부됩니다.
+- 기존 비밀번호 변경 화면도 완료 후 로그아웃합니다. 메일 복구 요청에는 기존 JWT를 붙이지 않아 폐기된 세션으로도 재설정할 수 있습니다.
+- 메일 링크는 설정된 `FRONTEND_ORIGIN`과 fragment를 사용합니다. 페이지 진입 시 fragment를 주소에서 지우고 버튼을 눌렀을 때 POST로 소비합니다. GET이나 메일 미리보기는 토큰을 소비하지 않습니다.
+- 미설정은 503, 잘못된 입력은 400, 만료·재사용·목적 불일치는 409입니다. SMTP 발송 실패는 토큰을 제거하고 공개 응답을 동일하게 유지하며 오류 종류만 로그에 남깁니다. 동기 SMTP 전송으로 인한 응답 시간 차이까지 감추지는 않습니다.
+- 새 환경 변수와 로컬 수신 검증은 [메일 가이드](../guidance/account-mail.md)를 참고합니다. 외부 메일 발송은 수행하지 않았습니다.

@@ -23,7 +23,7 @@
 ADMIN_EMAILS=admin@example.com ./mvnw spring-boot:run     # PowerShell: $env:ADMIN_EMAILS="admin@example.com"
 ```
 
-**기대 결과:** 그 이메일로 로그인하면 왼쪽 메뉴에 "신고 관리"가 나오고 `/admin`이 열립니다. 다른 계정은 `/admin`에서 첫 화면으로 돌아갑니다.
+**기대 결과:** 그 이메일로 로그인하면 왼쪽 메뉴에 "신고 관리"가 나오고 `/admin`이 열립니다. `MAIL_ENABLED=true`이면 먼저 사용자 웹 계정 설정에서 이메일 인증을 완료해야 합니다. 다른 계정은 `/admin`에서 첫 화면으로 돌아갑니다.
 
 ## 작품 게시부터 Clone까지
 

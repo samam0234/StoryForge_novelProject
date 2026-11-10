@@ -131,7 +131,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 89건 (실제 PostgreSQL)
+    └── test/                     # 단위·통합 테스트 101건 (실제 PostgreSQL·로컬 SMTP)
 ```
 
 ## 문제 해결
@@ -147,12 +147,20 @@ storyforge-backend/
 ## 아직 없는 것
 
 - 리프레시 토큰 (토큰이 만료되면 다시 로그인)
-- 이메일 인증, 비밀번호 재설정 (메일 발송 수단 결정 필요)
+- SMTP 실제 공급자·발신 주소 확정과 외부 수신 검증 ([로컬 검증 완료](../docs/guidance/account-mail.md))
 - Bible·Outline 확정 취소 (기획서에 정의 없음)
 - Prometheus 지표 (기획서 §12)
 - 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))
 
 ## 관련 문서
+
+후속 챕터 생성 중 실제 프로세스 복구는 `validate_restart.py`로 확인합니다. 먼저 `mvnw verify`로 실행 JAR를 만들고 AI venv의 Python으로 실행합니다.
+
+```powershell
+../storyforge-ai/.venv/Scripts/python validate_restart.py --container <로컬-PostgreSQL-컨테이너>
+```
+
+컨테이너는 호스트 `127.0.0.1`에 연결되어 있어야 합니다. 스크립트는 무작위 임시 DB·포트와 mock AI를 사용해 첫 장 승인 → 둘째 장 스트리밍 중 실제 JVM 종료 → 재시작·보존 확인 → 둘째 장 재생성을 검증합니다. 생성한 프로세스와 DB만 정리하고 로그는 OS 임시 폴더에 남깁니다. 실제 모델·브라우저 검증은 아닙니다.
 
 - [기획서 §7, §8.2, §10, §11](../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/Architecture/](../docs/Architecture/) — 구조, 상태 머신

@@ -82,7 +82,7 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 | 자동 재시작 실행 | 위 명령에 `--reload` |
 | 테스트 의존성 설치 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` |
 | 테스트 | `.venv/Scripts/python -m pytest -q` (mock 모드, API 키 불필요) |
-| 타입 검사 | `npx pyright --pythonpath .venv/Scripts/python.exe app tests` |
+| 타입 검사 | `.venv/Scripts/pyright --project ..` (개발 의존성 설치 후, 루트 설정 사용) |
 
 ### 환경 변수
 
@@ -140,10 +140,12 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 51건. mock·가짜 LLM·Ollama HTTP 모의 전송
+└── tests/                  # 56건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리·검증 도구 회귀
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.
+
+실제 모델 파이프라인은 `.venv/Scripts/python validate_pipeline.py --chapters 3`으로 확인합니다. 합성 작품의 Bible·Outline·챕터·요약·Continuity를 실행하며 인물 기록을 임시 폴더로 분리합니다. 원문이나 사용자 데이터를 출력하지 않고 시간·길이·검증 이슈만 출력합니다. 단계별 제한은 `--timeout`으로 정하며 기본 180초입니다. 이 도구는 API·DB·사용자 승인 검증을 대신하지 않습니다.
 
 ## 문제 해결
 
@@ -158,7 +160,11 @@ storyforge-ai/
 
 - 인증, 프로젝트 상태 관리, DB 저장은 하지 않습니다 (Spring Boot 담당).
 - Continuity 실패를 임의로 통과시키지 않습니다.
-- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 실제 Claude 호출은 미검증입니다. Ollama는 짧은 프롬프트 실측만 완료했으며 장편·배포 서버 성능은 추가 확인이 필요합니다.
+- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 실제 Claude 호출은 미검증입니다. Ollama는 합성 3장 생성·요약·Continuity와 이전 요약 40개 입력·슬롯 포화·스트림 중단 후 복구를 확인했습니다. 장편 품질과 배포 서버 성능 보장은 아닙니다. [측정과 제한](../docs/guidance/ollama-performance.md).
+
+`.venv/Scripts/python validate_load.py`는 실제 모델 스트림을 열린 채 두어 경쟁 요청의 대기 제한을 확인하고, 스트림 종료 후 합성 이전 장 40개를 넣은 요청의 회복을 확인합니다. 운영 DB나 인물 기록을 사용하지 않습니다.
+
+`.venv/Scripts/python -u validate_soak.py --duration 2400 --timeout 180`은 고정된 합성 컨텍스트로 챕터·요약·Continuity를 반복하고 경쟁 요청 거부·상위 챕터 중단 후 복구를 확인합니다. 서비스 함수 시험이며 DB·API·사용자 승인을 대신하지 않습니다. 결과는 원문 없이 시간·분량·검증 이슈·P50·P95를 JSON 줄로 출력합니다. 실패 시 종료 코드 1이며 연속 3회 실패 시 조기 종료합니다. 검증 도구는 Windows 콘솔의 문자셋과 무관하게 JSON 유니코드 이스케이프를 사용합니다. [조건과 한계](../docs/guidance/ollama-performance.md).
 
 ## 관련 문서
 

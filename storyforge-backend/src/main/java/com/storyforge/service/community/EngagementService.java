@@ -70,10 +70,10 @@ public class EngagementService {
         if (inserted > 0) {
             works.addLikes(workId, 1);
             int total = works.likeCount(workId);
-            Long daily = jdbc.queryForObject(
-                    "SELECT count(*) FROM work_like WHERE work_id = ? AND created_at > now() - interval '24 hours'", Long.class, workId);
+            long daily = Objects.requireNonNull(jdbc.queryForObject(
+                    "SELECT count(*) FROM work_like WHERE work_id = ? AND created_at > now() - interval '24 hours'", Long.class, workId));
             issues.reached(workId, IssueEvent.Metric.TOTAL_LIKES, total);
-            issues.reached(workId, IssueEvent.Metric.DAILY_LIKES, daily == null ? 0 : daily);
+            issues.reached(workId, IssueEvent.Metric.DAILY_LIKES, daily);
             activity.touchAchievements(work.getAuthor().getId());
         }
         return new LikeResponse(true, works.likeCount(workId));

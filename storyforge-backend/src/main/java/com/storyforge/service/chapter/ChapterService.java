@@ -120,8 +120,11 @@ public class ChapterService {
 
     /** 재검증 결과를 저장합니다. 요약을 바꾸고 새 리포트를 남깁니다. */
     @Transactional
-    public void applyReview(Long chapterId, String summary, List<ContinuityIssue> issues, int score) {
+    public void applyReview(Long chapterId, long expectedVersion, String summary, List<ContinuityIssue> issues, int score) {
         Chapter chapter = load(chapterId);
+        if (chapter.getVersion() != expectedVersion || chapter.getStatus() != ChapterStatus.DRAFT) {
+            throw new InvalidStateException("검증하는 동안 본문이 바뀌었습니다. 다시 승인해 주세요.");
+        }
         chapter.applyReview(summary);
         reports.save(new ContinuityReport(chapter, issues, score));
     }

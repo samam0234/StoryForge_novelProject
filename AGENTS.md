@@ -5,7 +5,7 @@
 
 ## 우선순위
 
-1. 기획 원본 [StoryForge_기획서_v1.2.md](StoryForge_기획서_v1.2.md) (또는 최신 버전)
+1. 기획 원본 [StoryForge_기획서_v1.2.md](docs/plan/Proposal/StoryForge_기획서_v1.2.md) (또는 최신 버전)
 2. 정본 `SKILL.md`
 3. 이 문서 `AGENTS.md`
 4. [commit-message.md](.agents/skills/storyforge/commit-message.md)

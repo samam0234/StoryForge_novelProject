@@ -18,6 +18,14 @@ public class AppUser {
     @Column(nullable = false)
     private String passwordHash;
 
+    private Instant emailVerifiedAt;
+
+    @Column(nullable = false)
+    private long credentialVersion;
+
+    @Version
+    private long rowVersion;
+
     @Column(nullable = false)
     private String displayName;
 
@@ -73,7 +81,12 @@ public class AppUser {
 
     public void changePassword(String passwordHash) {
         this.passwordHash = passwordHash;
+        this.credentialVersion++;
     }
+
+    public void verifyEmail() { this.emailVerifiedAt = Instant.now(); }
+    public boolean isEmailVerified() { return emailVerifiedAt != null; }
+    public long getCredentialVersion() { return credentialVersion; }
 
     public Long getId() { return id; }
     public String getEmail() { return email; }

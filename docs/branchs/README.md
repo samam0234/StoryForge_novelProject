@@ -30,11 +30,13 @@
 | `feature/project-scaffold` | 프로젝트 뼈대, 문서 규칙, 에이전트 어댑터 | `develop` | 2026-10-22 | develop 병합 |
 | `feature/web-foundation` | 프론트·백엔드·AI 서비스 기초 구현 (뼈대 브랜치 위에 쌓음) | `feature/project-scaffold` | 2026-10-22 | develop 병합 |
 | `feature/diagnostics-readme` | VS Code 경고 정리, README 실행 가이드 개편 | `develop` | 2026-10-23 | develop 병합 |
-| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, TipTap, 테스트, 안정성, Should 기능, 커뮤니티, 함께 창작, 재검증, 신고·관리, 독립 운영 콘솔, 운영 API, Ollama 응답 개선 | `develop` | 2026-11-02 | develop 병합 |
+| `feature/auth` | **지정 작업 브랜치 (1개).** 인증, SMTP 계정 메일, 창작·커뮤니티·운영 콘솔, Ollama·복구·코드 진단과 문서 | `develop` | 2026-11-02 | develop 병합 |
 
 상태: `예정` / `진행 중` / `develop 병합` / `main 병합` / `폐기`
 
 **브랜치를 임의로 만들지 않습니다.** 기록 전용으로 만들었던 `feature/merge-records*` 3개는 2026-11-02에 삭제했습니다.
+
+2026-11-10 최신 사용자 명령은 진단·문서 수정 후 커밋 → `feature/auth → develop → main`의 `--no-ff` 병합 → 푸시입니다. 이전 브라우저 검증 전 보류를 변경하며 실제 화면 검증은 미완료로 남깁니다. 최신 통합 커밋은 `git log --first-parent develop`과 `git log --first-parent main`에서 확인하고, [진단·검증 범위](../vaildates/diagnostics-integration.md)를 함께 봅니다.
 
 ## 커밋 기록 목록
 

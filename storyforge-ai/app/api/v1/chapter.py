@@ -1,6 +1,7 @@
 """챕터 생성 SSE. 이벤트: token(본문 조각) → done(ChapterGenerateResult JSON) | error(메시지)"""
 import logging
 from collections.abc import AsyncIterator
+from contextlib import aclosing
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -34,11 +35,12 @@ async def review(request: ChapterReviewRequest, llm: LLMClient = Depends(get_llm
 async def chapter(ctx: ChapterContext, llm: LLMClient = Depends(get_llm)) -> StreamingResponse:
     async def events() -> AsyncIterator[str]:
         try:
-            async for item in generate_chapter(llm, ctx):
-                if isinstance(item, Token):
-                    yield sse("token", item.text)
-                elif isinstance(item, Done):
-                    yield sse("done", item.result.model_dump_json(by_alias=True))
+            async with aclosing(generate_chapter(llm, ctx)) as generation:
+                async for item in generation:
+                    if isinstance(item, Token):
+                        yield sse("token", item.text)
+                    elif isinstance(item, Done):
+                        yield sse("done", item.result.model_dump_json(by_alias=True))
         except LLMError as e:
             log.warning("chapter generation failed: %s", e)
             yield sse("error", str(e))

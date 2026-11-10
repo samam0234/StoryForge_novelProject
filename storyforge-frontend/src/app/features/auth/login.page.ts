@@ -62,6 +62,7 @@ import { AuthService } from '../../core/auth/auth.service';
           </form>
         </mat-card-content>
         <mat-card-actions align="end">
+          <a mat-button routerLink="/account-mail">비밀번호를 잊으셨나요?</a>
           <a mat-button routerLink="/issues">로그인 없이 둘러보기</a>
           <button mat-button type="button" (click)="toggle()">
             {{ mode() === 'login' ? '계정이 없나요? 회원가입' : '이미 계정이 있나요? 로그인' }}

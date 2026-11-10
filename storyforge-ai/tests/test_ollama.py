@@ -5,6 +5,7 @@ import json
 import httpx
 import pytest
 from pydantic import BaseModel, Field, ValidationError
+from pydantic_settings import SettingsConfigDict
 
 from app.core.config import Settings
 from app.core.llm import RoutingLLM
@@ -15,8 +16,12 @@ class Result(BaseModel):
     world_setting: str = Field(alias="worldSetting")
 
 
+class IsolatedSettings(Settings):
+    model_config = SettingsConfigDict(env_file=None, extra="ignore")
+
+
 def settings(**kwargs):
-    return Settings(_env_file=None, **kwargs)
+    return IsolatedSettings(**kwargs)
 
 
 def test_pool_payload_and_structured_schema():
@@ -43,6 +48,7 @@ def test_pool_payload_and_structured_schema():
     assert payload["format"]["required"] == ["worldSetting"]
     assert payload["keep_alive"] == "15m"
     assert payload["think"] is False
+    assert payload["options"]["num_ctx"] == 32768
     assert payload["messages"][1]["content"] == "성경과 아웃라인"
     assert requests[1]["options"]["num_predict"] == 250
 

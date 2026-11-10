@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
                         .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/mail/status").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/mail/reset-request", "/api/v1/auth/mail/reset", "/api/v1/auth/mail/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/llm-notice").permitAll()
                         // 커뮤니티 읽기는 공개입니다 (공유 링크를 로그인 없이 열 수 있어야 합니다). 내려받기는 로그인이 필요합니다.
                         .requestMatchers(HttpMethod.GET, "/api/v1/works", "/api/v1/works/*", "/api/v1/works/*/chapters/*",

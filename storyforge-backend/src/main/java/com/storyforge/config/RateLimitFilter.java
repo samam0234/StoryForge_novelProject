@@ -52,7 +52,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         int limit = 0;
         String path = request.getRequestURI();
         if ("POST".equals(request.getMethod())) {
-            if (path.equals("/api/v1/auth/login") || path.equals("/api/v1/auth/register")) {
+            if (path.startsWith("/api/v1/auth/")) {
                 key = "auth:" + ClientAddresses.resolve(request, trustedProxies);
                 limit = properties.authPerMinute();
             } else if (path.startsWith("/api/v1/") && (path.endsWith("/generate") || path.endsWith("/continuity") || path.equals("/api/v1/guide/chat"))) {

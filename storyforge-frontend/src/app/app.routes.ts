@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { adminGuard, authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
+  { path: 'account-mail', loadComponent: () => import('./features/auth/account-mail.page').then(m => m.AccountMailPage) },
   {
     path: 'login',
     canActivate: [guestGuard],

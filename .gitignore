@@ -10,6 +10,7 @@ Thumbs.db
 *.iml
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
 ~$*.docx
 
 # Claude Code 로컬 설정
@@ -20,6 +21,8 @@ node_modules/
 dist/
 .angular/
 coverage/
+out-tsc/
+*.tsbuildinfo
 
 # Backend (Spring Boot)
 target/

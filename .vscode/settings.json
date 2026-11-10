@@ -1,0 +1,8 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "python.defaultInterpreterPath": "${workspaceFolder}/storyforge-ai/.venv",
+    "python.analysis.extraPaths": ["${workspaceFolder}/storyforge-ai"],
+    "typescript.tsdk": "storyforge-frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
+}
