@@ -12,6 +12,7 @@ Ollama에 `gemma4:e4b`가 설치되어 있어야 합니다. Python 의존성은 
 $env:LLM_PROVIDER = 'ollama'
 $env:OLLAMA_MODEL = 'gemma4:e4b'
 $env:OLLAMA_KEEP_ALIVE = '15m'
+$env:OLLAMA_NUM_CTX = '32768'
 $env:OLLAMA_THINK = 'false'
 $env:OLLAMA_WARMUP = 'true'
 $env:OLLAMA_MAX_CONCURRENT = '1'
@@ -44,3 +45,19 @@ ollama ps
 5. 모델 상주는 메모리를 사용합니다. 다른 모델과 함께 운영할 때는 `OLLAMA_KEEP_ALIVE`와 Ollama 서버의 병렬 처리·대기열 설정을 함께 조정합니다.
 
 공식 근거: [Chat API](https://docs.ollama.com/api/chat), [구조화 출력](https://docs.ollama.com/capabilities/structured-outputs), [모델 상주·GPU·동시 처리 FAQ](https://docs.ollama.com/faq).
+
+## 실제 3장 파이프라인 추가 확인 (2026-11-10)
+
+`.venv/Scripts/python validate_pipeline.py --chapters 3`은 합성 작품의 Bible·Outline·각 장의 생성·요약·Continuity를 실제 서비스 함수로 실행합니다. 임시 인물 저장소를 사용하며 제품의 검토·승인·DB 저장을 대신하지 않습니다.
+
+첫 실행에서는 2장 생성이 출력 한도에 도달해 정상 결과 없이 실패했습니다. 당시 `/api/ps`는 컨텍스트 4096을 보고했습니다. 이후 요청·예열에 `OLLAMA_NUM_CTX=32768`을 명시한 실행은 3장 모두 완료했습니다. 다른 생성 결과를 사용하므로 출력 실패 원인이 컨텍스트 하나였다고 단정하거나 성능 개선율을 계산하지 않습니다.
+
+| 단계 | 첫 토큰(초) | 요약·검증 포함 완료(초) | 본문 글자 수 | Continuity 점수 |
+|---|---:|---:|---:|---:|
+| 1장 | 0.254 | 23.570 | 3510 | 100 |
+| 2장 | 0.250 | 22.602 | 3040 | 60 |
+| 3장 | 0.267 | 26.843 | 3747 | 88 |
+
+Bible은 21.842초, Outline은 15.364초였습니다. 2장에서는 Outline 인물의 전체 이름 미검출과 모델 지적이, 3장에서는 플롯 지적이 남았습니다. 일부 모델 지적 문장이 불완전하거나 평가와 설명이 맞지 않아 사람 검토가 필요합니다. 세 장 모두 요청한 4000~6000자보다 짧습니다. **생성 절차 완료이며 원고 품질 통과가 아닙니다.** 연속성 결과를 제거하거나 승인으로 바꾸지 않았습니다. 표본 한 작품으로 P95나 배포 성능을 주장하지 않습니다.
+
+컨텍스트를 늘리면 메모리 요구량도 늘어납니다. 긴 입력에서 부족하면 값을 조정하고 GPU 적재 상태를 다시 확인합니다. 서버가 처리 가능한 입력 한도를 넘는 장편까지 보장하지 않습니다. [공식 컨텍스트 설명](https://docs.ollama.com/context-length), [num_ctx 파라미터](https://docs.ollama.com/modelfile).

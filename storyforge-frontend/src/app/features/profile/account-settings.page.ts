@@ -22,6 +22,13 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
     <div class="sf-page narrow">
       <h1>계정 설정</h1>
       <mat-card appearance="outlined" class="card">
+        <mat-card-header><mat-card-title>이메일 인증</mat-card-title></mat-card-header>
+        <mat-card-content><p>{{ auth.user()?.emailVerified ? '인증된 이메일입니다.' : '아직 이메일을 인증하지 않았습니다.' }}</p></mat-card-content>
+        @if (!auth.user()?.emailVerified) {
+          <mat-card-actions><button mat-button [disabled]="busy()" (click)="verifyEmail()">인증 메일 요청</button></mat-card-actions>
+        }
+      </mat-card>
+      <mat-card appearance="outlined" class="card">
         <mat-card-header>
           <mat-card-title>프로필</mat-card-title>
           <mat-card-subtitle>이름, 소개, 웹사이트는 공개 프로필에 보입니다. 이메일({{ auth.user()?.email }})은 공개되지 않습니다.</mat-card-subtitle>
@@ -219,7 +226,8 @@ export class AccountSettingsPage {
         this.busy.set(false);
         this.currentPassword = '';
         this.newPassword = '';
-        this.snack.open('비밀번호를 바꿨습니다.', undefined, { duration: 2000 });
+        this.snack.open('비밀번호를 바꿨습니다. 다시 로그인하세요.', undefined, { duration: 3000 });
+        this.auth.logout();
       },
       error: (e) => this.fail(e),
     });
@@ -231,6 +239,14 @@ export class AccountSettingsPage {
     this.api.deleteAccount(this.deletePassword).subscribe({
       next: () => this.auth.logout(),
       error: (e) => this.fail(e),
+    });
+  }
+
+  protected verifyEmail(): void {
+    this.busy.set(true);
+    this.auth.requestVerification().subscribe({
+      next: r => { this.busy.set(false); this.snack.open(r.message, '닫기', { duration: 5000 }); },
+      error: e => this.fail(e),
     });
   }
 

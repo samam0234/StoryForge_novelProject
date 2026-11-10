@@ -33,6 +33,7 @@ public class TokenService {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("storyforge")
                 .subject(String.valueOf(user.getId()))
+                .claim("cv", user.getCredentialVersion())
                 .issuedAt(now)
                 .expiresAt(expiresAt)
                 .build();

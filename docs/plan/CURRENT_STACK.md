@@ -49,6 +49,11 @@
 | `CONSOLE_ORIGIN` | backend | `http://localhost:4201` | 운영 콘솔 CORS 허용 출처 |
 | `JWT_SECRET` | backend | (없음) | 32바이트 이상. 비우면 시작할 때 무작위 생성(재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
+| `MAIL_ENABLED` | backend | `false` | SMTP 계정 인증·비밀번호 재설정 |
+| `MAIL_FROM` | backend | (없음) | 메일 활성화 시 필수 발신 주소 |
+| `SMTP_HOST` / `SMTP_PORT` | backend | `localhost` / `1025` | 로컬 수신기 기준 |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | backend | (없음) | SMTP 자격 증명 |
+| `SMTP_AUTH` / `SMTP_STARTTLS` | backend | `false` / `false` | 외부 공급자는 인증·TLS 설정 필요. STARTTLS true이면 필수 협상 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | backend | `20` | IP당 로그인·가입 |
 | `RATE_LIMIT_GENERATE_PER_MINUTE` | backend | `30` | 사용자당 AI 생성, 가이드챗 |
 | `RATE_LIMIT_COMMUNITY_PER_MINUTE` | backend | `60` | 사용자당 글·댓글·공유·Clone, IP당 공유 방문 |
@@ -63,6 +68,7 @@
 | `OLLAMA_BASE_URL` | ai | `http://127.0.0.1:11434` | 일반 출력 |
 | `OLLAMA_MODEL` | ai | `gemma4:e4b` | 일반 출력 모델 |
 | `OLLAMA_KEEP_ALIVE` | ai | `15m` | 모델 상주 시간 |
+| `OLLAMA_NUM_CTX` | ai | `32768` | 요청·예열에 명시하는 컨텍스트. 4096~131072. VRAM과 모델 한도 확인 |
 | `OLLAMA_THINK` | ai | `false` | 선택적 모델 추론 출력. 활성화하면 첫 토큰 지연 증가 가능 |
 | `OLLAMA_WARMUP` | ai | `false` | Ollama 모드에서 시작 시 모델 예열. 실패해도 앱 시작 |
 | `OLLAMA_MAX_CONCURRENT` | ai | `1` | 프로세스별 동시 추론 수, 1~32 |

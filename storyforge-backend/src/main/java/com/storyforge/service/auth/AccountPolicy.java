@@ -71,7 +71,7 @@ public class AccountPolicy {
 
     public UserResponse view(AppUser u) {
         return new UserResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBio(), u.getWebsite(),
-                u.getAvatarColor(), isAdmin(u), termsCurrent(u));
+                u.getAvatarColor(), isAdmin(u), termsCurrent(u), u.isEmailVerified());
     }
 
     public List<String> adminEmails() {

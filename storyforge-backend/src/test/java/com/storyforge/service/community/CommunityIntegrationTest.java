@@ -615,6 +615,9 @@ class CommunityIntegrationTest extends IntegrationTestBase {
         assertThat(call("PUT", "/me/password", Map.of("currentPassword", "password123", "newPassword", "newpassword1"), token).status()).isEqualTo(204);
         assertThat(call("POST", "/auth/login", Map.of("email", email, "password", "password123"), null).status()).isEqualTo(401);
         assertThat(call("POST", "/auth/login", Map.of("email", email, "password", "newpassword1"), null).status()).isEqualTo(200);
+        assertThat(call("GET", "/auth/me", null, token).status()).isEqualTo(401);
+        token = call("POST", "/auth/login", Map.of("email", email, "password", "newpassword1"), null)
+                .json().get("accessToken").asString();
 
         long work = published(token, "지워질 작품");
         String other = newUser();

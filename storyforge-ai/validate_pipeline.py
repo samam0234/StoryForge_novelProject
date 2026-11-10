@@ -5,6 +5,7 @@
 import argparse
 import asyncio
 import json
+import logging
 import shutil
 import tempfile
 import time
@@ -89,6 +90,7 @@ async def validate(chapters: int, timeout: float):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--chapters", type=int, choices=range(2, 6), default=3)
     parser.add_argument("--timeout", type=float, default=180)

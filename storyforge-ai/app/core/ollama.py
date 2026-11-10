@@ -65,7 +65,7 @@ class OllamaLLM:
             "think": self._settings.ollama_think,
             "keep_alive": self._settings.ollama_keep_alive,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-            "options": {"num_predict": max_tokens},
+            "options": {"num_predict": max_tokens, "num_ctx": self._settings.ollama_num_ctx},
         }
 
     @staticmethod
@@ -131,6 +131,8 @@ class OllamaLLM:
                         if not line:
                             continue
                         chunk = json.loads(line)
+                        if isinstance(chunk, dict) and chunk.get("done") is True:
+                            self._timing(chunk, time.perf_counter() - started, first_token)
                         content = self._content(chunk)
                         if content:
                             if first_token is None:
@@ -140,7 +142,6 @@ class OllamaLLM:
                         if chunk.get("done") is True:
                             if not received_content:
                                 raise LLMError("Ollama가 빈 응답을 반환했습니다.")
-                            self._timing(chunk, time.perf_counter() - started, first_token)
                             return
                     raise LLMError("Ollama 스트림이 완료 신호 없이 종료되었습니다.")
         except (httpx.HTTPError, ValueError, TypeError, AttributeError) as exc:
@@ -150,6 +151,7 @@ class OllamaLLM:
         async with self._slot():
             response = await self._http().post("/api/generate", json={
                 "model": self._settings.ollama_model, "keep_alive": self._settings.ollama_keep_alive, "stream": False,
+                "options": {"num_ctx": self._settings.ollama_num_ctx},
             })
             response.raise_for_status()
             body = response.json()

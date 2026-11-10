@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://127.0.0.1:11434"
     ollama_model: str = "gemma4:e4b"
     ollama_keep_alive: str = "15m"
+    ollama_num_ctx: int = Field(default=32768, ge=4096, le=131072)
     ollama_think: bool = False
     ollama_warmup: bool = False
     ollama_max_concurrent: int = Field(default=1, ge=1, le=32)

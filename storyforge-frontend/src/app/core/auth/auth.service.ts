@@ -59,6 +59,12 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  clearSession(): void { this.clear(); }
+
+  requestVerification(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.base}/mail/verify-request`, {});
+  }
+
   /** 서버가 401을 돌려줬을 때: 세션을 지우고 돌아올 주소와 함께 로그인으로 보냅니다. */
   expire(): void {
     this.clear();

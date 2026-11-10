@@ -43,6 +43,7 @@ def test_pool_payload_and_structured_schema():
     assert payload["format"]["required"] == ["worldSetting"]
     assert payload["keep_alive"] == "15m"
     assert payload["think"] is False
+    assert payload["options"]["num_ctx"] == 32768
     assert payload["messages"][1]["content"] == "성경과 아웃라인"
     assert requests[1]["options"]["num_predict"] == 250
 

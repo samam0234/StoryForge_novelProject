@@ -24,7 +24,7 @@ public final class AuthDtos {
 
     /** 내 정보. admin과 termsAccepted는 AccountPolicy가 채웁니다. */
     public record UserResponse(Long id, String email, String displayName, String bio, String website, String avatarColor,
-                               boolean admin, boolean termsAccepted) {
+                               boolean admin, boolean termsAccepted, boolean emailVerified) {
     }
 
     public record AuthResponse(String accessToken, String tokenType, Instant expiresAt, UserResponse user) {
