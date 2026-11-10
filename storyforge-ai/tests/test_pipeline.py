@@ -92,8 +92,21 @@ def test_review_uses_edited_text_for_summary_and_rules():
         "/internal/generate/review", json={"context": ctx, "title": "t", "content": "한서윤이 돌아왔다." * 40}
     ).json()
     assert present["summary"].startswith("2장(수정본): 한서윤")
-    assert present["report"]["issues"] == []
-    assert present["report"]["score"] == 100
+    assert len(present["report"]["issues"]) == 1
+    assert "4,000자" in present["report"]["issues"][0]["description"]
+    assert present["report"]["score"] == 96
+
+
+def test_length_warning_uses_chapter_target_and_name_warning_is_not_a_presence_claim():
+    ctx = ChapterContext.model_validate({
+        "project": PROJECT, "bible": {"characters": [{"name": "한서윤"}]}, "chapterNumber": 1,
+        "outlineChapter": {"order": 1, "title": "t", "characters": ["한서윤"]},
+    })
+    short = rule_checks(ctx, "서윤은 창가에 앉았다." + "가" * 300)
+    assert any("전체 이름" in i.description and "다른 호칭" in i.description for i in short)
+    assert any("4,000자" in i.description for i in short)
+    exact = "한서윤" + "가" * 3997
+    assert not any("4,000자" in i.description for i in rule_checks(ctx, exact))
 
 
 def test_later_mock_chapter_does_not_reuse_the_previous_scene():

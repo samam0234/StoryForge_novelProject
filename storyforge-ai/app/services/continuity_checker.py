@@ -18,7 +18,8 @@ from app.models.schemas import (
 from app.prompts import render
 
 _PENALTY = {"high": 30, "medium": 12, "low": 4}
-_MIN_LENGTH = 300
+# 챕터 생성 프롬프트의 공백 포함 분량 목표. 경고만 추가하며 검토를 건너뛰지 않습니다.
+_MIN_LENGTH = 4000
 
 
 def rule_checks(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
@@ -28,7 +29,7 @@ def rule_checks(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
             issues.append(
                 ContinuityIssue(
                     type="plot_thread",
-                    description=f"Outline에 등장하기로 한 '{name}'이(가) 본문에 나오지 않습니다.",
+                    description=f"Outline 인물 '{name}'의 전체 이름이 본문에 나오지 않습니다. 다른 호칭으로 등장했는지 확인하세요.",
                     severity="medium",
                 )
             )
@@ -46,7 +47,7 @@ def rule_checks(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
         issues.append(
             ContinuityIssue(
                 type="plot_thread",
-                description=f"본문이 {len(content.strip())}자로 너무 짧아 Beats를 충분히 다루지 못했을 수 있습니다.",
+                description=f"본문이 {len(content.strip())}자로 목표인 4,000자보다 짧습니다. Beats를 충분히 다루었는지 확인하세요.",
                 severity="low",
             )
         )
