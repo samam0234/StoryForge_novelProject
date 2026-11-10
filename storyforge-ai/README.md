@@ -140,10 +140,12 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 51건. mock·가짜 LLM·Ollama HTTP 모의 전송
+└── tests/                  # 52건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.
+
+실제 모델 파이프라인은 `.venv/Scripts/python validate_pipeline.py --chapters 3`으로 확인합니다. 합성 작품의 Bible·Outline·챕터·요약·Continuity를 실행하며 인물 기록을 임시 폴더로 분리합니다. 원문이나 사용자 데이터를 출력하지 않고 시간·길이·검증 이슈만 출력합니다. 단계별 제한은 `--timeout`으로 정하며 기본 180초입니다. 이 도구는 API·DB·사용자 승인 검증을 대신하지 않습니다.
 
 ## 문제 해결
 

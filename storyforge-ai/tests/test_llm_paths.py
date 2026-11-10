@@ -170,6 +170,13 @@ def test_outline_is_renumbered(use_llm):
     assert [c["order"] for c in res.json()["chapters"]] == [1, 2]
 
 
+def test_outline_rejects_wrong_chapter_count(use_llm):
+    res = use_llm(FakeLLM()).post(
+        "/internal/generate/outline", json={"project": PROJECT, "bible": BIBLE, "chapterCount": 3}
+    )
+    assert res.status_code == 502
+
+
 def test_llm_error_on_sync_call_gives_502(use_llm):
     class Failing(FakeLLM):
         async def structured(self, *, system, prompt, schema, model=None):

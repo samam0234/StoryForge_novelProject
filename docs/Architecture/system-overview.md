@@ -128,3 +128,9 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 - [pipeline-state-machine.md](pipeline-state-machine.md)
 - [../plan/api-v1.md](../plan/api-v1.md)
 - [../plan/CURRENT_STACK.md](../plan/CURRENT_STACK.md)
+# 실모델 검증 경계 (2026-11-10)
+
+AI Outline 생성은 요청한 챕터 수와 결과 수가 일치해야 성공합니다. 불일치는 `LLMError`로 반환하며 부분 Outline을 정상 결과로 전달하지 않습니다.
+
+`storyforge-ai/validate_pipeline.py`는 임시 인물 저장소에서 합성 작품을 생성하고 실제 요약·Continuity까지 실행합니다. 다음 장의 입력은 검증 프로세스 메모리 안에서만 조립하며 Spring Boot의 검토·승인·저장 흐름을 대체하지 않습니다. pytest 인물 저장소도 테스트별 임시 경로로 격리합니다.
+
