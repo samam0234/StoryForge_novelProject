@@ -5,7 +5,9 @@ import json
 from app.core.ollama import LLMBusyError
 from app.models.schemas import ChapterGenerateResult, ContinuityResult
 from app.services.chapter_generator import Done, Token
-import validate_soak
+from app.core.config import get_settings
+from app.core.llm import MockLLM
+from scripts import validate_pipeline, validate_soak
 
 
 def test_soak_runs_a_generation_even_when_warmup_exceeds_duration(monkeypatch, capsys):
@@ -38,4 +40,27 @@ def test_soak_runs_a_generation_even_when_warmup_exceeds_duration(monkeypatch, c
     summary = json.loads(capsys.readouterr().out.splitlines()[-1])
     assert summary["rounds"] == summary["completed"] == 1
     assert summary["busy_rejected"] == summary["cancelled"] == 1
+    assert closed == [True]
+
+
+def test_pipeline_module_loads_name_pool_and_finishes_without_real_model(monkeypatch, capsys):
+    closed = []
+
+    class LocalMock(MockLLM):
+        def __init__(self, settings):
+            pass
+
+        async def warmup(self):
+            pass
+
+        async def aclose(self):
+            closed.append(True)
+
+    monkeypatch.setattr(validate_pipeline, "OllamaLLM", LocalMock)
+    monkeypatch.setattr(get_settings(), "mock_stream_delay", 0)
+    asyncio.run(validate_pipeline.validate(chapters=2, timeout=5))
+
+    stages = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    assert [stage["stage"] for stage in stages] == ["bible", "outline", "chapter_1", "chapter_2", "complete"]
+    assert stages[-1]["chapters"] == 2
     assert closed == [True]

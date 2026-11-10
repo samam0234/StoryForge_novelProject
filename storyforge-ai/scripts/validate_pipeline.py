@@ -38,7 +38,7 @@ async def validate(chapters: int, timeout: float):
         await asyncio.wait_for(llm.warmup(), timeout)
         with tempfile.TemporaryDirectory(prefix="storyforge-validation-") as directory:
             root = Path(directory)
-            shutil.copyfile(Path(__file__).parent / "data/names.json", root / "names.json")
+            shutil.copyfile(Path(__file__).resolve().parents[1] / "data/names.json", root / "names.json")
             bank = CharacterBank(root)
             stage = "bible"
             started = time.perf_counter()

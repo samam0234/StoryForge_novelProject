@@ -28,7 +28,7 @@ $env:OLLAMA_MAX_CONCURRENT = '1'
 ## 측정
 
 ```sh
-.venv/Scripts/python benchmark_ollama.py --runs 3 --warmup
+.venv/Scripts/python -m scripts.benchmark_ollama --runs 3 --warmup
 ollama ps
 ```
 
@@ -48,7 +48,7 @@ ollama ps
 
 ## 실제 3장 파이프라인 추가 확인 (2026-11-10)
 
-`.venv/Scripts/python validate_pipeline.py --chapters 3`은 합성 작품의 Bible·Outline·각 장의 생성·요약·Continuity를 실제 서비스 함수로 실행합니다. 임시 인물 저장소를 사용하며 제품의 검토·승인·DB 저장을 대신하지 않습니다.
+`.venv/Scripts/python -m scripts.validate_pipeline --chapters 3`은 합성 작품의 Bible·Outline·각 장의 생성·요약·Continuity를 실제 서비스 함수로 실행합니다. 임시 인물 저장소를 사용하며 제품의 검토·승인·DB 저장을 대신하지 않습니다.
 
 첫 실행에서는 2장 생성이 출력 한도에 도달해 정상 결과 없이 실패했습니다. 당시 `/api/ps`는 컨텍스트 4096을 보고했습니다. 이후 요청·예열에 `OLLAMA_NUM_CTX=32768`을 명시한 실행은 3장 모두 완료했습니다. 다른 생성 결과를 사용하므로 출력 실패 원인이 컨텍스트 하나였다고 단정하거나 성능 개선율을 계산하지 않습니다.
 
@@ -64,14 +64,14 @@ Bible은 21.842초, Outline은 15.364초였습니다. 2장에서는 Outline 인�
 
 ## 슬롯 포화와 긴 입력 회복
 
-`.venv/Scripts/python validate_load.py`는 슬롯 1개, 대기 제한 0.2초로 실제 스트림을 점유합니다. 경쟁 요청은 `LLMBusyError`로 약 0.215초에 거부됐고, 스트림을 닫은 뒤 이전 요약 40개·입력 7584자로 요청한 세 문장 출력은 첫 토큰 0.485초, 전체 1.266초, 115자로 완료됐습니다. 데이터는 합성이고 실제 40개 챕터 생성이나 지속 부하 검증은 아닙니다.
+`.venv/Scripts/python -m scripts.validate_load`는 슬롯 1개, 대기 제한 0.2초로 실제 스트림을 점유합니다. 경쟁 요청은 `LLMBusyError`로 약 0.215초에 거부됐고, 스트림을 닫은 뒤 이전 요약 40개·입력 7584자로 요청한 세 문장 출력은 첫 토큰 0.485초, 전체 1.266초, 115자로 완료됐습니다. 데이터는 합성이고 실제 40개 챕터 생성이나 지속 부하 검증은 아닙니다.
 
 후속 프롬프트 변경 후 별도 DB·Spring Boot·FastAPI·Gemma를 연결한 두 장의 API 시험은 2,340자와 3,003자로 여전히 목표 미달이었습니다. 수정된 검사는 두 장에 분량 경고를 표시했습니다. 별도 첫 장 생성 도중 백엔드를 종료한 뒤 복구·재생성은 61.55초가 걸렸습니다. 사용자 브라우저 전체 흐름, 장시간 생성 부하와 원고 품질은 별도로 확인해야 합니다. [검증 기록](../vaildates/local-followup.md).
 
 ## 반복 생성과 중단 검증
 
 ```powershell
-.venv/Scripts/python -u validate_soak.py --duration 2400 --timeout 180
+.venv/Scripts/python -u -m scripts.validate_soak --duration 2400 --timeout 180
 ```
 
 합성 Bible·Outline·이전 한 장의 요약·인물 상태를 고정하고 생성→요약→Continuity를 반복합니다. 세 회차마다 상위 챕터 생성기를 중단한 직후 다시 생성하며, 각 생성의 첫 조각을 받은 상태에서 경쟁 요청을 보내 0.2초의 슬롯 대기 제한을 확인합니다. 슬롯은 프로세스당 하나입니다. 원고·DB·인물 사용 기록을 저장하거나 승인하지 않습니다.

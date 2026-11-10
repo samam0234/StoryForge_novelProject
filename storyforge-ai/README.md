@@ -39,7 +39,7 @@ mock 모드는 파이프라인 흐름(Bible → Outline → 챕터 스트리밍 
 `LLM_PROVIDER=ollama`, `OLLAMA_MODEL=gemma4:e4b`로 실행합니다. Claude 자격 증명은 Ollama 단독 사용에 필요하지 않습니다. 모델 상주·시작 예열·동시 추론 제한·스키마 출력 설정은 [성능 가이드](../docs/guidance/ollama-performance.md)를 보세요.
 
 ```sh
-.venv/Scripts/python benchmark_ollama.py --runs 3 --warmup
+.venv/Scripts/python -m scripts.benchmark_ollama --runs 3 --warmup
 ```
 
 ### 실행 — Claude 사용
@@ -129,10 +129,13 @@ Claude 모드에서는 서버 측 refusal fallback(`fallbacks: "default"`)을 �
 
 ## 폴더 구조
 
+서비스 루트에는 설정·의존성·문서를 두고, 보조 도구는 [scripts/](scripts/README.md), 서버 구현은 `app/`, 자동 회귀 테스트는 `tests/`에서 관리합니다.
+
 ```
 storyforge-ai/
 ├── requirements.txt        # 실행 의존성
 ├── requirements-dev.txt    # 테스트 의존성 (pytest, httpx)
+├── scripts/                # 수동 성능 측정·검증 도구 (python -m scripts.<도구>)
 ├── app/
 │   ├── main.py             # 앱, /health
 │   ├── api/v1/             # /internal/generate/*, /internal/package/*, /internal/guide/*
@@ -140,12 +143,12 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 56건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리·검증 도구 회귀
+└── tests/                  # 57건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리·검증 도구 회귀
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.
 
-실제 모델 파이프라인은 `.venv/Scripts/python validate_pipeline.py --chapters 3`으로 확인합니다. 합성 작품의 Bible·Outline·챕터·요약·Continuity를 실행하며 인물 기록을 임시 폴더로 분리합니다. 원문이나 사용자 데이터를 출력하지 않고 시간·길이·검증 이슈만 출력합니다. 단계별 제한은 `--timeout`으로 정하며 기본 180초입니다. 이 도구는 API·DB·사용자 승인 검증을 대신하지 않습니다.
+실제 모델 파이프라인은 `.venv/Scripts/python -m scripts.validate_pipeline --chapters 3`으로 확인합니다. 합성 작품의 Bible·Outline·챕터·요약·Continuity를 실행하며 인물 기록을 임시 폴더로 분리합니다. 원문이나 사용자 데이터를 출력하지 않고 시간·길이·검증 이슈만 출력합니다. 단계별 제한은 `--timeout`으로 정하며 기본 180초입니다. 이 도구는 API·DB·사용자 승인 검증을 대신하지 않습니다.
 
 ## 문제 해결
 
@@ -162,9 +165,9 @@ storyforge-ai/
 - Continuity 실패를 임의로 통과시키지 않습니다.
 - 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 실제 Claude 호출은 미검증입니다. Ollama는 합성 3장 생성·요약·Continuity와 이전 요약 40개 입력·슬롯 포화·스트림 중단 후 복구를 확인했습니다. 장편 품질과 배포 서버 성능 보장은 아닙니다. [측정과 제한](../docs/guidance/ollama-performance.md).
 
-`.venv/Scripts/python validate_load.py`는 실제 모델 스트림을 열린 채 두어 경쟁 요청의 대기 제한을 확인하고, 스트림 종료 후 합성 이전 장 40개를 넣은 요청의 회복을 확인합니다. 운영 DB나 인물 기록을 사용하지 않습니다.
+`.venv/Scripts/python -m scripts.validate_load`는 실제 모델 스트림을 열린 채 두어 경쟁 요청의 대기 제한을 확인하고, 스트림 종료 후 합성 이전 장 40개를 넣은 요청의 회복을 확인합니다. 운영 DB나 인물 기록을 사용하지 않습니다.
 
-`.venv/Scripts/python -u validate_soak.py --duration 2400 --timeout 180`은 고정된 합성 컨텍스트로 챕터·요약·Continuity를 반복하고 경쟁 요청 거부·상위 챕터 중단 후 복구를 확인합니다. 서비스 함수 시험이며 DB·API·사용자 승인을 대신하지 않습니다. 결과는 원문 없이 시간·분량·검증 이슈·P50·P95를 JSON 줄로 출력합니다. 실패 시 종료 코드 1이며 연속 3회 실패 시 조기 종료합니다. 검증 도구는 Windows 콘솔의 문자셋과 무관하게 JSON 유니코드 이스케이프를 사용합니다. [조건과 한계](../docs/guidance/ollama-performance.md).
+`.venv/Scripts/python -u -m scripts.validate_soak --duration 2400 --timeout 180`은 고정된 합성 컨텍스트로 챕터·요약·Continuity를 반복하고 경쟁 요청 거부·상위 챕터 중단 후 복구를 확인합니다. 서비스 함수 시험이며 DB·API·사용자 승인을 대신하지 않습니다. 결과는 원문 없이 시간·분량·검증 이슈·P50·P95를 JSON 줄로 출력합니다. 실패 시 종료 코드 1이며 연속 3회 실패 시 조기 종료합니다. 검증 도구는 Windows 콘솔의 문자셋과 무관하게 JSON 유니코드 이스케이프를 사용합니다. [조건과 한계](../docs/guidance/ollama-performance.md).
 
 ## 관련 문서
 
