@@ -12,7 +12,7 @@ StoryForge의 **FastAPI AI Service**입니다. 프롬프트 조립, LLM 스트�
 | 항목 | 버전 / 조건 | 비고 |
 |------|-------------|------|
 | Python | 3.10 이상 | `python --version` |
-| Anthropic API 키 | 선택 | 없으면 mock 생성기로 동작합니다 |
+| Anthropic API 키 | 선택 | `LLM_PROVIDER=anthropic` 또는 `claude-*` 선택 시 필요합니다 |
 
 ### 처음 한 번 — 가상환경과 의존성
 
@@ -33,6 +33,14 @@ python -m venv .venv
 개발 중 코드 변경을 바로 반영하려면 `--reload`를 붙입니다.
 
 mock 모드는 파이프라인 흐름(Bible → Outline → 챕터 스트리밍 → Continuity)을 확인하기 위한 것입니다. 생성물에는 "※ 개발용 mock 생성기 출력입니다" 표시가 붙습니다.
+
+### 실행 — Ollama 일반 출력
+
+`LLM_PROVIDER=ollama`, `OLLAMA_MODEL=gemma4:e4b`로 실행합니다. Claude 자격 증명은 Ollama 단독 사용에 필요하지 않습니다. 모델 상주·시작 예열·동시 추론 제한·스키마 출력 설정은 [성능 가이드](../docs/guidance/ollama-performance.md)를 보세요.
+
+```sh
+.venv/Scripts/python benchmark_ollama.py --runs 3 --warmup
+```
 
 ### 실행 — Claude 사용
 
@@ -80,9 +88,9 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
-| `LLM_PROVIDER` | `mock` | `mock` / `anthropic` |
+| `LLM_PROVIDER` | `mock` | `mock` / `ollama` / `anthropic` |
 | `LLM_MODEL` | `claude-opus-5-5` | Claude 모델 ID |
-| `LLM_EFFORT` | `medium` | `low` ~ `max`. 깊이와 비용을 조절합니다 |
+| `LLM_EFFORT` | `high` | `low` ~ `max`. 깊이와 비용을 조절합니다 |
 | `ANTHROPIC_API_KEY` | (없음) | 비우면 SDK 표준 경로(`ant auth login` 프로필 등)에서 찾습니다 |
 | `MOCK_STREAM_DELAY` | `0.02` | mock 스트리밍 조각 사이 지연(초) |
 
@@ -111,7 +119,7 @@ JSON 필드는 camelCase이며, 백엔드 [AiDtos.java](../storyforge-backend/sr
   → prompts/chapter.j2로 프롬프트 조립
   → LLM 스트리밍 (token 이벤트)
   → 요약 생성 (다음 챕터 컨텍스트용)
-  → Continuity 검증: 규칙 기반 검사 + (Claude 모드) LLM 검증 → 점수
+  → Continuity 검증: 규칙 기반 검사 + (Ollama·Claude 모드) LLM 검증 → 점수
   → done 이벤트
 ```
 
@@ -132,7 +140,7 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 29건. mock과 가짜 LLM (실제 API 호출 없음)
+└── tests/                  # 50건. mock·가짜 LLM·Ollama HTTP 모의 전송
 ```
 
 ## 문제 해결
@@ -148,11 +156,11 @@ storyforge-ai/
 
 - 인증, 프로젝트 상태 관리, DB 저장은 하지 않습니다 (Spring Boot 담당).
 - Continuity 실패를 임의로 통과시키지 않습니다.
-- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 그래서 **실제 모델 호출은 아직 검증하지 못했습니다.**
+- 실제 Claude를 호출하는 테스트는 비용이 들기 때문에 기본 테스트에 넣지 않습니다. 실제 Claude 호출은 미검증입니다. Ollama는 짧은 프롬프트 실측만 완료했으며 장편·배포 서버 성능은 추가 확인이 필요합니다.
 
 ## 관련 문서
 
-- [기획서 §6, §7, §8.3](../StoryForge_기획서_v1.2.md)
+- [기획서 §6, §7, §8.3](../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/novel/](../docs/novel/) — 프롬프트 작성 규칙, Continuity 규칙
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md), [docs/plan/CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)

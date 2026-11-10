@@ -9,15 +9,12 @@ import anthropic
 from pydantic import BaseModel
 
 from app.core.config import Settings, get_settings
+from app.core.ollama import LLMError, OllamaLLM
 
 T = TypeVar("T", bound=BaseModel)
 
 # 정책상 거절(refusal) 시 서버가 적절한 모델로 다시 실행합니다.
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
-
-
-class LLMError(Exception):
-    """LLM 호출 실패. API 라우터에서 502로 변환합니다."""
 
 
 class LLMClient(Protocol):
@@ -122,83 +119,6 @@ _EFFORT = {
 }
 
 
-class OllamaLLM:
-    """일반 출력. 이 PC의 Ollama Gemma 4 E4B."""
-
-    is_mock = False
-
-    def __init__(self, settings: Settings) -> None:
-        self._base = settings.ollama_base_url.rstrip("/")
-        self._model = settings.ollama_model
-
-    def _name(self, model: str | None) -> str:
-        return model or self._model
-
-    async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T:
-        raw = await self.text(
-            system=system + "\nJSON만 출력합니다.",
-            prompt=prompt,
-            max_tokens=8000,
-            model=model,
-        )
-        start = raw.find("{")
-        end = raw.rfind("}")
-        if start < 0 or end < start:
-            raise LLMError("Ollama 응답에서 JSON을 찾지 못했습니다.")
-        try:
-            return schema.model_validate_json(raw[start : end + 1])
-        except Exception as e:
-            raise LLMError("Ollama JSON을 해석하지 못했습니다.") from e
-
-    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
-        import httpx
-
-        payload = {
-            "model": self._name(model),
-            "stream": False,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt},
-            ],
-            "options": {"num_predict": max_tokens},
-        }
-        try:
-            async with httpx.AsyncClient(timeout=180) as client:
-                response = await client.post(f"{self._base}/api/chat", json=payload)
-                response.raise_for_status()
-                body = response.json()
-        except httpx.HTTPError as e:
-            raise LLMError(f"Ollama 호출 실패: {e}") from e
-        return body.get("message", {}).get("content", "")
-
-    async def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
-        import httpx
-
-        payload = {
-            "model": self._name(model),
-            "stream": True,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user", "content": prompt},
-            ],
-        }
-        try:
-            async with httpx.AsyncClient(timeout=180) as client:
-                async with client.stream("POST", f"{self._base}/api/chat", json=payload) as response:
-                    response.raise_for_status()
-                    async for line in response.aiter_lines():
-                        if not line:
-                            continue
-                        import json
-
-                        chunk = json.loads(line)
-                        text = chunk.get("message", {}).get("content", "")
-                        if text:
-                            yield text
-        except httpx.HTTPError as e:
-            raise LLMError(f"Ollama 스트리밍 실패: {e}") from e
-
-
 class RoutingLLM:
     """프로젝트 모델 값으로 일반(Ollama)과 강력 출력(Claude)을 나눕니다."""
 
@@ -206,11 +126,16 @@ class RoutingLLM:
 
     def __init__(self, settings: Settings) -> None:
         self._ollama = OllamaLLM(settings)
-        self._claude = AnthropicLLM(settings)
+        self._claude: AnthropicLLM | None = None
+        self._settings = settings
 
     def _pick(self, model: str | None) -> OllamaLLM | AnthropicLLM:
-        name = model or ""
-        return self._claude if name.startswith("claude") else self._ollama
+        name = model or (self._settings.llm_model if self._settings.llm_provider == "anthropic" else "")
+        if name.startswith("claude"):
+            if self._claude is None:
+                self._claude = AnthropicLLM(self._settings)
+            return self._claude
+        return self._ollama
 
     async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T:
         return await self._pick(model).structured(system=system, prompt=prompt, schema=schema, model=model)
@@ -220,6 +145,15 @@ class RoutingLLM:
 
     def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncIterator[str]:
         return self._pick(model).stream(system=system, prompt=prompt, model=model)
+
+
+    async def warmup(self) -> None:
+        await self._ollama.warmup()
+
+    async def aclose(self) -> None:
+        await self._ollama.aclose()
+        if self._claude is not None:
+            await self._claude._client.close()
 
 
 @lru_cache
