@@ -56,7 +56,7 @@ cd storyforge-backend
 
 ### 환경 변수
 
-모두 기본값이 있어서 로컬에서는 설정 없이 실행됩니다. 기준값은 [CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)에 있습니다.
+로컬 개발 기본값은 설정 없이 실행됩니다. prod에서는 DB·JWT와 웹·콘솔의 HTTPS 출처를 명시해야 합니다. 기준값은 [CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)에 있습니다.
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
@@ -64,7 +64,8 @@ cd storyforge-backend
 | `DB_URL` | `jdbc:postgresql://localhost:5433/storyforge` | JDBC URL |
 | `DB_USER` / `DB_PASSWORD` | `storyforge` / `storyforge` | 개발용. 운영에서는 반드시 바꿉니다 |
 | `AI_SERVICE_URL` | `http://localhost:8001` | FastAPI 주소 (내부망) |
-| `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
+| `CONSOLE_ORIGIN` | `http://localhost:4201` | 독립 운영 콘솔 출처 |
+| `FRONTEND_ORIGIN` | `http://localhost:4200` | 개발 CORS 출처. prod는 정확한 HTTPS 출처 하나 |
 | `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | `12h` | 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
@@ -103,6 +104,10 @@ cd storyforge-backend
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
 
+## 운영 API
+
+`ConsoleController`는 운영 집계·회원 검색과 정지·신고 일괄 조치·감사 조회를 제공합니다. 관리자 권한은 서비스에서 확인합니다. V11 운영 잠금을 사용하는 조치와 알림·감사 기록은 같은 트랜잭션입니다. [스펙](../docs/plan/operations-console.md).
+
 ## 폴더 구조
 
 ```
@@ -124,7 +129,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 76건 (실제 PostgreSQL)
+    └── test/                     # 단위·통합 테스트 88건 (실제 PostgreSQL)
 ```
 
 ## 문제 해결
@@ -147,7 +152,7 @@ storyforge-backend/
 
 ## 관련 문서
 
-- [기획서 §7, §8.2, §10, §11](../StoryForge_기획서_v1.2.md)
+- [기획서 §7, §8.2, §10, §11](../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/Architecture/](../docs/Architecture/) — 구조, 상태 머신
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md), [docs/plan/CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)

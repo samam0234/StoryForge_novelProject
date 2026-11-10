@@ -35,3 +35,7 @@
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` |
 | `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` |
 | `RATE_LIMIT_COMMUNITY_PER_MINUTE` | `60` |
+
+## 운영 조치와 추론 과부하 보호 (2026-11-10)
+
+운영 조치는 공통 DB 잠금과 트랜잭션으로 직렬화합니다. 이미 처리된 대상은 409입니다. Ollama는 프로세스별 동시 추론과 슬롯 대기 시간을 제한하며 취소·오류에서 슬롯과 HTTP 스트림을 반환합니다. 내부 503은 기존 외부 AI 장애 계약에 따라 처리합니다. [운영 구조](../Architecture/operations-console.md), [Ollama 가이드](../guidance/ollama-performance.md).

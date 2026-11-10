@@ -29,5 +29,5 @@
 
 ## 관련 문서
 
-- [기획서 §9.1, §9.2](../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §9.1, §9.2](../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/plan/should-features.md](../../../../docs/plan/should-features.md)

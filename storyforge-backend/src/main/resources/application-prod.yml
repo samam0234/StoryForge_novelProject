@@ -16,6 +16,8 @@ springdoc:
 
 storyforge:
   cors:
-    allowed-origins: ${FRONTEND_ORIGIN}
+    frontend-origin: ${FRONTEND_ORIGIN}
+    console-origin: ${CONSOLE_ORIGIN}
+    allowed-origins: ${storyforge.cors.frontend-origin},${storyforge.cors.console-origin}
   jwt:
     secret: ${JWT_SECRET}

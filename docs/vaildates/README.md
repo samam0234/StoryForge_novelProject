@@ -42,3 +42,4 @@
 | 문서 | 대상 | 최근 확인일 |
 |------|------|-------------|
 | [community-release.md](community-release.md) | 커뮤니티 공개 배포 전 | 아직 수행 전 |
+| [operations-console-release.md](operations-console-release.md) | 콘솔·운영 API·Ollama | 2026-11-10, 브라우저 미검증 |

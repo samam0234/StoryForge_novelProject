@@ -1,7 +1,11 @@
 # docs/ — StoryForge 문서 진입점
 
 StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모아 두는 곳입니다.
-기획 원본은 여기 두지 않고 루트의 [StoryForge_기획서_v1.2.md](../StoryForge_기획서_v1.2.md)에 그대로 둡니다.
+현재 기획 원본은 기존 이동 이력에 따라 [Proposal/StoryForge_기획서_v1.2.md](plan/Proposal/StoryForge_기획서_v1.2.md)에 있습니다. 이번 작업에서는 원본을 수정하거나 이동하지 않았습니다.
+
+## 운영 기능 안내
+
+[운영 콘솔 스펙](plan/operations-console.md) → [실행 가이드](guidance/operations-console.md) → [검증 결과](vaildates/operations-console-release.md). AI 설정과 실측 한계는 [Ollama 성능 가이드](guidance/ollama-performance.md)에 있습니다.
 
 ## 폴더 안내
 
@@ -29,7 +33,7 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 | [SECURITY.md](../SECURITY.md) | 보안 정책, 취약점 신고, 알려진 제한, 배포 전 체크리스트 |
 | [CONTRIBUTING.md](../CONTRIBUTING.md) | 기여 안내 |
 | [CHANGELOG.md](../CHANGELOG.md) | 변경 내역 |
-| [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) | 제3자 라이선스 고지 |
+| [THIRD_PARTY_NOTICES.md](plan/Proposal/THIRD_PARTY_NOTICES.md) | 제3자 라이선스 고지 |
 
 ## 어디에 써야 할지 모를 때
 

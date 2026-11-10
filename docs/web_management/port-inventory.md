@@ -6,6 +6,7 @@
 
 | 서비스 | 바인딩 | 외부 노출 | 비고 |
 |--------|--------|-----------|------|
+| storyforge-console | `localhost:4201` | 개발자 PC의 운영자 | 독립 Angular. `/api`를 8080으로 프록시 |
 | storyforge-frontend | `localhost:4200` | 개발자 PC | `ng serve`. `/api`를 8080으로 프록시 |
 | storyforge-backend | `0.0.0.0:8080` | 개발자 PC | 외부 API 단일 표면 |
 | storyforge-ai | `127.0.0.1:8001` | **없음** | 내부 전용. 인증이 없으므로 외부에 열지 않습니다 |

@@ -114,8 +114,12 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 - **트랜잭션**: Spring Boot는 FastAPI 호출 동안 DB 트랜잭션을 잡지 않습니다. 상태 확인·컨텍스트 조립 → (AI 호출) → 저장·상태 전이를 각각 짧은 트랜잭션으로 나눕니다.
 - **실패·중단**: AI 오류나 클라이언트 연결 종료 시 프로젝트 상태를 생성 전으로 되돌립니다. 전이 규칙은 [pipeline-state-machine.md](pipeline-state-machine.md)를 보세요.
 - **프론트 SSE**: 생성 요청이 POST라 `EventSource` 대신 `fetch` 스트림으로 읽습니다 (`core/api/chapter-stream.service.ts`).
-- **LLM 공급자**: 기본은 키 없이 동작하는 `mock`이고, `LLM_PROVIDER=anthropic`이면 Claude(`claude-opus-5-5`)를 씁니다.
+- **LLM 공급자**: 기본은 키 없이 동작하는 `mock`이고, `LLM_PROVIDER=ollama`이면 일반 출력은 Gemma이고 프로젝트가 `claude-*`를 지정하면 Claude로 라우팅합니다. `anthropic`은 모델 미지정 요청도 Claude를 기본 선택합니다.
 - 엔드포인트와 이벤트 형식은 [../plan/api-v1.md](../plan/api-v1.md)에 있습니다.
+
+## 운영 콘솔과 Ollama (2026-11-10)
+
+독립 Angular `storyforge-console`도 Spring Boot만 호출합니다. 운영 조치는 공통 DB 잠금으로 직렬화하고 변경·알림·감사를 같은 트랜잭션에 묶습니다. FastAPI는 연결 풀과 추론 슬롯을 재사용하며 모델 상주·예열·스키마 검증을 지원합니다. [상세 구조](operations-console.md).
 
 ## 관련 문서
 
