@@ -164,6 +164,8 @@ storyforge-ai/
 
 `.venv/Scripts/python validate_load.py`는 실제 모델 스트림을 열린 채 두어 경쟁 요청의 대기 제한을 확인하고, 스트림 종료 후 합성 이전 장 40개를 넣은 요청의 회복을 확인합니다. 운영 DB나 인물 기록을 사용하지 않습니다.
 
+`.venv/Scripts/python -u validate_soak.py --duration 2400 --timeout 180`은 고정된 합성 컨텍스트로 챕터·요약·Continuity를 반복하고 경쟁 요청 거부·상위 챕터 중단 후 복구를 확인합니다. 서비스 함수 시험이며 DB·API·사용자 승인을 대신하지 않습니다. 결과는 원문 없이 시간·분량·검증 이슈·P50·P95를 JSON 줄로 출력합니다. 실패 시 종료 코드 1이며 연속 3회 실패 시 조기 종료합니다. 검증 도구는 Windows 콘솔의 문자셋과 무관하게 JSON 유니코드 이스케이프를 사용합니다. [조건과 한계](../docs/guidance/ollama-performance.md).
+
 ## 관련 문서
 
 - [기획서 §6, §7, §8.3](../docs/plan/Proposal/StoryForge_기획서_v1.2.md)

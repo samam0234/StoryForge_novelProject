@@ -23,7 +23,7 @@ import httpx
 
 
 def emit(stage, **values):
-    print(json.dumps({"stage": stage, **values}, ensure_ascii=False), flush=True)
+    print(json.dumps({"stage": stage, **values}, ensure_ascii=True), flush=True)
 
 
 def free_port():

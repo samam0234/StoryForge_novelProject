@@ -25,7 +25,7 @@ from app.services.outline_generator import generate_outline
 
 
 def emit(stage, **values):
-    print(json.dumps({"stage": stage, **values}, ensure_ascii=False), flush=True)
+    print(json.dumps({"stage": stage, **values}, ensure_ascii=True), flush=True)
 
 
 async def validate(chapters: int, timeout: float):
