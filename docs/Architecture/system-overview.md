@@ -113,6 +113,7 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 - **스트리밍 시점**: FastAPI가 LLM 토큰을 받는 즉시 SSE로 보내고, Spring Boot는 이를 그대로 프론트에 중계합니다. 생성이 끝나면 FastAPI가 요약과 Continuity 검증을 실행해 `done` 이벤트로 보내고, Spring Boot가 이때 Draft로 저장합니다. (§7.2 4·5단계)
 - **트랜잭션**: Spring Boot는 FastAPI 호출 동안 DB 트랜잭션을 잡지 않습니다. 상태 확인·컨텍스트 조립 → (AI 호출) → 저장·상태 전이를 각각 짧은 트랜잭션으로 나눕니다.
 - **실패·중단**: AI 오류나 클라이언트 연결 종료 시 프로젝트 상태를 생성 전으로 되돌립니다. 전이 규칙은 [pipeline-state-machine.md](pipeline-state-machine.md)를 보세요.
+- **모델 스트림 해제**: FastAPI의 SSE 생성기와 챕터 생성기는 내부 비동기 생성기를 명시적으로 닫습니다. 수신 중단이 모델 HTTP 스트림까지 전달되어 추론 슬롯을 가비지 컬렉션에 의존하지 않고 반환합니다.
 - **프론트 SSE**: 생성 요청이 POST라 `EventSource` 대신 `fetch` 스트림으로 읽습니다 (`core/api/chapter-stream.service.ts`).
 - **LLM 공급자**: 기본은 키 없이 동작하는 `mock`이고, `LLM_PROVIDER=ollama`이면 일반 출력은 Gemma이고 프로젝트가 `claude-*`를 지정하면 Claude로 라우팅합니다. `anthropic`은 모델 미지정 요청도 Claude를 기본 선택합니다.
 - 엔드포인트와 이벤트 형식은 [../plan/api-v1.md](../plan/api-v1.md)에 있습니다.

@@ -4,6 +4,7 @@
 생성이 끝나면 요약과 Continuity 검증을 실행합니다.
 """
 from collections.abc import AsyncIterator
+from contextlib import aclosing
 from dataclasses import dataclass
 
 from app.core.config import get_settings
@@ -26,9 +27,11 @@ class Done:
 
 async def generate_chapter(llm: LLMClient, ctx: ChapterContext) -> AsyncIterator[Token | Done]:
     parts: list[str] = []
-    async for chunk in _stream_body(llm, ctx):
-        parts.append(chunk)
-        yield Token(chunk)
+    # 외부 SSE가 중단되면 모델 연결과 추론 슬롯도 즉시 반환합니다.
+    async with aclosing(_stream_body(llm, ctx)) as stream:
+        async for chunk in stream:
+            parts.append(chunk)
+            yield Token(chunk)
     content = "".join(parts).strip()
 
     summary = await _summarize(llm, ctx, content)

@@ -1,5 +1,7 @@
 """mock 공급자로 내부 API 계약과 SSE 형식을 확인합니다."""
 import json
+import asyncio
+import pytest
 
 from fastapi.testclient import TestClient
 
@@ -8,11 +10,52 @@ from app.main import app
 from app.models.schemas import ChapterContext, ContinuityIssue
 from app.services import mock_writer
 from app.services.continuity_checker import rule_checks, score
+from app.services.chapter_generator import generate_chapter
+from app.api.v1.chapter import chapter as chapter_response
 
 get_settings().mock_stream_delay = 0
 client = TestClient(app)
 
 PROJECT = {"title": "테스트", "genre": "판타지"}
+
+
+@pytest.mark.parametrize("through_sse", [False, True])
+def test_closing_chapter_releases_upstream_stream_immediately(through_sse):
+    class CancellableLLM:
+        is_mock = False
+
+        def __init__(self):
+            self.closed = False
+            self.streams = []
+
+        def stream(self, **kwargs):
+            async def body():
+                try:
+                    yield "첫 문장"
+                    await asyncio.Event().wait()
+                finally:
+                    self.closed = True
+            stream = body()
+            self.streams.append(stream)
+            return stream
+
+    async def run():
+        llm = CancellableLLM()
+        ctx = ChapterContext.model_validate({
+            "project": PROJECT, "bible": {}, "chapterNumber": 1,
+            "outlineChapter": {"order": 1, "title": "중단 검증"},
+        })
+        chapter = ((await chapter_response(ctx, llm)).body_iterator
+                   if through_sse else generate_chapter(llm, ctx))
+        try:
+            await chapter.__anext__()
+            await chapter.aclose()
+            assert llm.closed, "챕터 중단이 모델 스트림까지 즉시 전달되어야 합니다"
+        finally:
+            for stream in llm.streams:
+                await stream.aclose()
+
+    asyncio.run(run())
 
 
 def test_complete_does_not_echo_the_previous_sentence():
