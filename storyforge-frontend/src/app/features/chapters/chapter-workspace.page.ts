@@ -16,6 +16,7 @@ import { Chapter, ChapterVersion, OutlineChapter, StoryBible } from '../../core/
 import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
 import { VersionHistoryData, VersionHistoryDialog } from '../../shared/components/version-history/version-history.dialog';
 import { ProjectContext } from '../projects/project-context';
+import { LlmNoticeComponent } from '../guide/llm-notice.component';
 
 /**
  * 챕터 워크스페이스 (기획서 §9.6 4번)
@@ -33,8 +34,10 @@ import { ProjectContext } from '../projects/project-context';
     MatProgressBarModule,
     MatTooltipModule,
     RichTextEditorComponent,
+    LlmNoticeComponent,
   ],
   template: `
+    <sf-llm-notice />
     @if (!ready()) {
       <div class="sf-page">
         @if (ctx.status() && !ctx.is('OUTLINE_CONFIRMED', 'CHAPTER_GENERATING', 'CHAPTER_REVIEW', 'COMPLETED')) {

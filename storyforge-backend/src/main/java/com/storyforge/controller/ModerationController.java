@@ -5,6 +5,7 @@ import com.storyforge.domain.community.CommunityDtos.UserSummary;
 import com.storyforge.domain.moderation.ContentReport;
 import com.storyforge.domain.moderation.ModerationDtos.*;
 import com.storyforge.service.auth.CurrentUser;
+import com.storyforge.service.community.LlmDisclosure;
 import com.storyforge.service.moderation.ModerationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,11 +19,18 @@ import java.util.List;
 public class ModerationController {
 
     private final ModerationService moderation;
+    private final LlmDisclosure llm;
     private final CurrentUser currentUser;
 
-    public ModerationController(ModerationService moderation, CurrentUser currentUser) {
+    public ModerationController(ModerationService moderation, LlmDisclosure llm, CurrentUser currentUser) {
         this.moderation = moderation;
+        this.llm = llm;
         this.currentUser = currentUser;
+    }
+
+    @GetMapping("/llm-notice")
+    public LlmNotice llmNotice() {
+        return llm.notice();
     }
 
     @PostMapping("/reports")
