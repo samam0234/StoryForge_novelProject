@@ -104,6 +104,8 @@ cd storyforge-backend
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
 
+Spring Boot는 `.env`를 자동으로 읽지 않습니다. `ADMIN_EMAILS`, `JWT_SECRET`, DB 변수 등은 백엔드를 실행하는 셸이나 배포 도구로 주입합니다.
+
 ## 운영 API
 
 `ConsoleController`는 운영 집계·회원 검색과 정지·신고 일괄 조치·감사 조회를 제공합니다. 관리자 권한은 서비스에서 확인합니다. V11 운영 잠금을 사용하는 조치와 알림·감사 기록은 같은 트랜잭션입니다. [스펙](../docs/plan/operations-console.md).
@@ -129,7 +131,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 88건 (실제 PostgreSQL)
+    └── test/                     # 단위·통합 테스트 89건 (실제 PostgreSQL)
 ```
 
 ## 문제 해결

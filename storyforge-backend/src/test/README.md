@@ -1,6 +1,6 @@
 # storyforge-backend/src/test/
 
-백엔드 테스트 88건입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
+백엔드 테스트 89건입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
 
 **통합 테스트는 Docker로 실제 PostgreSQL을 띄웁니다.** Docker가 꺼져 있으면 통합 테스트는 실패가 아니라 **건너뜀**으로 처리되므로, 결과의 "Skipped"를 확인하세요.
 
@@ -19,7 +19,7 @@
 | `service/community/CommunityIntegrationTest` | 게시, 게시판, 비공개, 작업 그래프, Clone 범위·정책, 네트워크, 원본 비교, 공유, 내보내기 8종, 패키지, 추천·달성, 댓글, 프로필, 계정, 함께 창작 |
 | `service/community/PackageContinuityIntegrationTest` | 패키지 전체 검사, 비공개 설정 제외, 원본 가져오기, 확인 표시 |
 | `service/moderation/ModerationIntegrationTest` | 신고, 숨김·복원, 정지, 삭제된 토큰, 차단, 약관, 관리자 판별, 알림 |
-| `service/moderation/ConsoleIntegrationTest` | 운영자 권한, 회원 검색·정지, 입력 검증, 중복 대상 처리, 일괄 실패 롤백, 동시 조치·감사 기록 |
+| `service/moderation/ConsoleIntegrationTest` | 운영자 권한, 회원 검색·정지, 입력 검증, 중복 대상 처리, 일괄 실패 롤백, 동시 조치·감사 기록, 동일 작성자의 서로 다른 대상 정지·해제와 알림 중복 방지 |
 | `config/RateLimitFilterTest` | 요청 제한과 시간 창 초기화, 가이드챗·커뮤니티 쓰기 제한 |
 
 ## 규칙

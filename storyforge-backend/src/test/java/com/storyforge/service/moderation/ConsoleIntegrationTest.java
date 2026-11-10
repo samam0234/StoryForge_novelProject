@@ -122,4 +122,30 @@ class ConsoleIntegrationTest extends IntegrationTestBase {
         try { return call("PUT", "/admin/reports/" + id, Map.of("action", "DISMISS", "note", "검토"), admin).status(); }
         catch (Exception e) { throw new RuntimeException(e); }
     }
+
+    @Test
+    void batchCanSuspendAndUnsuspendSameAuthorAcrossDifferentTargets() throws Exception {
+        String author = newUser();
+        String reader = newUser();
+        String admin = adminToken();
+        long authorId = userId(author);
+        long first = report("POST", post(author), reader);
+        long second = report("POST", post(author), reader);
+        var body = Map.of("reportIds", List.of(first, second), "action", "SUSPEND", "note", "반복 도배 검토");
+        assertThat(call("POST", "/admin/reports/batch", body, admin).status()).isEqualTo(200);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM content_report WHERE id IN (?, ?) AND status = 'RESOLVED'",
+                Long.class, first, second)).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM notification WHERE user_id = ? AND type = 'MODERATION'",
+                Long.class, authorId)).isEqualTo(1L);
+        assertThat(call("POST", "/admin/reports/batch", Map.of("reportIds", List.of(first, second),
+                "action", "UNSUSPEND", "note", "재검토 해제"), admin).status()).isEqualTo(200);
+        assertThat(jdbc.queryForObject("SELECT suspended_at IS NULL FROM app_user WHERE id = ?", Boolean.class, authorId)).isTrue();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM notification WHERE user_id = ? AND type = 'MODERATION'",
+                Long.class, authorId)).isEqualTo(2L);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM admin_audit WHERE report_id IN (?, ?)",
+                Long.class, first, second)).isEqualTo(4L);
+        // 다른 요청에서 이미 해제된 상태는 여전히 충돌이어야 합니다.
+        assertThat(call("POST", "/admin/reports/batch", Map.of("reportIds", List.of(first, second),
+                "action", "UNSUSPEND", "note", "중복 요청"), admin).status()).isEqualTo(409);
+    }
 }

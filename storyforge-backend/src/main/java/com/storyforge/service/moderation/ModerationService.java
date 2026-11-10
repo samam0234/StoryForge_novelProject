@@ -20,9 +20,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 신고, 관리자 조치, 사용자 차단. 숨긴 글은 지우지 않고 복원할 수 있습니다.
@@ -91,6 +94,16 @@ public class ModerationService {
 
     @Transactional
     public ReportView decide(Long reportId, DecideRequest request, Long adminId) {
+        return applyDecision(reportId, request, adminId, new HashSet<>());
+    }
+
+    /** 같은 일괄 요청에서만 계정 조치를 공유합니다. 별도 요청의 상태 충돌은 유지합니다. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    ReportView decideInBatch(Long reportId, DecideRequest request, Long adminId, Set<Long> changedAccounts) {
+        return applyDecision(reportId, request, adminId, changedAccounts);
+    }
+
+    private ReportView applyDecision(Long reportId, DecideRequest request, Long adminId, Set<Long> changedAccounts) {
         policy.requireAdmin(adminId);
         reports.lockOperations();
         ContentReport report = reports.findById(Objects.requireNonNull(reportId))
@@ -103,16 +116,17 @@ public class ModerationService {
         Long id = report.getTargetId();
         String note = blankToNull(request.note());
         TargetView target = target(type, id);
+        Long authorId = target.author() == null ? null : target.author().id();
+        boolean accountChangedInBatch = changedAccounts.contains(authorId);
         if (!target.exists() && request.action() != Action.DISMISS) {
             throw new InvalidStateException("삭제된 대상에는 기각만 할 수 있습니다.");
         }
         if ((request.action() == Action.RESTORE && !target.hidden())
                 || (request.action() == Action.HIDE && target.hidden())
-                || (request.action() == Action.SUSPEND && target.authorSuspended())
-                || (request.action() == Action.UNSUSPEND && !target.authorSuspended())) {
+                || (request.action() == Action.SUSPEND && target.authorSuspended() && !accountChangedInBatch)
+                || (request.action() == Action.UNSUSPEND && !target.authorSuspended() && !accountChangedInBatch)) {
             throw new InvalidStateException("대상 상태가 변경되었습니다. 목록을 새로고침하세요.");
         }
-        Long authorId = target.author() == null ? null : target.author().id();
         switch (request.action()) {
             case HIDE -> {
                 requireContent(type);
@@ -131,13 +145,19 @@ public class ModerationService {
                 if (policy.isAdmin(author)) {
                     throw new InvalidStateException("관리자 계정은 정지할 수 없습니다.");
                 }
-                author.suspend(note);
+                if (!accountChangedInBatch) {
+                    author.suspend(note);
+                    notifyAuthor(authorId, "계정 이용이 정지되었습니다." + reasonSuffix(note), null);
+                    changedAccounts.add(authorId);
+                }
                 closeOpen(type, id, Status.RESOLVED, adminId, note);
-                notifyAuthor(authorId, "계정 이용이 정지되었습니다." + reasonSuffix(note), null);
             }
             case UNSUSPEND -> {
-                user(authorId).unsuspend();
-                notifyAuthor(authorId, "계정 이용 정지가 풀렸습니다.", null);
+                if (!accountChangedInBatch) {
+                    user(authorId).unsuspend();
+                    notifyAuthor(authorId, "계정 이용 정지가 풀렸습니다.", null);
+                    changedAccounts.add(authorId);
+                }
             }
         }
         audit.record(user(adminId), request.action().name(), type.name(), id, reportId, note);
