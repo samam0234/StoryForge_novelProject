@@ -105,6 +105,7 @@ def test_length_warning_uses_chapter_target_and_name_warning_is_not_a_presence_c
     short = rule_checks(ctx, "서윤은 창가에 앉았다." + "가" * 300)
     assert any("전체 이름" in i.description and "다른 호칭" in i.description for i in short)
     assert any("4,000자" in i.description for i in short)
+    assert any("4,000자" in i.description for i in rule_checks(ctx, "한서윤" + "가" * 3996))
     exact = "한서윤" + "가" * 3997
     assert not any("4,000자" in i.description for i in rule_checks(ctx, exact))
 

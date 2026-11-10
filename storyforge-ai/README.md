@@ -140,7 +140,7 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 52건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리
+└── tests/                  # 53건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.
