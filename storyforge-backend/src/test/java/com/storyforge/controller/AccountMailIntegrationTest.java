@@ -49,6 +49,15 @@ class AccountMailIntegrationTest extends IntegrationTestBase {
         assertThat(call("POST", "/auth/login", Map.of("email", user[0], "password", "password123"), null).status()).isEqualTo(401);
         assertThat(call("POST", "/auth/login", Map.of("email", user[0], "password", "replacement123"), null).status()).isEqualTo(200);
     }
+    @Test void configuredAdministratorMustVerifyEmailWhenMailIsEnabled() throws Exception {
+        String jwt = adminToken();
+        assertThat(call("GET", "/auth/me", null, jwt).json().get("admin").asBoolean()).isFalse();
+        assertThat(call("GET", "/admin/reports", null, jwt).status()).isEqualTo(403);
+        assertThat(call("POST", "/auth/mail/verify-request", null, jwt).status()).isEqualTo(200);
+        assertThat(call("POST", "/auth/mail/verify", Map.of("token", token(SMTP.body(), "verify")), null).status()).isEqualTo(200);
+        assertThat(call("GET", "/auth/me", null, jwt).json().get("admin").asBoolean()).isTrue();
+        assertThat(call("GET", "/admin/reports", null, jwt).status()).isEqualTo(200);
+    }
     @Test void verifyMailDoesNotResetPasswordAndIsSingleUse() throws Exception {
         var user = account();
         assertThat(call("POST", "/auth/mail/verify-request", null, null).status()).isEqualTo(401);

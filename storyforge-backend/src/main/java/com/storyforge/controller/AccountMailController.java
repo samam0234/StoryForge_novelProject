@@ -16,9 +16,13 @@ public class AccountMailController {
         this.service = service; this.currentUser = currentUser;
     }
     public record EmailRequest(@NotBlank @Email @Size(max=254) String email) { }
-    public record TokenRequest(@NotBlank @Pattern(regexp="[A-Za-z0-9_-]{43}") String token) { }
+    public record TokenRequest(@NotBlank @Pattern(regexp="[A-Za-z0-9_-]{43}") String token) {
+        @Override public String toString() { return "TokenRequest[redacted]"; }
+    }
     public record ResetRequest(@NotBlank @Pattern(regexp="[A-Za-z0-9_-]{43}") String token,
-                               @NotBlank @Size(min=8,max=72) String password) { }
+                               @NotBlank @Size(min=8,max=72) String password) {
+        @Override public String toString() { return "ResetRequest[redacted]"; }
+    }
     @GetMapping("/status")
     public Map<String, Boolean> status() { return Map.of("enabled", service.enabled()); }
     @PostMapping("/reset-request")

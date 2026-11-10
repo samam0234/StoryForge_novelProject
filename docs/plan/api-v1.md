@@ -2,7 +2,7 @@
 
 > 기준: 기획서 v1.2 §7.2, §10, §11
 > 실행 중인 백엔드의 OpenAPI 문서: `http://localhost:8080/swagger-ui.html`
-> **가입, 로그인, 커뮤니티 읽기(아래 🌐)를 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404, 정지된 계정의 쓰기와 관리자 전용 API는 403입니다.
+> **가입, 로그인, 공개 메일 API, 커뮤니티 읽기(아래 🌐)를 뺀 모든 API는 `Authorization: Bearer <토큰>`이 필요합니다** ([auth.md](auth.md)). 없으면 401, 다른 사용자의 리소스는 404, 정지된 계정의 쓰기와 관리자 전용 API는 403입니다.
 > 오류 응답은 모두 RFC 9457 ProblemDetail(`application/problem+json`)이며, 사용자 메시지는 `detail`에 있습니다.
 
 ## 외부 API (Spring Boot, `/api/v1`)
@@ -14,6 +14,13 @@
 | POST | `/auth/register` | 가입 → 토큰. `acceptTerms: true` 필수 |
 | POST | `/auth/login` | 로그인 → 토큰 |
 | GET | `/auth/me` | 내 정보 |
+| GET | `/auth/mail/status` | 공개. SMTP 기능 활성 여부 |
+| POST | `/auth/mail/reset-request` | 공개. `{email}`. 가입 여부와 무관한 동일 안내 |
+| POST | `/auth/mail/verify-request` | 로그인 필수. 인증 메일 요청 |
+| POST | `/auth/mail/verify` | 공개. `{token}`. 이메일 인증 |
+| POST | `/auth/mail/reset` | 공개. `{token,password}`. 재설정 및 기존 JWT 폐기 |
+
+메일 링크의 만료·단일 사용·오류 계약은 [auth.md](auth.md)에 있습니다. `UserResponse`에 `emailVerified`가 추가되며 SMTP 활성화 시 미인증 관리자 계정도 `admin=false`입니다.
 
 ### 기획서 §11에 있는 엔드포인트
 
