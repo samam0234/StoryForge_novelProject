@@ -22,6 +22,8 @@ npm start
 
 `http://localhost:4201`에서 운영자로 로그인합니다. 일반 계정은 진입할 수 없습니다. 운영 환경에서는 실제 콘솔 도메인, TLS, SPA fallback, `/api` 백엔드 프록시를 구성합니다. 개발 프록시 설정이 배포 산출물에 포함되는 것은 아닙니다.
 
+`prod`에서는 `FRONTEND_ORIGIN`과 `CONSOLE_ORIGIN`을 각각 `https://app.example.com`, `https://console.example.com`처럼 지정합니다. 경로, 후행 `/`, 와일드카드, 쉼표로 여러 출처를 넣으면 시작하지 않습니다. 기존 `prod`의 단일 출처 설정은 콘솔을 포함한 두 개의 명시적 출처로 확장했습니다.
+
 ## 기대 결과
 
 1. 운영 현황의 회원·프로젝트·작품·신고 수와 상태별 분포가 표시됩니다.

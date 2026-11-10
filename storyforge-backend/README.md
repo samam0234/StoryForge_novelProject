@@ -56,7 +56,7 @@ cd storyforge-backend
 
 ### 환경 변수
 
-모두 기본값이 있어서 로컬에서는 설정 없이 실행됩니다. 기준값은 [CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)에 있습니다.
+로컬 개발 기본값은 설정 없이 실행됩니다. prod에서는 DB·JWT와 웹·콘솔의 HTTPS 출처를 명시해야 합니다. 기준값은 [CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)에 있습니다.
 
 | 변수 | 기본값 | 설명 |
 |------|--------|------|
@@ -65,7 +65,7 @@ cd storyforge-backend
 | `DB_USER` / `DB_PASSWORD` | `storyforge` / `storyforge` | 개발용. 운영에서는 반드시 바꿉니다 |
 | `AI_SERVICE_URL` | `http://localhost:8001` | FastAPI 주소 (내부망) |
 | `CONSOLE_ORIGIN` | `http://localhost:4201` | 독립 운영 콘솔 출처 |
-| `FRONTEND_ORIGIN` | `http://localhost:4200` | CORS 허용 출처 (쉼표로 여러 개) |
+| `FRONTEND_ORIGIN` | `http://localhost:4200` | 개발 CORS 출처. prod는 정확한 HTTPS 출처 하나 |
 | `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | `12h` | 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
@@ -129,7 +129,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 82건 (실제 PostgreSQL)
+    └── test/                     # 단위·통합 테스트 88건 (실제 PostgreSQL)
 ```
 
 ## 문제 해결

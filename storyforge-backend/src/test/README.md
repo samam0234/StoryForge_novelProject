@@ -1,6 +1,6 @@
 # storyforge-backend/src/test/
 
-백엔드 테스트 82건입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
+백엔드 테스트 88건입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
 
 **통합 테스트는 Docker로 실제 PostgreSQL을 띄웁니다.** Docker가 꺼져 있으면 통합 테스트는 실패가 아니라 **건너뜀**으로 처리되므로, 결과의 "Skipped"를 확인하세요.
 

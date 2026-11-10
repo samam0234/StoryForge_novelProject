@@ -89,6 +89,8 @@
 
 운영 콘솔은 사용자 웹과 동일한 Spring Boot를 사용합니다. Ollama는 프로세스별 추론 슬롯, 대기 시간 제한, 모델 상주, JSON 스키마 검증을 적용합니다. 필수 컨텍스트와 Continuity 검증은 유지합니다. [구조](../Architecture/operations-console.md), [조정 가이드](../guidance/ollama-performance.md).
 
+`prod`에서는 `FRONTEND_ORIGIN`과 `CONSOLE_ORIGIN`을 각각 경로·와일드카드·후행 슬래시 없는 HTTPS 출처 하나로 명시합니다. 두 출처를 정확하게 허용하며, 개발 DB 자격 증명·빈 JWT 키 거부와 API 문서 비활성 정책은 유지합니다.
+
 ## 변경 이력
 
 | 일자 | 변경 | 커밋 기록 |

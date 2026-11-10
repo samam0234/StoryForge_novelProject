@@ -173,7 +173,7 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | AI 서비스 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` 후 `.venv/Scripts/python -m pytest -q` |
 | 프론트엔드 | `npx ng test --watch=false`, **`npx ng build`** (단위 테스트는 화면 템플릿 오류를 놓칠 수 있음) |
 
-2026-11-10 검증: 백엔드 82건, AI 50건, 운영 콘솔 8건입니다. 상세 결과와 브라우저 미검증 사항은 [검증 기록](docs/vaildates/operations-console-release.md)을 보세요. `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
+2026-11-10 검증: 백엔드 88건, AI 50건, 사용자 웹 50건, 운영 콘솔 8건(총 196건)입니다. 상세 결과와 브라우저 미검증 사항은 [검증 기록](docs/vaildates/operations-console-release.md)을 보세요. `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
 
 ## 현재 구현 범위
 
