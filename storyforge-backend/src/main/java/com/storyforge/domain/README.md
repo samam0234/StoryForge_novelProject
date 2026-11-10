@@ -16,7 +16,7 @@
 | `outline/` | `Outline`, `OutlineChapter`, `OutlineRepository`, `OutlineDtos` | Outline(`chapters` JSONB) |
 | `chapter/` | `Chapter`, `ChapterStatus`, `ChapterVersion`, `ContinuityReport`, `ContinuityIssue`, 각 Repository, `ChapterDtos` | 챕터(DRAFT/CONFIRMED), 생성·수정 이력, Continuity 리포트 |
 | `community/` | `Work`, `WorkChapter`, `WorkRevision`, `WorkClone`, `WorkShare`, `PackageItem`, `PackageLink`, `PackageReport`, `Post`, `Comment`, `IssueEvent`, 각 Repository, `CommunityDtos` | 게시 작품(프로젝트와 독립된 스냅샷), Clone, 공유, 패키지포지, 라운지, 달성 ([community.md](../../../../../../../docs/plan/community.md)) |
-| `moderation/` | `ContentReport`, `UserBlock`, 각 Repository, `ModerationDtos` | 신고와 처리 결과, 사용자 차단 |
+| `moderation/` | `ContentReport`, `UserBlock`, 각 Repository, `ModerationDtos`, `ConsoleDtos` | 신고와 처리 결과, 사용자 차단, 운영 계약 |
 | `notification/` | `Notification`, `NotificationRepository`, `NotificationDtos` | 알림 |
 | `activity/` | `ActivityEvent`, `ActivityType`, `ActivityEventRepository`, `ActivityDtos` | 작업 그래프와 활동 잔디의 원본. 수동·에이전트 구분 |
 
@@ -30,5 +30,5 @@
 
 ## 관련 문서
 
-- [기획서 §8.2, §10](../../../../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §8.2, §10](../../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [should-features.md](../../../../../../../docs/plan/should-features.md) — 이력과 설정

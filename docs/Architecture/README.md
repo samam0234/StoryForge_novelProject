@@ -13,6 +13,7 @@
 | 문서 | 내용 | 기준 절 |
 |------|------|---------|
 | [system-overview.md](system-overview.md) | 고수준 구조, 서비스 책임, 호출 규칙, 챕터 생성 흐름 | 기획서 §7 |
+| [operations-console.md](operations-console.md) | 독립 운영 콘솔, 운영 트랜잭션·감사 기록, Ollama 연결·동시성 | 2026-11-10 사용자 요청 |
 | [pipeline-state-machine.md](pipeline-state-machine.md) | 프로젝트 단위 파이프라인 상태 머신 | 기획서 §7.2 |
 
 ## 들어가지 않을 것

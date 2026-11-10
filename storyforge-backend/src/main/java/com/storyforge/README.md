@@ -29,6 +29,7 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 | `UserController` | 프로필, 활동 잔디, 업적, 이슈, 계정 설정 |
 | `GuideController` | AI 가이드챗 |
 | `CollaborationController` | 함께 창작: 초대, 참여자, 작업 커밋 |
+| `ConsoleController` | 운영 집계, 회원 검색·정지, 일괄 조치, 감사 기록 |
 | `ModerationController` | 신고, 차단, 관리자 처리 |
 | `NotificationController` | 내 알림 |
 
@@ -36,7 +37,7 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 
 | 패키지 | 파일 | 내용 |
 |--------|------|------|
-| `moderation/` | `ModerationService` | 신고, 관리자 조치, 차단 ([moderation.md](../../../../../../docs/plan/moderation.md)) |
+| `moderation/` | `ModerationService`, `ConsoleService`, `AdminAudit` | 신고, 관리자 조치, 차단 ([moderation.md](../../../../../../docs/plan/moderation.md)) |
 | `notification/` | `NotificationService` | 알림. 호출한 쪽 트랜잭션에 묶임 |
 | `community/` | `WorkService`, `CloneService`, `ShareService`, `PackageService`, `PackageContinuityService`, `EngagementService`, `PostService`, `IssueService`, `ActivityService`, `AchievementService`, `ProfileService`, `GuideService` | 커뮤니티 ([community.md](../../../../../../docs/plan/community.md)) |
 | `orchestration/` | `PipelineStateMachine`, `PipelineOrchestrator`, `PipelineRecovery` | 상태 머신, 단계 실행, 시작 시 복구 ([README](service/orchestration/README.md)) |
@@ -70,5 +71,5 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 
 ## 관련 문서
 
-- [기획서 §8.2](../../../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §8.2](../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/plan/api-v1.md](../../../../../../docs/plan/api-v1.md), [docs/plan/stability.md](../../../../../../docs/plan/stability.md)

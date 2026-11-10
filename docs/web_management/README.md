@@ -33,4 +33,4 @@
 - 포트의 **확정값**은 [../plan/CURRENT_STACK.md](../plan/CURRENT_STACK.md)가 원본입니다. 인벤토리는 환경별 실제 배치를 기록합니다.
 - FastAPI는 내부망 전용이므로 외부 노출 포트가 없어야 합니다.
 - 시크릿 값은 적지 않습니다. 보관 위치만 적습니다.
-- 운영 프로세스는 `spring.profiles.active=prod`로 띄웁니다. 이 프로필은 개발용 DB 계정, 빈 JWT, CORS 주소가 하나가 아니면 시작하지 않고 API 문서를 끕니다. FastAPI(8001)는 이 인벤토리의 외부 포트에 넣지 않습니다.
+- 운영 프로세스는 `spring.profiles.active=prod`로 띄웁니다. 이 프로필은 개발용 DB 계정, 빈 JWT, 웹·콘솔 각각의 HTTPS 출처가 정확하게 지정되지 않으면 시작하지 않고 API 문서를 끕니다. FastAPI(8001)는 이 인벤토리의 외부 포트에 넣지 않습니다.

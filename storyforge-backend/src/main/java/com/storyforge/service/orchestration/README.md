@@ -26,5 +26,5 @@
 
 ## 관련 문서
 
-- [기획서 §7.2](../../../../../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §7.2](../../../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/Architecture/pipeline-state-machine.md](../../../../../../../../docs/Architecture/pipeline-state-machine.md)

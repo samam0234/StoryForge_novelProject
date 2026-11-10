@@ -28,7 +28,7 @@ storyforge:
   llm:
     provider: ${LLM_PROVIDER:mock}
   cors:
-    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200}
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:4200},${CONSOLE_ORIGIN:http://localhost:4201}
   rate-limit:
     auth-per-minute: ${RATE_LIMIT_AUTH_PER_MINUTE:20}
     generate-per-minute: ${RATE_LIMIT_GENERATE_PER_MINUTE:30}

@@ -14,9 +14,9 @@
 | Java | — | 소스/타깃 21, 개발 JDK 26 | 설치된 JDK가 26뿐이라 26으로 실행 |
 | AI Service | FastAPI, Pydantic v2, httpx / OpenAI SDK | FastAPI 0.158.1, Pydantic 2, anthropic SDK 2.0.0, Jinja2 3 | 패키지 관리: venv + `requirements.txt` |
 | Python | — | 3.10 | |
-| LLM | OpenAI, Anthropic 등 | 기본 `mock`, 선택 `anthropic` (`claude-opus-5-5`) | 서버 측 refusal fallback(`fallbacks: "default"`) 사용 |
+| LLM | OpenAI, Anthropic 등 | 개발 기본 `mock`, 일반 출력 Ollama `gemma4:e4b`, 선택 Anthropic `claude-*` | 서버 측 refusal fallback(`fallbacks: "default"`) 사용 |
 | Database | PostgreSQL 16+ | PostgreSQL 16 (Docker 이미지 `postgres:16`) | pgvector는 Phase 3 |
-| 인프라 | Docker Compose (개발), 향후 Kubernetes | Docker Compose (DB만) | 서비스 3개는 로컬 프로세스로 실행 |
+| 인프라 | Docker Compose (개발), 향후 Kubernetes | Docker Compose (DB만) | 웹·콘솔·백엔드·AI는 로컬 프로세스로 실행 |
 | 안정성 | Circuit Breaker, Rate Limiting | Resilience4j 2.4.0, 자체 필터 | [stability.md](stability.md) |
 | 내보내기 | Markdown, DOCX, PDF | commonmark 0.32, Apache POI 6.0, OpenPDF 3.0, 나눔고딕 내장. TXT, HTML, EPUB, ODT, RTF는 라이브러리 없이 생성 | [should-features.md](should-features.md), [community.md](community.md) |
 | 관측성 | Spring Actuator, Prometheus, 구조화 로깅 | Actuator `health`, `info`만 노출 | Prometheus 미도입 |
@@ -26,6 +26,7 @@
 | 서비스 | 개발 포트 | 외부 노출 | 비고 |
 |--------|-----------|-----------|------|
 | storyforge-frontend | 4200 | 예 | `ng serve`. `/api`는 `proxy.conf.json`으로 8080에 전달 |
+| storyforge-console | 4201 | 운영자 전용 | 독립 Angular 21.2 앱. `/api`는 같은 백엔드로 전달 |
 | storyforge-backend | 8080 | 예 | 외부에 노출하는 단일 API 표면 |
 | storyforge-ai | 8001 | **아니오** | `127.0.0.1`에만 바인딩. 내부망 전용. 8000은 같은 PC의 다른 프로젝트(Django)와 겹쳐 2026-11-02에 변경 |
 | PostgreSQL | 5433 → 컨테이너 5432 | 아니오 | 로컬에 이미 5432를 쓰는 PostgreSQL이 있어 5433 사용 |
@@ -44,6 +45,7 @@
 | `BACKEND_PORT` | backend | `8080` | |
 | `AI_SERVICE_URL` | backend | `http://localhost:8001` | 백엔드만 사용. 프론트에 넣지 않음 |
 | `FRONTEND_ORIGIN` | backend | `http://localhost:4200` | CORS 허용 출처 |
+| `CONSOLE_ORIGIN` | backend | `http://localhost:4201` | 운영 콘솔 CORS 허용 출처 |
 | `JWT_SECRET` | backend | (없음) | 32바이트 이상. 비우면 시작할 때 무작위 생성(재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | backend | `20` | IP당 로그인·가입 |
@@ -59,6 +61,14 @@
 | `LLM_MODEL` | ai | `claude-opus-5-5` | 강력 출력 기본 모델 |
 | `OLLAMA_BASE_URL` | ai | `http://127.0.0.1:11434` | 일반 출력 |
 | `OLLAMA_MODEL` | ai | `gemma4:e4b` | 일반 출력 모델 |
+| `OLLAMA_KEEP_ALIVE` | ai | `15m` | 모델 상주 시간 |
+| `OLLAMA_THINK` | ai | `false` | 선택적 모델 추론 출력. 활성화하면 첫 토큰 지연 증가 가능 |
+| `OLLAMA_WARMUP` | ai | `false` | Ollama 모드에서 시작 시 모델 예열. 실패해도 앱 시작 |
+| `OLLAMA_MAX_CONCURRENT` | ai | `1` | 프로세스별 동시 추론 수, 1~32 |
+| `OLLAMA_QUEUE_TIMEOUT` | ai | `5` | 추론 슬롯 대기 제한(초) |
+| `OLLAMA_TIMEOUT` | ai | `180` | Ollama HTTP 읽기 제한(초), 연결·풀 대기는 5초 |
+| `OLLAMA_STRUCTURED_MAX_TOKENS` | ai | `8000` | JSON 생성 출력 상한. 잘리면 실패 |
+| `OLLAMA_STREAM_MAX_TOKENS` | ai | `16000` | 챕터 스트림 출력 상한. 잘리면 실패 |
 | `LLM_EFFORT` | ai | `high` | 소설 생성·이어쓰기 추론. Claude 선택 모델은 Haiku high, Sonnet·Opus medium |
 | `ANTHROPIC_API_KEY` | ai | (없음) | 비우면 SDK 표준 자격 증명 경로 사용 |
 
@@ -68,12 +78,18 @@
 |------|----------|-------------|
 | Angular → Spring Boot | HTTP REST + SSE (`fetch` 스트림) | §7.1 |
 | Spring Boot → FastAPI | 내부 HTTP (WebClient), 챕터는 SSE | §7.1, §7.3 |
-| FastAPI → LLM Providers | anthropic SDK 스트리밍 | §7.1 |
+| FastAPI → LLM Providers | Ollama HTTP 연결 풀 / Anthropic SDK 스트리밍 | §7.1 |
 | Spring Boot → PostgreSQL | JDBC (JPA, Flyway) | §7.1 |
 
 - 외부 API 버전 prefix: `/api/v1/` (§11). 상세는 [api-v1.md](api-v1.md)
 - 내부 API: `POST /internal/generate/{bible|outline|chapter|review}` (§7.2), `/internal/package/continuity`, `/internal/guide/chat`
 - 타임아웃: 백엔드 → AI 180초, 연결 5초. MVC 비동기 요청 180초 (§4 P95 < 90초 기준 여유)
+
+## 운영 콘솔과 추론 정책 (2026-11-10)
+
+운영 콘솔은 사용자 웹과 동일한 Spring Boot를 사용합니다. Ollama는 프로세스별 추론 슬롯, 대기 시간 제한, 모델 상주, JSON 스키마 검증을 적용합니다. 필수 컨텍스트와 Continuity 검증은 유지합니다. [구조](../Architecture/operations-console.md), [조정 가이드](../guidance/ollama-performance.md).
+
+`prod`에서는 `FRONTEND_ORIGIN`과 `CONSOLE_ORIGIN`을 각각 경로·와일드카드·후행 슬래시 없는 HTTPS 출처 하나로 명시합니다. 두 출처를 정확하게 허용하며, 개발 DB 자격 증명·빈 JWT 키 거부와 API 문서 비활성 정책은 유지합니다.
 
 ## 변경 이력
 

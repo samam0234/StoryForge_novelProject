@@ -25,5 +25,5 @@
 
 ## 관련 문서
 
-- [기획서 §7.1, §8.1, §11](../../../../StoryForge_기획서_v1.2.md)
+- [기획서 §7.1, §8.1, §11](../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/plan/api-v1.md](../../../../docs/plan/api-v1.md), [docs/plan/auth.md](../../../../docs/plan/auth.md)

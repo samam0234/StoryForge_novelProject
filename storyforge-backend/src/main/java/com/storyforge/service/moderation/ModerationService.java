@@ -42,10 +42,11 @@ public class ModerationService {
     private final AppUserRepository users;
     private final AccountPolicy policy;
     private final NotificationService notifications;
+    private final AdminAudit audit;
 
     public ModerationService(ContentReportRepository reports, UserBlockRepository blocks, WorkRepository works,
                              PostRepository posts, CommentRepository comments, AppUserRepository users,
-                             AccountPolicy policy, NotificationService notifications) {
+                             AccountPolicy policy, NotificationService notifications, AdminAudit audit) {
         this.reports = reports;
         this.blocks = blocks;
         this.works = works;
@@ -54,6 +55,7 @@ public class ModerationService {
         this.users = users;
         this.policy = policy;
         this.notifications = notifications;
+        this.audit = audit;
     }
 
     // ───────────── 신고 ─────────────
@@ -81,7 +83,7 @@ public class ModerationService {
 
     public PageResponse<ReportView> list(Status status, int page, int size, Long adminId) {
         policy.requireAdmin(adminId);
-        Page<ContentReport> result = reports.findByStatusOrderByCreatedAtDesc(status,
+        Page<ContentReport> result = reports.findByStatusOrderByCreatedAtDescIdDesc(status,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50)));
         return new PageResponse<>(result.stream().map(this::view).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
@@ -90,12 +92,26 @@ public class ModerationService {
     @Transactional
     public ReportView decide(Long reportId, DecideRequest request, Long adminId) {
         policy.requireAdmin(adminId);
+        reports.lockOperations();
         ContentReport report = reports.findById(Objects.requireNonNull(reportId))
                 .orElseThrow(() -> new NotFoundException("신고를 찾을 수 없습니다: " + reportId));
+        if (report.getStatus() != Status.OPEN && (request.action() == Action.HIDE
+                || request.action() == Action.DISMISS || request.action() == Action.SUSPEND)) {
+            throw new InvalidStateException("이미 처리된 신고입니다. 목록을 새로고침하세요.");
+        }
         TargetType type = report.getTargetType();
         Long id = report.getTargetId();
         String note = blankToNull(request.note());
         TargetView target = target(type, id);
+        if (!target.exists() && request.action() != Action.DISMISS) {
+            throw new InvalidStateException("삭제된 대상에는 기각만 할 수 있습니다.");
+        }
+        if ((request.action() == Action.RESTORE && !target.hidden())
+                || (request.action() == Action.HIDE && target.hidden())
+                || (request.action() == Action.SUSPEND && target.authorSuspended())
+                || (request.action() == Action.UNSUSPEND && !target.authorSuspended())) {
+            throw new InvalidStateException("대상 상태가 변경되었습니다. 목록을 새로고침하세요.");
+        }
         Long authorId = target.author() == null ? null : target.author().id();
         switch (request.action()) {
             case HIDE -> {
@@ -124,6 +140,7 @@ public class ModerationService {
                 notifyAuthor(authorId, "계정 이용 정지가 풀렸습니다.", null);
             }
         }
+        audit.record(user(adminId), request.action().name(), type.name(), id, reportId, note);
         return view(report);
     }
 

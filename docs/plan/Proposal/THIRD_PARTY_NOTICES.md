@@ -1,6 +1,6 @@
 # 제3자 구성 요소 고지
 
-StoryForge는 아래 오픈소스 구성 요소를 사용합니다. 각 구성 요소는 **각자의 라이선스**를 따르며, 이 저장소의 [LICENSE](LICENSE)는 그 라이선스를 바꾸지 않습니다.
+StoryForge는 아래 오픈소스 구성 요소를 사용합니다. 각 구성 요소는 **각자의 라이선스**를 따르며, 이 저장소의 [LICENSE](../../../LICENSE)는 그 라이선스를 바꾸지 않습니다.
 
 > 이 목록은 직접 사용하는 주요 구성 요소 기준이며 **전체 의존성 목록이 아닙니다.** 라이선스는 각 프로젝트의 공식 표기를 따라 적었으니, 배포나 상업적 사용 전에 실제 설치 버전으로 다시 확인하세요. 전체 목록은 `npm ls`, `./mvnw dependency:tree`, `pip list`로 뽑을 수 있습니다.
 
@@ -27,6 +27,10 @@ StoryForge는 아래 오픈소스 구성 요소를 사용합니다. 각 구성 �
 | TipTap (`@tiptap/*`) | MIT |
 | diff | BSD-3-Clause |
 | Vitest | MIT |
+
+## 운영 콘솔 (`storyforge-console`)
+
+운영 콘솔은 Angular(MIT), RxJS(Apache-2.0), Vitest(MIT)를 사용합니다. 외부 글꼴이나 이미지 리소스를 추가로 불러오지 않습니다. 실제 배포 의존성은 별도 `package-lock.json`으로 고정합니다.
 
 ## 백엔드 (`storyforge-backend`)
 

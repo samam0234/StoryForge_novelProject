@@ -28,5 +28,5 @@
 
 ## 관련 문서
 
-- [기획서 §6, §7.2, §8.3](../../../StoryForge_기획서_v1.2.md)
+- [기획서 §6, §7.2, §8.3](../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/novel/](../../../docs/novel)

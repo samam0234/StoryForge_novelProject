@@ -134,9 +134,13 @@ storyforge-frontend/
 - LLM 호출, Continuity 판단, 상태 전이 로직을 이 프로젝트에 넣지 않습니다.
 - FastAPI 주소, API 키 등 시크릿을 `environments/`에 넣지 않습니다 (번들에 노출됨).
 
+## 운영 콘솔
+
+관리자를 위한 독립 앱은 [storyforge-console](../storyforge-console/README.md)에 있습니다. 기존 `/admin` 신고 관리도 유지하며 서버의 감사 기록·동시 조치 보호를 공유합니다.
+
 ## 관련 문서
 
-- [기획서 §8.1, §9](../StoryForge_기획서_v1.2.md)
+- [기획서 §8.1, §9](../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md) — 호출하는 API와 SSE 이벤트
 - [docs/guidance/local-dev-setup.md](../docs/guidance/local-dev-setup.md) — 전체 스택 실행
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)
