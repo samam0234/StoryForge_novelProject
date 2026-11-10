@@ -43,3 +43,4 @@
 |------|------|-------------|
 | [community-release.md](community-release.md) | 커뮤니티 공개 배포 전 | 아직 수행 전 |
 | [operations-console-release.md](operations-console-release.md) | 콘솔·운영 API·Ollama | 2026-11-10, 브라우저 미검증 |
+| [local-followup.md](local-followup.md) | SMTP·다중 챕터·긴 입력·회복 | 2026-11-10, 브라우저 검증 전 병합 보류 |

@@ -174,7 +174,7 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | 운영 콘솔 | `npm test`, `npm run build` |
 | 프론트엔드 | `npx ng test --watch=false`, **`npx ng build`** (단위 테스트는 화면 템플릿 오류를 놓칠 수 있음) |
 
-2026-11-10 검증: 백엔드 89건, AI 51건, 사용자 웹 50건, 운영 콘솔 8건(총 198건)입니다. 상세 결과와 브라우저 미검증 사항은 [검증 기록](docs/vaildates/operations-console-release.md)을 보세요. `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
+2026-11-10 추가 검증: 백엔드 97건, AI 52건, 사용자 웹 53건입니다. 운영 콘솔 8건을 포함한 총 210건과 두 Angular 빌드가 통과했습니다. SMTP 로컬 수신 및 실제 Gemma 3장 생성·장기 입력·중단 복구 결과와 남은 제한은 [추가 검증 기록](docs/vaildates/local-followup.md)을 보세요. **사용자 지시에 따라 브라우저 검증 전 병합은 보류합니다.** `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
 
 ## 현재 구현 범위
 
@@ -184,7 +184,9 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | ✅ 커뮤니티 | 게시판 5종, 게시, 작업 그래프, Clone 3범위, 원본 비교·가져오기, 공유 그래프, 패키지포지와 전체 검사, 이슈, 프로필, 활동 잔디, 업적, 가이드챗, 내보내기 8종 |
 | ✅ 운영 | 독립 콘솔, 운영 집계, 회원 검색·정지, 원자적 일괄 조치, 감사 기록, 신고, 관리자 처리, 숨김·복원, 계정 정지, 차단, 이용약관, 알림, Rate Limiting, Circuit Breaker, 다크/라이트 테마 |
 | ⏸ 보류 | 실제 Claude API 연동 검증 (현재 mock 공급자로 동작). Codicomperchat 실제 연동 (규격 필요) |
-| ⚠️ 공개 전 필요 | 이용약관 법률 검토, 이메일 인증·비밀번호 재설정 (메일 수단 결정 필요), 배포 구성 |
+| ⚠️ 공개 전 필요 | 이용약관 법률 검토, SMTP 공급자·발신 주소와 외부 수신 검증, 브라우저 검증, 배포 구성 |
+
+이메일 인증과 비밀번호 재설정은 SMTP 설정으로 사용할 수 있습니다. 기본 비활성이며 [설정·로컬 검증 가이드](docs/guidance/account-mail.md)를 따릅니다.
 
 ## 저장소 구조
 

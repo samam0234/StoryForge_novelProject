@@ -131,7 +131,7 @@ storyforge-backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/         # Flyway
-    └── test/                     # 단위·통합 테스트 89건 (실제 PostgreSQL)
+    └── test/                     # 단위·통합 테스트 97건 (실제 PostgreSQL·로컬 SMTP)
 ```
 
 ## 문제 해결
@@ -147,7 +147,7 @@ storyforge-backend/
 ## 아직 없는 것
 
 - 리프레시 토큰 (토큰이 만료되면 다시 로그인)
-- 이메일 인증, 비밀번호 재설정 (메일 발송 수단 결정 필요)
+- SMTP 실제 공급자·발신 주소 확정과 외부 수신 검증 ([로컬 검증 완료](../docs/guidance/account-mail.md))
 - Bible·Outline 확정 취소 (기획서에 정의 없음)
 - Prometheus 지표 (기획서 §12)
 - 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))

@@ -24,6 +24,8 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 
 > `vaildates/`의 스펠링은 의도적입니다. 교정하지 않습니다.
 
+현재 후속 작업은 [SMTP 계정 메일](guidance/account-mail.md), [실제 Gemma 측정](guidance/ollama-performance.md), [배포 제외 검증·병합 보류 기록](vaildates/local-followup.md)에서 확인합니다.
+
 ## 루트 문서
 
 | 문서 | 내용 |
