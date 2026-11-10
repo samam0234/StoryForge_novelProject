@@ -8,6 +8,8 @@
 
 #### 후속 검증과 계정 메일
 
+- 원격 Ubuntu CI에서 Maven Wrapper 실행 권한 누락을 발견해 Git 실행 비트 수정 (Wrapper 내용 유지)
+
 - 최신 사용자 명령: 코드 진단·문서 갱신 후 커밋·develop→main 병합·푸시. 브라우저 미검증 상태를 기록하고 이전 병합 보류를 변경
 - Python 타입 오류 28건·Java 경고 11건 수정, 루트 Pyright·작업공간 설정·타입 검사 CI, 예열만으로 0회 성공하던 검증 도구 수정
 - 최신 자동 테스트 218건·두 Angular 빌드·Pyright·범위별 TypeScript/Eclipse 검사 통과. [상세 결과](docs/vaildates/diagnostics-integration.md)

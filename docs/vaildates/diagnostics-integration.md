@@ -39,3 +39,7 @@
 - Maven 의존성이 선언한 비공개 Flyway 저장소의 메타데이터 요청 401과 JDK의 Mockito 동적 에이전트 안내는 코드 진단과 별도입니다. 빌드·테스트는 통과했으며 이를 감추기 위해 자격 증명이나 보안 설정을 바꾸지 않았습니다.
 - 브라우저·외부 문서 리더·다양한 실제 작품·다중 사용자 부하는 후속 확인 대상입니다. [브라우저 연결 진단](../repeater/browser-automation-host.md).
 - 원격 CI 결과는 GitHub Actions의 해당 푸시 실행에서 확인합니다. 로컬 결과를 원격 CI 통과로 간주하지 않습니다.
+
+## 최초 푸시 뒤 확인한 CI 차이
+
+첫 main 통합 `f22bec8`의 [CI 실행](https://github.com/samam0234/StoryForge_novelProject/actions/runs/42812935162)은 프론트·콘솔 작업이 성공했지만 백엔드가 Maven Wrapper 실행 권한 부족으로 테스트 전에 종료 코드 126을 반환했습니다. Git에 저장된 `mvnw` 실행 비트를 바로잡아 후속 작업 브랜치 커밋·develop→main 병합·푸시로 반영합니다. Wrapper 원문과 기존 테스트 조건은 바꾸지 않습니다. 해당 첫 실행은 성공으로 기록하지 않습니다.
