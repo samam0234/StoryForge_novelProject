@@ -15,7 +15,7 @@ public interface ContentReportRepository extends JpaRepository<ContentReport, Lo
     int lockOperations();
 
     @EntityGraph(attributePaths = "reporter")
-    Page<ContentReport> findByStatusOrderByCreatedAtDesc(ContentReport.Status status, Pageable pageable);
+    Page<ContentReport> findByStatusOrderByCreatedAtDescIdDesc(ContentReport.Status status, Pageable pageable);
 
     Optional<ContentReport> findFirstByReporterIdAndTargetTypeAndTargetIdAndStatus(
             Long reporterId, ContentReport.TargetType targetType, Long targetId, ContentReport.Status status);

@@ -83,7 +83,7 @@ public class ModerationService {
 
     public PageResponse<ReportView> list(Status status, int page, int size, Long adminId) {
         policy.requireAdmin(adminId);
-        Page<ContentReport> result = reports.findByStatusOrderByCreatedAtDesc(status,
+        Page<ContentReport> result = reports.findByStatusOrderByCreatedAtDescIdDesc(status,
                 PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50)));
         return new PageResponse<>(result.stream().map(this::view).toList(), result.getTotalElements(),
                 result.getNumber(), result.getSize());
