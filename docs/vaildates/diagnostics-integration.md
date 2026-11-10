@@ -40,6 +40,10 @@
 - 브라우저·외부 문서 리더·다양한 실제 작품·다중 사용자 부하는 후속 확인 대상입니다. [브라우저 연결 진단](../repeater/browser-automation-host.md).
 - 원격 CI 결과는 GitHub Actions의 해당 푸시 실행에서 확인합니다. 로컬 결과를 원격 CI 통과로 간주하지 않습니다.
 
+## 보조 스크립트 재배치 후 확인
+
+이후 사용자 지시로 AI 네 도구와 백엔드 JVM 도구를 각 서비스의 `scripts/`로 옮겼습니다. 서비스 폴더에서 `python -m scripts.<도구>`로 실행합니다. AI 57건·Pyright 오류/경고 0건, 다섯 모듈의 `--help`, mock Pipeline 이름 풀 로딩·두 챕터 완료, 새 위치의 JVM 복구 시험 38.077초가 통과했습니다. 앞선 전체 218건은 이전 실행 기록입니다. 이 이동은 Angular와 Java 서비스 구현을 바꾸지 않습니다.
+
 ## 최초 푸시 뒤 확인한 CI 차이
 
 첫 main 통합 `f22bec8`의 [CI 실행](https://github.com/samam0234/StoryForge_novelProject/actions/runs/42812935162)은 프론트·콘솔 작업이 성공했지만 백엔드가 Maven Wrapper 실행 권한 부족으로 테스트 전에 종료 코드 126을 반환했습니다. Git에 저장된 `mvnw` 실행 비트를 바로잡아 후속 작업 브랜치 커밋·develop→main 병합·푸시로 반영합니다. Wrapper 원문과 기존 테스트 조건은 바꾸지 않습니다. 해당 첫 실행은 성공으로 기록하지 않습니다.

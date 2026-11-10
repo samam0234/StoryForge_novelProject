@@ -1,6 +1,6 @@
 """임시 DB와 mock AI로 후속 챕터 생성 중 실제 Java 프로세스 종료·복구를 확인합니다.
 
-실행: ../storyforge-ai/.venv/Scripts/python validate_restart.py --container <로컬 PostgreSQL 컨테이너>
+실행: ../storyforge-ai/.venv/Scripts/python -m scripts.validate_restart --container <로컬 PostgreSQL 컨테이너>
 먼저 mvnw verify로 실행 JAR를 만듭니다. 기존 DB는 사용하지 않으며 생성한 DB만 정리합니다.
 """
 import argparse
@@ -71,7 +71,7 @@ def wait_ready(url, process):
 
 
 def validate(container):
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[1]
     ai_root = root.parent / "storyforge-ai"
     jar = root / "target/storyforge-backend-0.0.1-SNAPSHOT.jar"
     if not jar.is_file():

@@ -6,6 +6,12 @@
 
 ### 2026-11-10
 
+#### 보조 도구 폴더 정리
+
+- AI 성능 측정·검증 네 도구를 `storyforge-ai/scripts/`, 백엔드 JVM 검증 도구를 `storyforge-backend/scripts/`로 이동
+- 서비스 폴더에서 `python -m scripts.<도구>`로 실행하도록 import·데이터/JAR 경로·Pyright·테스트·문서 수정
+- 루트에 보조 실행 파일을 두지 않는 배치 규칙을 정본·AGENTS·어댑터에 반영
+
 #### 후속 검증과 계정 메일
 
 - 원격 Ubuntu CI에서 Maven Wrapper 실행 권한 누락을 발견해 Git 실행 비트 수정 (Wrapper 내용 유지)

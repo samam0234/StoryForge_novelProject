@@ -1,4 +1,5 @@
 """합성 장기 컨텍스트, 실제 Ollama 슬롯 포화·중단 후 복구 검증. 원문은 출력하지 않습니다."""
+import argparse
 import asyncio
 import json
 import time
@@ -53,4 +54,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    argparse.ArgumentParser(description=__doc__).parse_args()
     asyncio.run(main())
