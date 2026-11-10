@@ -15,7 +15,8 @@ from app.models.schemas import (
     ContinuityIssues,
     ContinuityResult,
 )
-from app.prompts import render
+from app.prompts.orchestration import render
+from app.models.orchestration import chapter_prompt_context
 
 _PENALTY = {"high": 30, "medium": 12, "low": 4}
 # 챕터 생성 프롬프트의 공백 포함 분량 목표. 경고만 추가하며 검토를 건너뛰지 않습니다.
@@ -92,9 +93,7 @@ async def check_continuity(llm: LLMClient, ctx: ChapterContext, content: str) ->
             system=render("system"),
             prompt=render(
                 "continuity",
-                bible=ctx.bible,
-                previous_chapters=ctx.previous_chapters,
-                outline=ctx.outline_chapter,
+                **chapter_prompt_context(ctx),
                 content=content,
             ),
             schema=ContinuityIssues,

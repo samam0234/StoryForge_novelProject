@@ -13,7 +13,8 @@ import time
 from app.core.config import Settings
 from app.core.ollama import LLMBusyError, OllamaLLM
 from app.models.schemas import ChapterContext, ChapterGenerateResult
-from app.services.chapter_generator import Done, generate_chapter
+from app.models.orchestration import Done
+from app.services.orchestration import AiTaskOrchestrator
 
 
 def emit(stage, **values):
@@ -60,6 +61,7 @@ def percentile(values, fraction):
 async def validate(duration, timeout):
     settings = Settings(llm_provider="ollama", ollama_max_concurrent=1, ollama_queue_timeout=0.2)
     llm = OllamaLLM(settings)
+    tasks = AiTaskOrchestrator(llm)
     ctx = context(settings.ollama_model)
     started = time.perf_counter()
     totals, first_tokens, lengths = [], [], []
@@ -75,7 +77,7 @@ async def validate(duration, timeout):
             try:
                 # 가장 바깥 생성기를 닫은 직후 같은 클라이언트를 재사용합니다.
                 if rounds % 3 == 1:
-                    async with aclosing(generate_chapter(llm, ctx)) as cancelled:
+                    async with aclosing(tasks.generate_chapter(ctx)) as cancelled:
                         await asyncio.wait_for(cancelled.__anext__(), timeout)
                     cancellations += 1
                 began = time.perf_counter()
@@ -83,7 +85,7 @@ async def validate(duration, timeout):
                     nonlocal busy
                     first = None
                     final = None
-                    async with aclosing(generate_chapter(llm, ctx)) as generation:
+                    async with aclosing(tasks.generate_chapter(ctx)) as generation:
                         async for event in generation:
                             if isinstance(event, Done):
                                 final = event.result

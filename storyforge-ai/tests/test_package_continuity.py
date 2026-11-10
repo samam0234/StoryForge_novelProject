@@ -1,7 +1,7 @@
 """패키지 전체 Continuity 검사"""
 from fastapi.testclient import TestClient
 
-from app.core.llm import get_llm
+from app.core.orchestration import get_llm
 from app.main import app
 from app.models.schemas import PackageIssue, PackageIssues
 

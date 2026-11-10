@@ -47,3 +47,16 @@
 ## 최초 푸시 뒤 확인한 CI 차이
 
 첫 main 통합 `f22bec8`의 [CI 실행](https://github.com/samam0234/StoryForge_novelProject/actions/runs/42812935162)은 프론트·콘솔 작업이 성공했지만 백엔드가 Maven Wrapper 실행 권한 부족으로 테스트 전에 종료 코드 126을 반환했습니다. Git에 저장된 `mvnw` 실행 비트를 바로잡아 후속 작업 브랜치 커밋·develop→main 병합·푸시로 반영합니다. Wrapper 원문과 기존 테스트 조건은 바꾸지 않습니다. 해당 첫 실행은 성공으로 기록하지 않습니다.
+
+## AI 실행 계층 정리 후 검증
+
+작업 커밋 `97deb02`에서 정식 ASGI 진입점을 `main:app`으로 정리하고 하위 패키지 실행 책임을 `orchestration.py`로 분리했습니다. API·SSE·상태 머신 계약은 보존하며, 기존 경로 `app.main:app`도 동일 앱을 사용합니다.
+
+| 검사 | 결과 |
+|---|---|
+| AI pytest | 64건 통과. 기존 57건과 조립·수명주기·도구 선택 7건 |
+| Pyright, 루트 main 포함 | 오류 0, 경고 0 |
+| 개별 도구 4개·통합 도구 4개·통합 목록 도움말 | 9개 통과, 모델 호출 없음 |
+| 새 `main:app` + Spring Boot 실제 JVM + 격리 PostgreSQL | 54.235초. 둘째 장 생성 중 JVM 종료 후 CHAPTER_REVIEW 복구·확정 첫 장 보존·부분 원고 미저장·둘째 장 재생성 DRAFT, 임시 DB·프로세스 정리 |
+
+앱·프롬프트·모델·서비스·scripts·tests README와 저장소 실행 안내, Architecture·CURRENT_STACK을 새 책임 경계에 맞췄습니다. 앞선 전체 218건·두 빌드는 당시 기록이며 이번 로컬 검사는 AI 변경 범위입니다. 브라우저·실제 Claude·장편 원고 품질의 기존 한계는 유지합니다.

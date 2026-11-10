@@ -1,7 +1,7 @@
 """Outline 생성 (기획서 §6.2)"""
 from app.core.llm import LLMClient, LLMError
 from app.models.schemas import OutlineGenerateRequest, OutlineGenerateResponse
-from app.prompts import render
+from app.prompts.orchestration import render
 from app.services import mock_writer
 
 

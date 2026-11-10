@@ -160,3 +160,19 @@ V13은 챕터의 내부 낙관적 잠금 버전을 추가합니다. 승인 요�
 
 메일 토큰·감사·업적·추천의 SQL `COUNT` 결과는 명시적으로 필수 값으로 확인합니다. 비정상적으로 결과가 없을 때 0으로 간주해 후속 처리를 진행하지 않습니다. 클라이언트 IP 파싱은 기존 신뢰 프록시 규칙을 유지하며 단순 반복문으로 처리합니다.
 
+## AI 서버 내부 실행 조정
+
+요청한 폴더 책임 분리를 위해 `storyforge-ai/main.py`를 정식 ASGI 진입점으로 두고 `app/orchestration.py`의 팩토리가 API·상태 확인·모델 수명주기를 조립합니다. 이전 `app.main:app`은 같은 인스턴스를 참조합니다. 실행 명령은 서비스 폴더에서 `python -m uvicorn main:app`입니다.
+
+| 조정 파일 | 책임 |
+|---|---|
+| `app/api/orchestration.py`, `app/api/v1/orchestration.py` | HTTP 오류 계약과 라우터 그룹 등록 |
+| `app/core/orchestration.py` | 모델 공급자 라우팅, 캐시된 클라이언트, 선택적 예열·종료 |
+| `app/services/orchestration.py` | 요청별 `AiTaskOrchestrator`, 본문 스트림 → 요약 → Continuity → 결과 |
+| `app/models/orchestration.py` | 공통 챕터 컨텍스트와 내부 Token·Done 이벤트 |
+| `app/prompts/orchestration.py` | 공통 Jinja 환경과 템플릿 렌더링 |
+| `scripts/orchestration.py` | 허용된 네 검증 도구 선택·인자 전달 |
+| `tests/orchestration.py` | 자동 테스트 인물 저장소 격리 |
+
+API는 의존성 주입으로 작업 조정기를 받고 개별 서비스는 상위 계층을 역참조하지 않습니다. 수동 파이프라인·반복 검증도 같은 작업 조정기를 사용합니다. 데이터 폴더에는 실행 조정 코드를 추가하지 않습니다. Spring Boot의 상태 머신·DB 저장·사용자 검토 단계와 기존 HTTP·SSE 계약은 유지합니다.
+

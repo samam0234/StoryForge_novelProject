@@ -16,7 +16,7 @@ $env:OLLAMA_NUM_CTX = '32768'
 $env:OLLAMA_THINK = 'false'
 $env:OLLAMA_WARMUP = 'true'
 $env:OLLAMA_MAX_CONCURRENT = '1'
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+.venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 시작 예열은 선택이며 기본값은 `false`입니다. 예열 실패는 로그에 남기고 앱은 시작합니다. `/health`는 프로세스 상태와 설정을 보여 주며 모델의 응답 가능 여부를 보장하지 않습니다.
