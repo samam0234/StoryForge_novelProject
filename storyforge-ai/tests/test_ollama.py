@@ -140,3 +140,17 @@ def test_routing_does_not_require_claude_credentials_for_ollama(monkeypatch):
 def test_settings_reject_invalid_capacity(kwargs):
     with pytest.raises(ValidationError):
         settings(**kwargs)
+
+
+def test_whitespace_only_stream_is_not_success():
+    async def run():
+        llm = OllamaLLM(settings(), transport=httpx.MockTransport(lambda _: httpx.Response(200, text=
+            '{"message":{"content":" "}}\n{"message":{"content":"\\n"}}\n{"done":true}\n')))
+        try:
+            with pytest.raises(LLMError, match="빈 응답"):
+                async for _ in llm.stream(system="s", prompt="p"):
+                    pass
+            assert llm._slots._value == 1
+        finally:
+            await llm.aclose()
+    asyncio.run(run())
