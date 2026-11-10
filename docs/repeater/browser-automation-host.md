@@ -27,4 +27,4 @@ OpenAI 문서는 데스크톱 내장 브라우저와 localhost 화면 검증을 
 
 ## 현재 결과
 
-브라우저 검증은 미완료이며 최신 사용자 조건에 따라 병합을 보류합니다. [후속 검증 기록](../vaildates/local-followup.md).
+브라우저 검증은 미완료입니다. 후속 사용자가 코드 진단·문서 수정 후 병합·푸시를 직접 요청해 이전 보류를 변경했습니다. 이 연결 제한은 통합 뒤에도 남는 확인 대상입니다. [최신 진단·통합 검증](../vaildates/diagnostics-integration.md), [이전 검증 기록](../vaildates/local-followup.md).

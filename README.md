@@ -174,7 +174,7 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | 운영 콘솔 | `npm test`, `npm run build` |
 | 프론트엔드 | `npx ng test --watch=false`, **`npx ng build`** (단위 테스트는 화면 템플릿 오류를 놓칠 수 있음) |
 
-2026-11-10 추가 검증: 백엔드 97건, AI 52건, 사용자 웹 53건입니다. 운영 콘솔 8건을 포함한 총 210건과 두 Angular 빌드가 통과했습니다. SMTP 로컬 수신 및 실제 Gemma 3장 생성·장기 입력·중단 복구 결과와 남은 제한은 [추가 검증 기록](docs/vaildates/local-followup.md)을 보세요. **사용자 지시에 따라 브라우저 검증 전 병합은 보류합니다.** `develop`, `main`으로 가는 푸시와 PR에서 GitHub Actions([ci.yml](.github/workflows/ci.yml))가 네 서비스의 테스트와 두 Angular 앱의 `ng build`를 돌립니다.
+2026-11-10 초기 추가 검증은 백엔드 97건·AI 52건·사용자 웹 53건·콘솔 8건으로 총 210건과 두 Angular 빌드가 통과했습니다. 최신 진단 수정 후에는 **백엔드 101·AI 56·사용자 웹 53·콘솔 8, 총 218건과 두 빌드가 통과**했습니다. Pyright 오류·경고도 0건입니다. 사용자의 최신 직접 명령에 따라 제한을 기록하고 커밋·병합·푸시를 진행하며 실제 브라우저 확인은 미완료입니다. [최신 결과](docs/vaildates/diagnostics-integration.md), [이전 모델·SMTP 기록](docs/vaildates/local-followup.md). GitHub Actions([ci.yml](.github/workflows/ci.yml))는 네 서비스 테스트·두 Angular 빌드·AI 타입 검사를 실행합니다.
 
 ## 현재 구현 범위
 

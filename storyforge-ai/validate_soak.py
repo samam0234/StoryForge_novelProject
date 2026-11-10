@@ -69,7 +69,8 @@ async def validate(duration, timeout):
         emit("started", duration_s=duration, model=settings.ollama_model,
              context_tokens=settings.ollama_num_ctx, max_concurrent=1, queue_timeout_s=0.2,
              scope="service_functions_only")
-        while time.perf_counter() - started < duration:
+        # 짧은 시험도 예열만으로 끝나지 않고 실제 생성·검증을 한 번은 수행합니다.
+        while rounds == 0 or time.perf_counter() - started < duration:
             rounds += 1
             try:
                 # 가장 바깥 생성기를 닫은 직후 같은 클라이언트를 재사용합니다.

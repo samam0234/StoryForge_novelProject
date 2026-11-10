@@ -82,7 +82,7 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 | 자동 재시작 실행 | 위 명령에 `--reload` |
 | 테스트 의존성 설치 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` |
 | 테스트 | `.venv/Scripts/python -m pytest -q` (mock 모드, API 키 불필요) |
-| 타입 검사 | `npx pyright --pythonpath .venv/Scripts/python.exe app tests` |
+| 타입 검사 | `.venv/Scripts/pyright --project ..` (개발 의존성 설치 후, 루트 설정 사용) |
 
 ### 환경 변수
 
@@ -140,7 +140,7 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 55건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리
+└── tests/                  # 56건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리·검증 도구 회귀
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.

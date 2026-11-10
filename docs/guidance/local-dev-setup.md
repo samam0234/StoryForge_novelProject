@@ -68,12 +68,15 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 
 ```bash
 cd storyforge-backend && ./mvnw test
-cd storyforge-ai && .venv/Scripts/python -m pip install -r requirements-dev.txt && .venv/Scripts/python -m pytest -q
+cd storyforge-ai && .venv/Scripts/python -m pip install -r requirements-dev.txt && .venv/Scripts/pyright --project .. && .venv/Scripts/python -m pytest -q
 cd storyforge-frontend && npx ng test --watch=false && npx ng build
 cd storyforge-console && npm test && npm run build
 ```
 
 ## 실패하면
+
+- VS Code의 Python 기본 인터프리터 경로는 `storyforge-ai/.venv`, import 탐색 경로는 `storyforge-ai`입니다. 먼저 AI venv와 개발 의존성을 설치합니다. 이미 다른 인터프리터를 선택한 작업공간은 기존 선택이 우선할 수 있어 현재 선택을 확인합니다.
+- TypeScript SDK 경로는 사용자 웹의 `node_modules/typescript/lib`를 제안합니다. 두 Angular 앱에 `npm ci`를 먼저 실행합니다. 이 설정은 진단을 비활성화하지 않으며 기존 사용자 선택을 강제로 바꾸지 않습니다.
 
 - 백엔드가 `Connection refused ... 5433`으로 멈춤 → `docker compose ps`로 DB가 `healthy`인지 확인
 - 챕터 생성 시 "챕터 생성에 실패했습니다" → AI 서비스(8001)가 떠 있는지 확인. 실패하면 상태는 생성 전으로 되돌아갑니다

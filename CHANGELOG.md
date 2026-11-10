@@ -8,11 +8,15 @@
 
 #### 후속 검증과 계정 메일
 
+- 최신 사용자 명령: 코드 진단·문서 갱신 후 커밋·develop→main 병합·푸시. 브라우저 미검증 상태를 기록하고 이전 병합 보류를 변경
+- Python 타입 오류 28건·Java 경고 11건 수정, 루트 Pyright·작업공간 설정·타입 검사 CI, 예열만으로 0회 성공하던 검증 도구 수정
+- 최신 자동 테스트 218건·두 Angular 빌드·Pyright·범위별 TypeScript/Eclipse 검사 통과. [상세 결과](docs/vaildates/diagnostics-integration.md)
+
 - SMTP 이메일 인증·비밀번호 재설정, V12 해시 토큰·만료·일회 사용·재발급, 계정 잠금과 기존 JWT 폐기
 - 로그인·계정 설정·메일 링크 화면, 실제 루프백 SMTP·PostgreSQL 검증
 - Outline 챕터 수 불일치 거부, 테스트 인물 데이터 격리, 실제 모델 파이프라인·슬롯 포화·중단 복구 검증 도구
 - Ollama 요청·예열에 컨텍스트 32768 명시. 실제 3장 완료와 품질 제한 기록
-- 사용자 지시에 따라 브라우저 검증 전 병합 보류
+- 당시 사용자 지시에 따라 브라우저 검증 전 병합 보류 (이후 위 직접 명령으로 변경)
 
 #### 추가 점검에서 수정
 
@@ -40,7 +44,7 @@
 - 잘린 출력과 완료 신호가 없는 Ollama 스트림의 성공 처리
 - 기획서·제3자 고지 이동 이후 문서 링크와 실행·보안·검증 안내
 
-운영 콘솔 초기 작업은 제한을 기록하고 병합했으나, 이후 SMTP 화면 추가에 대한 최신 사용자 지시는 브라우저 검증 전 병합 보류입니다. 현재 브라우저 검증은 미완료입니다. [최신 기록](docs/vaildates/local-followup.md), [초기 검증](docs/vaildates/operations-console-release.md).
+운영 콘솔 초기 통합 후 SMTP 화면 단계에서는 브라우저 확인 전 병합을 보류했습니다. 이후 사용자가 코드 진단·문서 수정 후 병합·푸시를 직접 명령해 보류를 변경했습니다. 브라우저 검증 자체는 미완료입니다. [최신 기록](docs/vaildates/diagnostics-integration.md), [초기 검증](docs/vaildates/operations-console-release.md).
 
 ### 2026-11-04
 

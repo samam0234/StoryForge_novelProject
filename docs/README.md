@@ -24,9 +24,9 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 
 > `vaildates/`의 스펠링은 의도적입니다. 교정하지 않습니다.
 
-현재 후속 작업은 [SMTP 계정 메일](guidance/account-mail.md), [실제 Gemma 측정](guidance/ollama-performance.md), [배포 제외 검증·병합 보류 기록](vaildates/local-followup.md)에서 확인합니다.
+현재 후속 작업은 [SMTP 계정 메일](guidance/account-mail.md), [실제 Gemma 측정](guidance/ollama-performance.md), [배포 제외 검증·통합 기록](vaildates/local-followup.md)에서 확인합니다.
 
-후속 점검에서 챕터 중단·완료 이벤트 누락·재검증 중 동시 편집을 수정했습니다. AI 55건·백엔드 101건과 실제 JVM 후속 장 복구, Gemma 40분 반복 관측을 기록했습니다. [브라우저 연결 호스트 문제](repeater/browser-automation-host.md)는 화면 검증과 병합의 남은 조건입니다.
+최신 코드 진단 수정 후 [218건 자동 테스트·두 빌드·타입·컴파일 검사](vaildates/diagnostics-integration.md)를 확인했습니다. 사용자가 커밋·병합·푸시를 직접 요청해 이전 보류를 변경했습니다. [브라우저 연결 호스트 문제](repeater/browser-automation-host.md)와 실제 화면 검증은 통합 후에도 남는 확인 대상입니다.
 
 ## 루트 문서
 
