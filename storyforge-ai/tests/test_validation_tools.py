@@ -4,7 +4,7 @@ import json
 
 from app.core.ollama import LLMBusyError
 from app.models.schemas import ChapterGenerateResult, ContinuityResult
-from app.services.chapter_generator import Done, Token
+from app.models.orchestration import Done, Token
 from app.core.config import get_settings
 from app.core.llm import MockLLM
 from scripts import validate_pipeline, validate_soak
@@ -33,7 +33,7 @@ def test_soak_runs_a_generation_even_when_warmup_exceeds_duration(monkeypatch, c
                                         report=ContinuityResult(issues=[], score=100)))
 
     monkeypatch.setattr(validate_soak, "OllamaLLM", FakeLLM)
-    monkeypatch.setattr(validate_soak, "generate_chapter", generate)
+    monkeypatch.setattr(validate_soak.AiTaskOrchestrator, "generate_chapter", generate)
     monkeypatch.setattr(validate_soak.time, "perf_counter", lambda: clock[0])
 
     assert asyncio.run(validate_soak.validate(duration=1, timeout=1)) == 0

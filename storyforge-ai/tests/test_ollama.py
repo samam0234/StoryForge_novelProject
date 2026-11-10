@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, ValidationError
 from pydantic_settings import SettingsConfigDict
 
 from app.core.config import Settings
-from app.core.llm import RoutingLLM
+from app.core.orchestration import RoutingLLM
 from app.core.ollama import LLMBusyError, LLMError, OllamaLLM
 
 

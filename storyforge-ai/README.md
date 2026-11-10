@@ -27,7 +27,7 @@ python -m venv .venv
 ### 실행 — mock 모드 (기본, API 키 불필요)
 
 ```bash
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+.venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 개발 중 코드 변경을 바로 반영하려면 `--reload`를 붙입니다.
@@ -47,14 +47,14 @@ mock 모드는 파이프라인 흐름(Bible → Outline → 챕터 스트리밍 
 ```bash
 # bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
-  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+  .venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 ```powershell
 # PowerShell
 $env:LLM_PROVIDER = "anthropic"
 $env:ANTHROPIC_API_KEY = "sk-ant-..."
-.venv\Scripts\python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+.venv\Scripts\python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 저장소 루트나 이 폴더의 `.env`에 값을 적어 두어도 자동으로 읽습니다 (`.env`는 커밋하지 않습니다).
@@ -78,7 +78,7 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 
 | 하려는 일 | 명령 |
 |-----------|------|
-| 실행 | `.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001` |
+| 실행 | `.venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001` |
 | 자동 재시작 실행 | 위 명령에 `--reload` |
 | 테스트 의존성 설치 | `.venv/Scripts/python -m pip install -r requirements-dev.txt` |
 | 테스트 | `.venv/Scripts/python -m pytest -q` (mock 모드, API 키 불필요) |
@@ -129,24 +129,28 @@ Claude 모드에서는 서버 측 refusal fallback(`fallbacks: "default"`)을 �
 
 ## 폴더 구조
 
-서비스 루트에는 설정·의존성·문서를 두고, 보조 도구는 [scripts/](scripts/README.md), 서버 구현은 `app/`, 자동 회귀 테스트는 `tests/`에서 관리합니다.
+서비스 루트의 `main.py`가 서버를 시작하고 `app/orchestration.py`가 API와 모델 수명주기를 조립합니다. 설정·의존성·문서를 제외한 보조 도구는 [scripts/](scripts/README.md), 서버 구현은 `app/`, 자동 회귀 테스트는 `tests/`에서 관리합니다. 각 패키지의 `orchestration.py`가 해당 계층의 실행 순서나 등록을 모으며 상세 책임은 [app 안내](app/README.md)에 있습니다. 기존 `app.main:app`은 같은 서버 인스턴스를 참조하는 호환 경로입니다.
 
 ```
 storyforge-ai/
+├── main.py                 # 정식 ASGI 진입점 (uvicorn main:app)
 ├── requirements.txt        # 실행 의존성
 ├── requirements-dev.txt    # 테스트 의존성 (pytest, httpx)
 ├── scripts/                # 수동 성능 측정·검증 도구 (python -m scripts.<도구>)
 ├── app/
-│   ├── main.py             # 앱, /health
+│   ├── orchestration.py    # 앱 팩토리, /health, API·모델 수명주기 조립
+│   ├── main.py             # 기존 ASGI 경로 호환
 │   ├── api/v1/             # /internal/generate/*, /internal/package/*, /internal/guide/*
 │   ├── core/               # 설정, LLM 추상화
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 57건. mock·가짜 LLM·Ollama HTTP 모의 전송, 인물 기록 격리·검증 도구 회귀
+└── tests/                  # 64건. API·LLM·중단·수명주기·도구 회귀, 인물 기록 격리
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.
+
+서버 내부 작업의 공통 진입점은 `services/orchestration.py`의 `AiTaskOrchestrator`입니다. 프로젝트 상태 전이·DB 저장·사람의 승인 조정은 Spring Boot에 유지합니다. `data/`에는 실행 조정 코드를 두지 않습니다.
 
 실제 모델 파이프라인은 `.venv/Scripts/python -m scripts.validate_pipeline --chapters 3`으로 확인합니다. 합성 작품의 Bible·Outline·챕터·요약·Continuity를 실행하며 인물 기록을 임시 폴더로 분리합니다. 원문이나 사용자 데이터를 출력하지 않고 시간·길이·검증 이슈만 출력합니다. 단계별 제한은 `--timeout`으로 정하며 기본 180초입니다. 이 도구는 API·DB·사용자 승인 검증을 대신하지 않습니다.
 

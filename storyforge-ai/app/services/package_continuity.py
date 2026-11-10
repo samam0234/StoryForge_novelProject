@@ -5,7 +5,7 @@
 """
 from app.core.llm import LLMClient
 from app.models.schemas import PackageContinuityRequest, PackageContinuityResult, PackageIssue, PackageIssues
-from app.prompts import render
+from app.prompts.orchestration import render
 
 _PENALTY = {"high": 30, "medium": 12, "low": 4}
 

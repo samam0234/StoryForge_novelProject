@@ -31,7 +31,7 @@ docker compose up -d
 cd storyforge-ai
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt     # macOS/Linux: .venv/bin/python
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+.venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 
 # 3. 백엔드 (Flyway가 스키마를 자동 생성)
 cd storyforge-backend
@@ -51,7 +51,7 @@ npm start
 실제 Claude로 생성하려면 2번을 이렇게 실행합니다.
 
 ```bash
-LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 백엔드의 외부 모델 안내에도 같은 `LLM_PROVIDER` 값을 설정해야 합니다. 로컬 Gemma 실행과 측정은 [Ollama 가이드](ollama-performance.md)를 참고합니다.

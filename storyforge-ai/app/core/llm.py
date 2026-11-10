@@ -2,14 +2,13 @@
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
-from functools import lru_cache
 from typing import Protocol, TypeVar
 
 import anthropic
 from pydantic import BaseModel
 
-from app.core.config import Settings, get_settings
-from app.core.ollama import LLMError, OllamaLLM
+from app.core.config import Settings
+from app.core.ollama import LLMError
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -117,48 +116,3 @@ _EFFORT = {
     "claude-sonnet-5-5": "medium",
     "claude-opus-5-5": "medium",
 }
-
-
-class RoutingLLM:
-    """프로젝트 모델 값으로 일반(Ollama)과 강력 출력(Claude)을 나눕니다."""
-
-    is_mock = False
-
-    def __init__(self, settings: Settings) -> None:
-        self._ollama = OllamaLLM(settings)
-        self._claude: AnthropicLLM | None = None
-        self._settings = settings
-
-    def _pick(self, model: str | None) -> OllamaLLM | AnthropicLLM:
-        name = model or (self._settings.llm_model if self._settings.llm_provider == "anthropic" else "")
-        if name.startswith("claude"):
-            if self._claude is None:
-                self._claude = AnthropicLLM(self._settings)
-            return self._claude
-        return self._ollama
-
-    async def structured(self, *, system: str, prompt: str, schema: type[T], model: str | None = None) -> T:
-        return await self._pick(model).structured(system=system, prompt=prompt, schema=schema, model=model)
-
-    async def text(self, *, system: str, prompt: str, max_tokens: int = 4000, model: str | None = None) -> str:
-        return await self._pick(model).text(system=system, prompt=prompt, max_tokens=max_tokens, model=model)
-
-    def stream(self, *, system: str, prompt: str, model: str | None = None) -> AsyncGenerator[str, None]:
-        return self._pick(model).stream(system=system, prompt=prompt, model=model)
-
-
-    async def warmup(self) -> None:
-        await self._ollama.warmup()
-
-    async def aclose(self) -> None:
-        await self._ollama.aclose()
-        if self._claude is not None:
-            await self._claude._client.close()
-
-
-@lru_cache
-def get_llm() -> LLMClient:
-    settings = get_settings()
-    if settings.llm_provider == "mock":
-        return MockLLM()
-    return RoutingLLM(settings)

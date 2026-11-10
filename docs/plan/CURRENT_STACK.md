@@ -103,6 +103,8 @@
 
 ## 변경 이력
 
+AI 서버의 정식 실행은 `storyforge-ai` 폴더에서 `python -m uvicorn main:app`입니다. 루트 `main.py` → `app/orchestration.py` → API·모델 수명주기 순서로 조립하며 패키지별 `orchestration.py`에 등록·작업 순서·공통 컨텍스트를 모읍니다. `app.main:app`은 동일 서버의 호환 경로입니다. `python -m scripts <도구> <인자>` 통합 명령과 기존 개별 도구 명령을 함께 지원합니다. [책임 경계](../Architecture/system-overview.md#ai-서버-내부-실행-조정).
+
 실모델 파이프라인 검증은 `storyforge-ai` 폴더에서 `.venv/Scripts/python -m scripts.validate_pipeline --chapters 3`으로 실행합니다. 단계별 제한은 기본 180초이며 원문 대신 길이·시간·Continuity 이슈를 출력합니다. 인물 사용 기록은 임시 경로로 격리합니다. Outline 응답의 챕터 수 불일치는 생성 오류로 처리합니다. 수동 도구는 각 서비스의 `scripts/`, 자동 회귀 테스트는 표준 테스트 경로에 둡니다.
 
 SMTP 활성화 시 `ADMIN_EMAILS`에 지정된 계정도 이메일 인증을 완료해야 관리자 권한을 얻습니다. 비밀번호 변경·재설정은 모든 기존 JWT를 폐기합니다. V12가 이메일 인증·자격 증명 버전·계정 낙관적 잠금·해시 토큰을 저장합니다. 이전 브라우저 검증 전 병합 보류는 후속 사용자의 커밋·병합·푸시 직접 명령으로 변경됐으며, 실제 화면 검증은 미완료입니다.

@@ -6,7 +6,7 @@
 
 | 파일 | 내용 |
 |------|------|
-| `__init__.py` | `render(name, **context)` — Jinja2 로더 (`StrictUndefined`) |
+| `orchestration.py` | `render(name, **context)` — Jinja2 로더 (`StrictUndefined`). 모든 서비스가 사용하는 템플릿 진입점 |
 | `system.j2` | 공통 시스템 프롬프트 |
 | `_bible_context.j2` | Story Bible 블록 (include용) |
 | `bible.j2` | Bible 생성 |

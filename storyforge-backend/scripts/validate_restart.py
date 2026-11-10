@@ -107,7 +107,7 @@ def validate(container):
         runner = directory / "mock_ai.py"
         runner.write_text("import os\nfrom pathlib import Path\nimport app.services.character_bank as bank\n"
             "import uvicorn\nbank._ROOT = Path(__file__).parent\n"
-            "uvicorn.run('app.main:app', host='127.0.0.1', port=int(os.environ['QA_AI_PORT']))\n", encoding="utf-8")
+            "uvicorn.run('main:app', host='127.0.0.1', port=int(os.environ['QA_AI_PORT']))\n", encoding="utf-8")
         environment = dict(os.environ, LLM_PROVIDER="mock", MOCK_STREAM_DELAY="0.05", MAIL_ENABLED="false",
             DB_URL=f"jdbc:postgresql://127.0.0.1:{binding['HostPort']}/{database}",
             DB_USER=db_user, DB_PASSWORD=db_password, JWT_SECRET=secrets.token_urlsafe(48),

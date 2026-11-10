@@ -89,7 +89,7 @@ docker compose up -d
 cd storyforge-ai
 python -m venv .venv
 .venv/Scripts/python -m pip install -r requirements.txt
-.venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+.venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 
 # ③ 백엔드 — http://localhost:8080 (Flyway가 스키마를 자동 생성)
 cd storyforge-backend
@@ -125,7 +125,7 @@ npx ng serve
 
 ```bash
 LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
-  .venv/Scripts/python -m uvicorn app.main:app --host 127.0.0.1 --port 8001
+  .venv/Scripts/python -m uvicorn main:app --host 127.0.0.1 --port 8001
 ```
 
 PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-ant-..."`를 먼저 실행합니다.

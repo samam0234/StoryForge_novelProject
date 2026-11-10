@@ -6,9 +6,11 @@ from contextlib import aclosing
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
-from app.core.llm import LLMClient, LLMError, get_llm
+from app.core.llm import LLMError
+from app.api.dependencies import get_tasks
+from app.services.orchestration import AiTaskOrchestrator
 from app.models.schemas import ChapterContext, ChapterReviewRequest, ChapterReviewResult, CompleteRequest, CompleteResponse
-from app.services.chapter_generator import Done, Token, complete_text, generate_chapter, review_chapter
+from app.models.orchestration import Done, Token
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -21,21 +23,21 @@ def sse(event: str, data: str) -> str:
 
 
 @router.post("/complete", response_model=CompleteResponse, response_model_by_alias=True)
-async def complete(request: CompleteRequest, llm: LLMClient = Depends(get_llm)) -> CompleteResponse:
-    suggestion = await complete_text(llm, request.before, request.after, request.tone)
+async def complete(request: CompleteRequest, tasks: AiTaskOrchestrator = Depends(get_tasks)) -> CompleteResponse:
+    suggestion = await tasks.complete(request.before, request.after, request.tone)
     return CompleteResponse(suggestion=suggestion)
 
 
 @router.post("/review", response_model=ChapterReviewResult, response_model_by_alias=True)
-async def review(request: ChapterReviewRequest, llm: LLMClient = Depends(get_llm)) -> ChapterReviewResult:
-    return await review_chapter(llm, request)
+async def review(request: ChapterReviewRequest, tasks: AiTaskOrchestrator = Depends(get_tasks)) -> ChapterReviewResult:
+    return await tasks.review_chapter(request)
 
 
 @router.post("/chapter")
-async def chapter(ctx: ChapterContext, llm: LLMClient = Depends(get_llm)) -> StreamingResponse:
+async def chapter(ctx: ChapterContext, tasks: AiTaskOrchestrator = Depends(get_tasks)) -> StreamingResponse:
     async def events() -> AsyncIterator[str]:
         try:
-            async with aclosing(generate_chapter(llm, ctx)) as generation:
+            async with aclosing(tasks.generate_chapter(ctx)) as generation:
                 async for item in generation:
                     if isinstance(item, Token):
                         yield sse("token", item.text)

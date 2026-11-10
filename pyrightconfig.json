@@ -1,5 +1,6 @@
 {
   "include": [
+    "storyforge-ai/main.py",
     "storyforge-ai/app",
     "storyforge-ai/tests",
     "storyforge-ai/scripts",

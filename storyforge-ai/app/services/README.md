@@ -6,9 +6,10 @@
 
 | 파일 | 내용 |
 |------|------|
+| `orchestration.py` | `AiTaskOrchestrator`: Bible·Outline·챕터·수정본 검증·이어쓰기·패키지·가이드의 공통 진입점. 챕터 본문 → 요약 → Continuity → 최종 결과 순서와 중단 처리 |
 | `bible_generator.py` | Story Bible 생성 |
 | `outline_generator.py` | Outline 생성, order 재번호 |
-| `chapter_generator.py` | 본문 스트리밍 → 요약 → Continuity 검증 → 결과. 고친 본문의 재요약·재검증 |
+| `chapter_generator.py` | 본문 스트림·요약·이어쓰기의 개별 작업. 실행 순서는 `orchestration.py`에서 관리 |
 | `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
 | `package_continuity.py` | 패키지 작품 사이의 규칙 검사 + LLM 검증 ([규칙](../../../docs/novel/continuity-rules.md)) |
 | `guide_assistant.py` | AI 가이드챗: 명령어 안내, 키워드 매칭, 자유 질문. 이동 버튼은 이 파일의 표에서만 만듦 |
@@ -24,6 +25,7 @@
 ## 들어가지 않을 것
 
 - DB 접근, 상태 전이 (Spring Boot 담당)
+- 개별 생성기에서 API 계층이나 `AiTaskOrchestrator`를 역참조하는 순환 호출
 - Continuity 실패를 임의로 통과시키는 로직
 
 ## 관련 문서
