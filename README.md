@@ -190,6 +190,8 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 
 후속 디버깅에서 챕터 스트림 중단·완료 이벤트 누락·재검증 중 동시 편집을 수정했습니다. AI 55건, 백엔드 101건과 패키징이 통과했으며 mock AI를 사용한 실제 JVM 후속 챕터 복구도 확인했습니다. 위의 210건·두 Angular 빌드는 이전 실행 기록입니다. 실제 모델 장시간 시험과 브라우저 확인 상태는 [후속 기록](docs/vaildates/local-followup.md)에 구분해 남깁니다.
 
+실제 Gemma 40분 관측은 생성 95회·포화 거부 95회·중단 후 재사용 32회였습니다. 도구 로그 오류 1건을 수정한 뒤 3회 재시험은 오류 없이 끝났습니다. 목표 분량 충족은 27/95회로 품질 과제가 남고, [브라우저 호스트 연결](docs/repeater/browser-automation-host.md)은 미복구 상태입니다.
+
 ## 저장소 구조
 
 ```

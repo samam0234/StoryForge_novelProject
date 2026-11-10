@@ -19,7 +19,7 @@
 | 9 | 신고, 관리자, 차단, 정지, 이용약관, 알림 | 완료 | [moderation.md](moderation.md) |
 | 10 | 패키지 전체 검사, 원본 가져오기 | 완료 | [community.md](community.md) |
 | 11 | 독립 Angular 운영 콘솔, 운영 집계·회원·일괄 조치·감사 기록 | 구현·자동 검증 완료, 브라우저 미검증 | [operations-console.md](operations-console.md) |
-| 12 | Ollama Gemma 응답 지연과 과부하 처리 개선 | 합성 3장·긴 입력·중단 복구 확인, 원고 품질 제한 남음 | [성능 가이드](../guidance/ollama-performance.md) |
+| 12 | Ollama Gemma 응답 지연과 과부하 처리 개선 | 합성 3장·긴 입력·40분 반복·중단 관측. 도구 로그 오류 1건과 원고 품질 제한 기록 | [성능 가이드](../guidance/ollama-performance.md) |
 | 13 | SMTP 이메일 인증·비밀번호 재설정 | 구현·로컬 SMTP 검증 완료, 브라우저 확인 전 병합 보류 | [메일 가이드](../guidance/account-mail.md) |
 
 ## 현재 테스트 (2026-11-10)

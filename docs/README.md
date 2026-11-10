@@ -26,6 +26,8 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 
 현재 후속 작업은 [SMTP 계정 메일](guidance/account-mail.md), [실제 Gemma 측정](guidance/ollama-performance.md), [배포 제외 검증·병합 보류 기록](vaildates/local-followup.md)에서 확인합니다.
 
+후속 점검에서 챕터 중단·완료 이벤트 누락·재검증 중 동시 편집을 수정했습니다. AI 55건·백엔드 101건과 실제 JVM 후속 장 복구, Gemma 40분 반복 관측을 기록했습니다. [브라우저 연결 호스트 문제](repeater/browser-automation-host.md)는 화면 검증과 병합의 남은 조건입니다.
+
 ## 루트 문서
 
 | 문서 | 내용 |
