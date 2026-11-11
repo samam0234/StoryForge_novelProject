@@ -60,7 +60,8 @@ async def validate(chapters: int, timeout: float):
             for chapter in outline.chapters:
                 stage = f"chapter_{chapter.order}"
                 ctx = ChapterContext(project=project, bible=bible, chapter_number=chapter.order,
-                                     outline_chapter=chapter, previous_chapters=list(previous))
+                                     outline_chapter=chapter, previous_chapters=list(previous),
+                                     story_outline=outline.chapters)
                 started = time.perf_counter()
                 async def collect() -> tuple[ChapterGenerateResult, float]:
                     first = None
@@ -81,7 +82,10 @@ async def validate(chapters: int, timeout: float):
                      previous_chapters=len(previous), score=final.report.score,
                      issues=[i.model_dump() for i in final.report.issues])
                 # 합성 시험의 다음 입력만 조립합니다. 제품 CHAPTER_REVIEW 승인이 아닙니다.
-                previous.append(PreviousChapter(number=chapter.order, title=final.title, summary=final.summary))
+                for earlier in previous:
+                    earlier.ending_excerpt = None
+                previous.append(PreviousChapter(number=chapter.order, title=final.title, summary=final.summary,
+                                                ending_excerpt=final.content[-1200:]))
             emit("complete", chapters=len(previous), model=settings.ollama_model)
     except Exception as exc:
         emit("failed", operation=stage, error_type=type(exc).__name__)

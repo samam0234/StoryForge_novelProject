@@ -47,10 +47,7 @@ class AiTaskOrchestrator:
     async def review_chapter(self, request: ChapterReviewRequest) -> ChapterReviewResult:
         if not self.llm.is_mock:
             return await analyze(self.llm, request.context, request.content)
-        if self.llm.is_mock:
-            summary = mock_writer.review_summary(request.context, request.content)
-        else:
-            summary = await chapter_generator.summarize(self.llm, request.context, request.content)
+        summary = mock_writer.review_summary(request.context, request.content)
         report = await check_continuity(self.llm, request.context, request.content)
         return ChapterReviewResult(summary=summary, report=report)
 
