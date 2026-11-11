@@ -145,7 +145,7 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 64건. API·LLM·중단·수명주기·도구 회귀, 인물 기록 격리
+└── tests/                  # 69건. API·LLM·중단·수명주기·도구 회귀, 인물 기록 격리
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.

@@ -6,6 +6,8 @@
 
 | 파일 | 내용 |
 |------|------|
+| `chapter_analysis.py` | 실모델 본문 요약과 연속성 판단을 한 구조화 요청으로 수행하고 규칙 검사 합산 |
+| `repetition_guard.py` | 긴 문장 세 번 반복·구분 없는 반복 루프를 스트리밍 중 감지 |
 | `orchestration.py` | `AiTaskOrchestrator`: Bible·Outline·챕터·수정본 검증·이어쓰기·패키지·가이드의 공통 진입점. 챕터 본문 → 요약 → Continuity → 최종 결과 순서와 중단 처리 |
 | `bible_generator.py` | Story Bible 생성 |
 | `outline_generator.py` | Outline 생성, order 재번호 |

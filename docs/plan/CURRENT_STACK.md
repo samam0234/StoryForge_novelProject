@@ -103,6 +103,8 @@
 
 ## 변경 이력
 
+2026-11-11: `SMTP_SSL=false`를 추가했습니다. Gmail 설정은 STARTTLS 587·인증 활성·SSL 비활성이며 로컬 비밀 설정은 루트 `.env`에 둡니다. Windows 로컬 실행은 `storyforge-backend/scripts/start-local.ps1`을 사용합니다. V14는 프로젝트 창작 요구를 저장합니다. AI 컨텍스트는 `form`, `creativeBrief`, `storyOutline`, 이전 장의 `endingExcerpt`를 포함하며 기존 입력은 새 필드 없이도 처리합니다. 실모델 후처리를 요약·Continuity 공동 구조화 호출로 통합했습니다.
+
 AI 서버의 정식 실행은 `storyforge-ai` 폴더에서 `python -m uvicorn main:app`입니다. 루트 `main.py` → `app/orchestration.py` → API·모델 수명주기 순서로 조립하며 패키지별 `orchestration.py`에 등록·작업 순서·공통 컨텍스트를 모읍니다. `app.main:app`은 동일 서버의 호환 경로입니다. `python -m scripts <도구> <인자>` 통합 명령과 기존 개별 도구 명령을 함께 지원합니다. [책임 경계](../Architecture/system-overview.md#ai-서버-내부-실행-조정).
 
 실모델 파이프라인 검증은 `storyforge-ai` 폴더에서 `.venv/Scripts/python -m scripts.validate_pipeline --chapters 3`으로 실행합니다. 단계별 제한은 기본 180초이며 원문 대신 길이·시간·Continuity 이슈를 출력합니다. 인물 사용 기록은 임시 경로로 격리합니다. Outline 응답의 챕터 수 불일치는 생성 오류로 처리합니다. 수동 도구는 각 서비스의 `scripts/`, 자동 회귀 테스트는 표준 테스트 경로에 둡니다.

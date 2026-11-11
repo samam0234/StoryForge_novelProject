@@ -22,4 +22,5 @@ def chapter_prompt_context(context: ChapterContext) -> dict[str, object]:
         "chapter_number": context.chapter_number,
         "previous_chapters": context.previous_chapters,
         "outline": context.outline_chapter,
+        "story_outline": context.story_outline,
     }

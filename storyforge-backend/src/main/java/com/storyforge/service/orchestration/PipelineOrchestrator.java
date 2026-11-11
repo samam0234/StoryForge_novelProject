@@ -94,6 +94,7 @@ public class PipelineOrchestrator {
                     .toList();
             StoryBible bible = bibleService.replace(p, generated.worldSetting(), generated.theme(),
                     generated.tone(), characters);
+            p.setCreativeBrief(prompt);
             activity.recordProject(p, ActivityType.BIBLE_GENERATED, "Story Bible AI 생성 (v" + bible.getVersion() + ")",
                     ActivityService.length(bibleText(bible)));
             return BibleResponse.from(bible);
@@ -323,10 +324,17 @@ public class PipelineOrchestrator {
     /** 컨텍스트 패키지: Bible + Outline 해당 장 + 확정된 이전 챕터 요약 (기획서 §6.3) */
     private ChapterContext chapterContext(Project p, int number, List<OutlineChapter> outlineChapters) {
         List<PreviousChapter> previous = chapterService.confirmedBefore(p.getId(), number).stream()
-                .map(c -> new PreviousChapter(c.getNumber(), c.getTitle(), c.getSummary()))
+                .map(c -> new PreviousChapter(c.getNumber(), c.getTitle(), c.getSummary(),
+                        c.getNumber() == number - 1 ? endingExcerpt(c.getContent()) : null))
                 .toList();
         return new ChapterContext(projectInfo(p), bibleInfo(bibleService.get(p.getId())),
-                number, outlineChapters.get(number - 1), previous);
+                number, outlineChapters.get(number - 1), previous, outlineChapters);
+    }
+
+    private static String endingExcerpt(String content) {
+        if (content == null) return null;
+        int count = content.codePointCount(0, content.length());
+        return content.substring(content.offsetByCodePoints(0, Math.max(0, count - 1200)));
     }
 
     // ───────────── helpers ─────────────
@@ -342,7 +350,8 @@ public class PipelineOrchestrator {
     }
 
     private static ProjectInfo projectInfo(Project p) {
-        return new ProjectInfo(p.getTitle(), p.getGenre(), p.getModel(), p.getDefaultTone());
+        return new ProjectInfo(p.getTitle(), p.getGenre(), p.getModel(), p.getDefaultTone(),
+                p.getForm().name(), p.getCreativeBrief());
     }
 
     private static BibleInfo bibleInfo(StoryBible b) {

@@ -6,6 +6,7 @@
 
 | 파일 | 내용 |
 |------|------|
+| `chapter_analysis.j2` | Continuity 컨텍스트와 본문을 공유하는 요약·검증 공동 분석 |
 | `orchestration.py` | `render(name, **context)` — Jinja2 로더 (`StrictUndefined`). 모든 서비스가 사용하는 템플릿 진입점 |
 | `system.j2` | 공통 시스템 프롬프트 |
 | `_bible_context.j2` | Story Bible 블록 (include용) |

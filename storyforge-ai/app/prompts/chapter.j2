@@ -1,14 +1,34 @@
 「{{ project.title }}」 {{ chapter_number }}장을 쓰세요.
+장르: {{ project.genre|default(none) or "미정" }}
+작품 형식: {{ project.form|default(none) or "LONG" }}
+작가의 기본 톤: {{ project.default_tone|default(none) or "Story Bible을 따릅니다" }}
+{% if project.creative_brief|default(none) %}
+<creative_brief>
+{{ project.creative_brief }}
+</creative_brief>
+작가의 창작 요구를 반영하고, 확정된 Story Bible과 현재 Outline에 맞춰 구체화합니다.
+{% endif %}
 
 {% include "_bible_context.j2" %}
 
 <previous_chapters>
 {% for p in previous_chapters %}
 {{ p.number }}장 {{ p.title or "" }}: {{ p.summary or "" }}
+{% if p.ending_excerpt|default(none) %}
+직전 장의 마지막 장면 (그 다음 시점부터 이어 쓰며 문장을 재사용하지 않습니다):
+{{ p.ending_excerpt }}
+{% endif %}
 {% else %}
 (첫 챕터입니다)
 {% endfor %}
 </previous_chapters>
+
+<story_outline>
+{% for chapter in story_outline|default([]) %}
+{{ chapter.order }}장 {{ chapter.title }}: {{ chapter.beats|join(" / ") }}
+{% endfor %}
+</story_outline>
+전체 흐름에서 이번 장의 역할을 지킵니다. 미래 장의 반전과 해결을 앞당기지 않습니다.
 
 <this_chapter>
 제목: {{ outline.title }}
@@ -22,6 +42,7 @@
 </this_chapter>
 
 규칙:
+- 각 Beat에 장면 진입, 행동과 대화, 발견 또는 선택, 다음 장면에 영향을 주는 결과를 배분합니다. 전체 4,000~6,000자를 Beat 수에 맞게 나눠 마지막 장면에 분량이 몰리지 않게 합니다.
 - 위 Beats를 순서대로 모두 다룹니다. 각 Beat는 이전 Beat와 다른 장소이거나, 같은 장소라면 시간이 지나 상황이 바뀐 새 장면입니다.
 - 이전 챕터 요약은 이미 일어난 일입니다. 그 문장을 다시 쓰거나 요약을 본문에 붙여 넣지 않습니다. 필요한 사실만 한 문장으로 받은 뒤 이번 장의 사건으로 넘어갑니다.
 - 이전 챕터와 모순되는 사건을 만들지 않습니다. 열린 질문과 복선은 이번 장에서 한 걸음 진행하거나, 진행하지 않는다면 그 이유를 새 사건 안에 둡니다.

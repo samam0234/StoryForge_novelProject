@@ -3,6 +3,8 @@
 <project>
 제목: {{ project.title }}
 장르: {{ project.genre or "미정" }}
+작품 형식: {{ project.form|default(none) or "LONG" }}
+작가의 창작 요구: {{ project.creative_brief|default(none) or "Story Bible을 따릅니다" }}
 </project>
 
 {% include "_bible_context.j2" %}
@@ -17,3 +19,6 @@
 
 전체가 하나의 완결된 이야기 흐름(도입-전개-위기-절정-결말)을 이루게 합니다.
 앞 챕터의 Beats를 다음 챕터에서 같은 말로 반복하지 않습니다. 각 챕터는 새로운 선택이나 대가를 하나 이상 갖습니다.
+제목과 장르가 약속한 갈등을 중심에 두고, 인물의 욕망·장애물·선택·대가가 다음 사건의 원인이 되게 합니다.
+익숙한 전개를 그대로 복제하지 말고 세계관의 규칙에서 파생되는 구체적인 딜레마와 반전을 만듭니다.
+복선을 심을 장과 회수할 장을 continuity_points에 명시하고 결말에서 핵심 질문에 답합니다.

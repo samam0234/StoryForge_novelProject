@@ -24,6 +24,13 @@ class AccountMailIntegrationTest extends IntegrationTestBase {
         r.add("spring.mail.port", SMTP::port);
     }
     @BeforeEach void clearMail() { SMTP.clear(); }
+    @Test void verificationReportsSmtpFailureAndCanRetry() throws Exception {
+        var user = account();
+        SMTP.rejectNext = true;
+        assertThat(call("POST", "/auth/mail/verify-request", null, user[1]).status()).isEqualTo(503);
+        assertThat(call("POST", "/auth/mail/verify-request", null, user[1]).status()).isEqualTo(200);
+        assertThat(call("POST", "/auth/mail/verify", Map.of("token", token(SMTP.body(), "verify")), null).status()).isEqualTo(200);
+    }
     private String[] account() throws Exception {
         String email = UUID.randomUUID() + "@example.test";
         String jwt = call("POST", "/auth/register", Map.of("email", email, "password", "password123",
