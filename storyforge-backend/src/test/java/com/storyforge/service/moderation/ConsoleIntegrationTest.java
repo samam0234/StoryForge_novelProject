@@ -17,6 +17,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConsoleIntegrationTest extends IntegrationTestBase {
     @Autowired private JdbcTemplate jdbc;
 
+    @Test
+    void concurrentDuplicateReportsReturnSameReceipt() throws Exception {
+        String author = newUser();
+        String reporter = newUser();
+        long target = post(author);
+        var first = CompletableFuture.supplyAsync(() -> {
+            try { return report("POST", target, reporter); }
+            catch (Exception exception) { throw new RuntimeException(exception); }
+        });
+        var second = CompletableFuture.supplyAsync(() -> {
+            try { return report("POST", target, reporter); }
+            catch (Exception exception) { throw new RuntimeException(exception); }
+        });
+        assertThat(first.join()).isEqualTo(second.join());
+        assertThat(jdbc.queryForObject("select count(*) from content_report where target_type = 'POST' and target_id = ?",
+                Integer.class, target)).isEqualTo(1);
+    }
+
     private long userId(String token) throws Exception {
         return call("GET", "/auth/me", null, token).json().get("id").asLong();
     }

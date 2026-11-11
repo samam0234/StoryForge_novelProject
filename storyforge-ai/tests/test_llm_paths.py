@@ -13,6 +13,7 @@ from app.core.orchestration import get_llm
 from app.main import app
 from app.models.schemas import (
     BibleGenerateResponse,
+    ChapterAnalysis,
     ContinuityIssue,
     ContinuityIssues,
     GeneratedCharacter,
@@ -56,6 +57,8 @@ class FakeLLM:
     async def structured(self, *, system, prompt, schema, model=None):
         self.models.append(model)
         self.prompts.append(prompt)
+        if schema is ChapterAnalysis:
+            return ChapterAnalysis(summary="요약입니다", issues=self.issues)
         if schema is ContinuityIssues:
             return ContinuityIssues(issues=self.issues)
         if schema is BibleGenerateResponse:
@@ -107,6 +110,28 @@ def test_chapter_prompt_contains_required_context(use_llm):
         assert expected in chapter_prompt, expected
 
 
+def test_creative_brief_form_and_future_outline_reach_generation(use_llm):
+    llm = FakeLLM()
+    context = {**CONTEXT, "project": {**PROJECT, "creativeBrief": "초능력 없이 추리", "form": "SHORT"},
+               "storyOutline": [{"order": 3, "title": "마지막 증언", "beats": ["범인을 밝힌다"]}],
+               "previousChapters": [{"number": 1, "summary": "첫 사건", "endingExcerpt": "열쇠를 건넸다"}]}
+    with use_llm(llm).stream("POST", "/internal/generate/chapter", json=context) as response:
+        assert "event: done" in response.read().decode()
+    for expected in ("초능력 없이 추리", "SHORT", "판타지", "마지막 증언", "열쇠를 건넸다"):
+        assert expected in llm.prompts[0]
+    assert len(llm.prompts) == 2
+
+
+def test_blank_combined_summary_cannot_complete_generation(use_llm):
+    class BlankSummary(FakeLLM):
+        async def structured(self, **kwargs):
+            return ChapterAnalysis(summary="   ", issues=[])
+    with use_llm(BlankSummary()).stream("POST", "/internal/generate/chapter", json=CONTEXT) as response:
+        body = response.read().decode()
+    assert "event: error" in body
+    assert "event: done" not in body
+
+
 def test_continuity_prompt_contains_content_and_settings(use_llm):
     llm = FakeLLM()
     with use_llm(llm).stream("POST", "/internal/generate/chapter", json=CONTEXT) as res:
@@ -144,7 +169,7 @@ def test_project_model_is_used_for_every_llm_call(use_llm):
     context = {**CONTEXT, "project": {**PROJECT, "model": "claude-sonnet-5-5"}}
     with use_llm(llm).stream("POST", "/internal/generate/chapter", json=context) as res:
         res.read()
-    assert llm.models == ["claude-sonnet-5-5"] * 3  # 본문, 요약, Continuity
+    assert llm.models == ["claude-sonnet-5-5"] * 2  # 본문, 요약과 Continuity 공동 분석
 
 
 def test_default_tone_reaches_bible_prompt(use_llm):

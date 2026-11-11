@@ -17,6 +17,8 @@ class ProjectInfo(Schema):
     # 프로젝트 설정 (기획서 §9.6-5). 비어 있으면 서비스 기본값을 씁니다.
     model: str | None = None
     default_tone: str | None = None
+    form: str | None = None
+    creative_brief: str | None = None
 
 
 class CharacterInfo(Schema):
@@ -79,6 +81,7 @@ class PreviousChapter(Schema):
     number: int
     title: str | None = None
     summary: str | None = None
+    ending_excerpt: str | None = None
 
 
 class ChapterContext(Schema):
@@ -89,6 +92,7 @@ class ChapterContext(Schema):
     chapter_number: int
     outline_chapter: OutlineChapter
     previous_chapters: list[PreviousChapter] = Field(default_factory=list)
+    story_outline: list[OutlineChapter] = Field(default_factory=list)
 
 
 IssueType = Literal["setting_conflict", "character_consistency", "timeline", "plot_thread"]
@@ -105,6 +109,10 @@ class ContinuityIssues(Schema):
     """LLM 검증 응답 형식"""
 
     issues: list[ContinuityIssue]
+
+
+class ChapterAnalysis(ContinuityIssues):
+    summary: str = Field(min_length=1)
 
 
 class ContinuityResult(Schema):

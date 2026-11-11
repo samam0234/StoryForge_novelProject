@@ -38,3 +38,9 @@ Testcontainers PostgreSQL과 임의 루프백 포트의 SMTP 수신기를 사용
 ## 제한과 병합 기준
 
 현재 실제 브라우저 검증은 미완료입니다. 이전 병합 보류 이후 사용자가 코드 진단·문서 수정 후 커밋·병합·푸시를 직접 명령했습니다. 이 제한을 기록하고 `develop → main` 순서로 통합합니다. 실제 공급자·발신 주소 확정 및 외부 메일 수신 검증은 별도이며 배포는 제외합니다. [최신 결과](../vaildates/diagnostics-integration.md).
+# Gmail 로컬 설정 (2026-11-11)
+
+루트 `.env`의 `SMTP_PASSWORD`에 발신 Google 계정의 앱 비밀번호를 입력합니다. `MAIL_ENABLED=true`, `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_AUTH=true`, `SMTP_STARTTLS=true`, `SMTP_SSL=false`를 사용합니다. `MAIL_FROM`과 `SMTP_USERNAME`은 발신 Gmail 주소입니다. [Google SMTP 안내](https://developers.google.com/workspace/gmail/imap/imap-smtp), [앱 비밀번호 안내](https://support.google.com/accounts/answer/185833).
+
+저장소 루트에서 `powershell -File storyforge-backend/scripts/start-local.ps1`로 백엔드를 시작하면 `.env`를 읽습니다. 기존 백엔드는 설정 변경 후 다시 시작해야 합니다. 인증 메일 전송 실패는 503을 반환합니다. 비밀번호 재설정 응답은 계정 존재 여부를 숨기므로 서버 로그와 실제 수신함을 함께 확인합니다. 앱 비밀번호 입력 전 실제 Gmail 수신은 미검증입니다.
+

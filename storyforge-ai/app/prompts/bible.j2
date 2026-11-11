@@ -1,8 +1,9 @@
-아래 아이디어로 장편 소설의 Story Bible 초안을 만드세요.
+아래 아이디어와 작품 형식에 맞는 소설의 Story Bible 초안을 만드세요.
 
 <project>
 제목: {{ project.title }}
 장르: {{ project.genre or "미정" }}
+작품 형식: {{ project.form|default(none) or "LONG" }}
 {% if project.default_tone %}
 작가가 정한 기본 톤: {{ project.default_tone }}
 {% endif %}
@@ -11,6 +12,10 @@
 <idea>
 {{ prompt }}
 </idea>
+
+사용자가 지정한 사건·관계·금지 사항을 구체적인 설정 제약으로 보존합니다.
+아이디어의 빈 부분은 제목과 장르에 맞는 독창적인 갈등, 세계의 규칙에서 비롯된 대가, 서로 충돌하는 인물의 욕망으로 확장합니다.
+주인공의 목표와 실패했을 때 잃는 것, 작품의 중심 질문이 연결되게 작성합니다. 단편은 중심 갈등과 인물 수를 집중합니다.
 
 다음을 작성합니다.
 - world_setting: 시대, 장소, 사회 구조, 이 세계만의 규칙. 이후 챕터가 지켜야 할 제약을 분명히 적습니다.

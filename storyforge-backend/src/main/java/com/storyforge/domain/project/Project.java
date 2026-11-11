@@ -20,6 +20,9 @@ public class Project {
 
     private String genre;
 
+    @Column(columnDefinition = "text")
+    private String creativeBrief;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProjectStatus status;
@@ -123,6 +126,8 @@ public class Project {
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getGenre() { return genre; }
+    public String getCreativeBrief() { return creativeBrief; }
+    public void setCreativeBrief(String creativeBrief) { this.creativeBrief = creativeBrief; touch(); }
     public ProjectStatus getStatus() { return status; }
     public Long getOwnerId() { return ownerId; }
     public String getCoverUrl() { return coverUrl; }

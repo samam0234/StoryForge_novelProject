@@ -104,6 +104,10 @@ public class AccountMailService {
             jdbc.update("delete from account_mail_token where user_id = ? and purpose = ?", id, purpose);
             // 공개 재설정 API는 메일 장애로 계정 존재 여부를 노출하지 않습니다.
             org.slf4j.LoggerFactory.getLogger(getClass()).warn("계정 메일 발송 실패: {}", ex.getClass().getSimpleName());
+            if (purpose.equals("verify")) {
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                        "인증 메일을 전송하지 못했습니다. 잠시 후 다시 시도하거나 관리자에게 문의하세요.");
+            }
         }
     }
 

@@ -66,6 +66,7 @@ public class ModerationService {
     /** 같은 대상을 처리 전에 다시 신고하면 새로 만들지 않습니다. 볼 수 없는 대상은 404, 내 것은 409입니다. */
     @Transactional
     public ReportReceipt report(ReportRequest request, Long reporterId) {
+        reports.lockOperations();
         TargetView target = target(request.targetType(), request.targetId());
         boolean admin = policy.isAdminId(reporterId);
         if (!target.exists() || (target.hidden() && !admin)) {

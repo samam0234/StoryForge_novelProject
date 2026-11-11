@@ -132,6 +132,8 @@ AI 호출에는 타임아웃, 연결 실패 재시도, Circuit Breaker가 적용
 - [../plan/CURRENT_STACK.md](../plan/CURRENT_STACK.md)
 # 실모델 검증 경계 (2026-11-10)
 
+2026-11-11 생성 보강에서 프로젝트의 최초 창작 요구를 V14 `creative_brief`에 저장합니다. AI에 작품 형식과 전체 Outline, 직전 확정 장의 마지막 1,200자를 추가로 전달합니다. 실모델 본문 후처리는 요약과 Continuity 구조화 분석 한 번으로 수행하며 규칙 검사 결과를 합산합니다. 반복 루프는 스트리밍 중 감지해 오류로 종료합니다. 동시 신고 접수는 운영 잠금으로 관리자 조치와 직렬화합니다.
+
 AI Outline 생성은 요청한 챕터 수와 결과 수가 일치해야 성공합니다. 불일치는 `LLMError`로 반환하며 부분 Outline을 정상 결과로 전달하지 않습니다.
 
 `storyforge-ai/scripts/validate_pipeline.py`는 임시 인물 저장소에서 합성 작품을 생성하고 실제 요약·Continuity까지 실행합니다. 다음 장의 입력은 검증 프로세스 메모리 안에서만 조립하며 Spring Boot의 검토·승인·저장 흐름을 대체하지 않습니다. pytest 인물 저장소도 테스트별 임시 경로로 격리합니다.

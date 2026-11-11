@@ -46,6 +46,8 @@ class PipelineIntegrationTest extends IntegrationTestBase {
         generateChapter(project, 2, token);
 
         JsonNode context = JSON.readTree(AI.chapterRequests.get(1));
+        assertThat(context.get("project").get("creativeBrief").asString()).isEqualTo("아이디어");
+        assertThat(context.get("project").get("form").asString()).isEqualTo("LONG");
         assertThat(context.get("bible").get("worldSetting").asString()).isEqualTo("세계");
         assertThat(context.get("bible").get("characters").get(0).get("name").asString()).isEqualTo("한서윤");
         assertThat(context.get("outlineChapter").get("title").asString()).isEqualTo("2장");
