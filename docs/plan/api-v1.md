@@ -170,6 +170,8 @@ AI SSE가 `done` 없이 종료된 경우도 `error`이며 부분 본문을 저�
 
 계약 정의 위치: 백엔드 `client/AiDtos.java` ↔ AI `app/models/schemas.py`. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다.
 
+2026-11-11 컨텍스트 확장: `project`는 `form`(LONG/SHORT), `creativeBrief`(최초 창작 요구)를 포함합니다. `ChapterContext.storyOutline`은 전체 아웃라인이며 `previousChapters[].endingExcerpt`는 직전 확정 장의 마지막 1,200자입니다. FastAPI는 추가 필드 없는 기존 입력에도 기본값을 적용합니다. 실모델은 본문 후 요약과 Continuity를 하나의 구조화 분석으로 생성하고, 반복 루프는 SSE error로 종료합니다.
+
 ## Continuity 리포트
 
 - `issues[].type`: `setting_conflict`(설정 충돌), `character_consistency`(캐릭터 일관성), `timeline`(타임라인), `plot_thread`(플롯 스레드) — §6.3의 네 항목
