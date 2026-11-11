@@ -36,4 +36,3 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 
 - [기획서 §8.2, §10, §12](../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
 V14는 프로젝트의 최초 창작 프롬프트 `creative_brief`를 nullable text로 추가합니다. 기존 프로젝트는 빈 값으로 유지하고 다음 성공한 Bible 생성부터 저장합니다.
-
