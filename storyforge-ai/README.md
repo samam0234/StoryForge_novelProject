@@ -116,10 +116,10 @@ JSON 필드는 camelCase이며, 백엔드 [AiDtos.java](../storyforge-backend/sr
 
 ```
 컨텍스트 수신 (Bible + Outline 해당 장 + 이전 챕터 요약 + 캐릭터 상태)
-  → prompts/chapter.j2로 프롬프트 조립
+  → 창작 요구·장르·작품 형식·전체 Outline·직전 장 마지막 장면 주입
+  → Beat 3개 이상인 실모델 챕터는 두 구간으로 나눠 앞 구간 본문을 이어받음
   → LLM 스트리밍 (token 이벤트)
-  → 요약 생성 (다음 챕터 컨텍스트용)
-  → Continuity 검증: 규칙 기반 검사 + (Ollama·Claude 모드) LLM 검증 → 점수
+  → 실모델은 요약·Continuity 공동 구조화 분석 + 규칙 검사 → 점수
   → done 이벤트
 ```
 
@@ -145,7 +145,7 @@ storyforge-ai/
 │   ├── services/           # 생성기, Continuity 검사, 패키지 검사, 가이드챗, mock
 │   ├── prompts/            # Jinja2 템플릿
 │   └── models/             # Pydantic 스키마
-└── tests/                  # 64건. API·LLM·중단·수명주기·도구 회귀, 인물 기록 격리
+└── tests/                  # 72건. API·LLM·장면 연결·중단·반복·수명주기·도구 회귀
 ```
 
 실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다.

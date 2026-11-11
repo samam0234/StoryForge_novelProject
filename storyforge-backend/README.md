@@ -168,3 +168,6 @@ storyforge-backend/
 - [docs/plan/api-v1.md](../docs/plan/api-v1.md), [docs/plan/CURRENT_STACK.md](../docs/plan/CURRENT_STACK.md)
 - 저장소 안내: [../README.md](../README.md), 작업 규칙: [../AGENTS.md](../AGENTS.md)
 - 보안: [../SECURITY.md](../SECURITY.md), 라이선스: [../LICENSE](../LICENSE)
+# 로컬 메일 환경 파일 실행
+
+저장소 루트 `.env`를 읽어 실행하려면 저장소 루트에서 `powershell -File storyforge-backend/scripts/start-local.ps1`을 사용합니다. `SMTP_PASSWORD`는 로컬에서 입력하고 Git에 추가하지 않습니다. [메일 설정과 검증](../docs/guidance/account-mail.md).

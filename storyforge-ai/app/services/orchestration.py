@@ -12,6 +12,8 @@ from app.models.schemas import (
 from app.services import bible_generator, chapter_generator, guide_assistant, mock_writer
 from app.services import outline_generator, package_continuity
 from app.services.continuity_checker import check_continuity
+from app.services.repetition_guard import RepetitionGuard
+from app.services.chapter_analysis import analyze
 
 
 class AiTaskOrchestrator:
@@ -26,21 +28,26 @@ class AiTaskOrchestrator:
 
     async def generate_chapter(self, context: ChapterContext) -> AsyncGenerator[Token | Done, None]:
         parts: list[str] = []
+        guard = RepetitionGuard()
         async with aclosing(chapter_generator.stream_body(self.llm, context)) as stream:
             async for chunk in stream:
+                guard.feed(chunk)
                 parts.append(chunk)
                 yield Token(chunk)
         content = "".join(parts).strip()
-        summary = await chapter_generator.summarize(self.llm, context, content)
-        report = await check_continuity(self.llm, context, content)
+        if self.llm.is_mock:
+            summary = await chapter_generator.summarize(self.llm, context, content)
+            report = await check_continuity(self.llm, context, content)
+        else:
+            analysis = await analyze(self.llm, context, content)
+            summary, report = analysis.summary, analysis.report
         yield Done(ChapterGenerateResult(title=context.outline_chapter.title, content=content,
                                         summary=summary, report=report))
 
     async def review_chapter(self, request: ChapterReviewRequest) -> ChapterReviewResult:
-        if self.llm.is_mock:
-            summary = mock_writer.review_summary(request.context, request.content)
-        else:
-            summary = await chapter_generator.summarize(self.llm, request.context, request.content)
+        if not self.llm.is_mock:
+            return await analyze(self.llm, request.context, request.content)
+        summary = mock_writer.review_summary(request.context, request.content)
         report = await check_continuity(self.llm, request.context, request.content)
         return ChapterReviewResult(summary=summary, report=report)
 

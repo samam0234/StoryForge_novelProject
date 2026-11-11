@@ -15,7 +15,8 @@ public final class AiDtos {
     private AiDtos() {
     }
 
-    public record ProjectInfo(String title, String genre, String model, String defaultTone) {
+    public record ProjectInfo(String title, String genre, String model, String defaultTone,
+                              String form, String creativeBrief) {
     }
 
     public record CharacterInfo(String name, String description, String personality, String relationships,
@@ -41,12 +42,16 @@ public final class AiDtos {
     }
 
     // POST /internal/generate/chapter (SSE)
-    public record PreviousChapter(int number, String title, String summary) {
+    public record PreviousChapter(int number, String title, String summary, String endingExcerpt) {
+        public PreviousChapter(int number, String title, String summary) {
+            this(number, title, summary, null);
+        }
     }
 
     /** 컨텍스트 패키지 (기획서 §6.3, §7.2): Bible + Outline + 이전 챕터 요약 + 캐릭터 상태 */
     public record ChapterContext(ProjectInfo project, BibleInfo bible, int chapterNumber,
-                                 OutlineChapter outlineChapter, List<PreviousChapter> previousChapters) {
+                                 OutlineChapter outlineChapter, List<PreviousChapter> previousChapters,
+                                 List<OutlineChapter> storyOutline) {
     }
 
     public record ContinuityResult(List<ContinuityIssue> issues, int score) {

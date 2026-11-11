@@ -6,10 +6,12 @@
 
 | 파일 | 내용 |
 |------|------|
+| `chapter_analysis.py` | 실모델 본문 요약과 연속성 판단을 한 구조화 요청으로 수행하고 규칙 검사 합산 |
+| `repetition_guard.py` | 긴 문장 세 번 반복·구분 없는 반복 루프를 스트리밍 중 감지 |
 | `orchestration.py` | `AiTaskOrchestrator`: Bible·Outline·챕터·수정본 검증·이어쓰기·패키지·가이드의 공통 진입점. 챕터 본문 → 요약 → Continuity → 최종 결과 순서와 중단 처리 |
 | `bible_generator.py` | Story Bible 생성 |
 | `outline_generator.py` | Outline 생성, order 재번호 |
-| `chapter_generator.py` | 본문 스트림·요약·이어쓰기의 개별 작업. 실행 순서는 `orchestration.py`에서 관리 |
+| `chapter_generator.py` | 본문 스트림·두 구간 사건 배분·이어쓰기. 실제 앞 구간 본문을 다음 구간에 전달하며 생성 전체는 `orchestration.py`에서 관리 |
 | `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
 | `package_continuity.py` | 패키지 작품 사이의 규칙 검사 + LLM 검증 ([규칙](../../../docs/novel/continuity-rules.md)) |
 | `guide_assistant.py` | AI 가이드챗: 명령어 안내, 키워드 매칭, 자유 질문. 이동 버튼은 이 파일의 표에서만 만듦 |

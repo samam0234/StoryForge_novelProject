@@ -5,6 +5,9 @@
 <previous_chapters>
 {% for p in previous_chapters %}
 {{ p.number }}장: {{ p.summary or "" }}
+{% if p.ending_excerpt|default(none) %}
+마지막 장면: {{ p.ending_excerpt }}
+{% endif %}
 {% else %}
 (첫 챕터입니다)
 {% endfor %}
