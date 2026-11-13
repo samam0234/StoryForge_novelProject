@@ -5,12 +5,12 @@
   --sf-secondary: #2e75b6;
   --sf-accent: #e8a838;
 
-  --sf-bg: light-dark(#f8f9fa, #121212);
-  --sf-surface: light-dark(#ffffff, #1e1e1e);
-  --sf-surface-2: light-dark(#f1f3f5, #262626);
-  --sf-text: light-dark(#1a1a1a, #e0e0e0);
-  --sf-text-muted: light-dark(#5f6368, #9aa0a6);
-  --sf-border: light-dark(#dde1e6, #333333);
+  --sf-bg: light-dark(#f4f7fb, #0e141c);
+  --sf-surface: light-dark(#ffffff, #182230);
+  --sf-surface-2: light-dark(#eef3f8, #223044);
+  --sf-text: light-dark(#142033, #e7eef6);
+  --sf-text-muted: light-dark(#5c6b7a, #a9b7c6);
+  --sf-border: light-dark(#d5e0ea, #2c3d52);
 
   // 다크 배경에서 딥 블루 대비가 낮아 Secondary로 강조합니다.
   --sf-emphasis: light-dark(var(--sf-primary), var(--sf-secondary));
@@ -33,5 +33,7 @@
   --sf-series-8: light-dark(#e34948, #e66767);
 
   --sf-font: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
-  --sf-radius: 10px;
+  --sf-radius: 16px;
+  --sf-shadow: 0 16px 40px light-dark(rgb(31 78 121 / 0.08), rgb(0 0 0 / 0.35));
+  --sf-glow: 0 0 0 1px color-mix(in srgb, var(--sf-accent) 35%, transparent);
 }

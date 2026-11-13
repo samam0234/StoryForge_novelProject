@@ -76,13 +76,16 @@ import { AuthService } from '../../core/auth/auth.service';
       display: grid;
       place-items: center;
       min-height: calc(100vh - 64px);
-      padding: 16px;
+      padding: 24px 16px;
       box-sizing: border-box;
+      background:
+        radial-gradient(480px 240px at 50% 0%, color-mix(in srgb, var(--sf-accent) 30%, transparent), transparent 70%);
     }
     .card {
       width: 100%;
-      max-width: 420px;
+      max-width: 440px;
       background: var(--sf-surface);
+      box-shadow: var(--sf-shadow);
     }
     form {
       margin-top: 16px;

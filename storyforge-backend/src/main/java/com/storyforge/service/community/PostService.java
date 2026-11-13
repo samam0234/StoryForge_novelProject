@@ -49,6 +49,14 @@ public class PostService {
                 result.getNumber(), result.getSize());
     }
 
+    /** 프로필의 라운지 글. 숨긴 글은 목록에서 뺍니다. */
+    public PageResponse<PostCard> byAuthor(Long authorId, int page, int size) {
+        Page<Post> result = posts.findByAuthorIdAndHiddenAtIsNullOrderByCreatedAtDesc(
+                authorId, PageRequest.of(Math.max(page, 0), Math.clamp(size, 1, 50)));
+        return new PageResponse<>(result.stream().map(PostCard::from).toList(), result.getTotalElements(),
+                result.getNumber(), result.getSize());
+    }
+
     public Post load(Long postId) {
         return posts.findWithAuthor(Objects.requireNonNull(postId))
                 .orElseThrow(() -> new NotFoundException("게시글을 찾을 수 없습니다: " + postId));

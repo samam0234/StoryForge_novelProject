@@ -21,8 +21,14 @@ class _OverlapEmbedding:
     def name(self) -> str:
         return "storyforge-overlap"
 
-    def __call__(self, input: list[str]) -> list[list[float]]:
+    def embed_documents(self, input: list[str]) -> list[list[float]]:
         return [self._vec(text) for text in input]
+
+    def embed_query(self, input: list[str]) -> list[list[float]]:
+        return self.embed_documents(input)
+
+    def __call__(self, input: list[str]) -> list[list[float]]:
+        return self.embed_documents(input)
 
     def _vec(self, text: str) -> list[float]:
         vec = [0.0] * self._dim
@@ -107,6 +113,18 @@ class CharacterBank:
         collection = self._collection_or_none()
         if collection is not None and documents:
             collection.upsert(ids=ids, documents=documents)
+
+    def embed_catalog(self) -> int:
+        """이름 풀 전체를 Chroma 컬렉션 characters에 벡터로 넣습니다."""
+        rows = self.all_names()
+        collection = self._collection_or_none()
+        if collection is None:
+            raise RuntimeError("ChromaDB를 불러오지 못했습니다. pip install chromadb 후 다시 실행하세요.")
+        ids = [f"pool-{index}" for index in range(len(rows))]
+        documents = [f"{row['name']} / {row['country']}식 한글 이름" for row in rows]
+        metadatas = [{"country": row["country"], "kind": "pool"} for row in rows]
+        collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+        return int(collection.count())
 
     def _collection_or_none(self):
         if self._collection is not None:

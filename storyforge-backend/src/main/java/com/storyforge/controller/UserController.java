@@ -9,6 +9,7 @@ import com.storyforge.service.auth.CurrentUser;
 import com.storyforge.service.community.AchievementService;
 import com.storyforge.service.community.ActivityService;
 import com.storyforge.service.community.IssueService;
+import com.storyforge.service.community.PostService;
 import com.storyforge.service.community.ProfileService;
 import com.storyforge.service.community.WorkService;
 import jakarta.validation.Valid;
@@ -23,15 +24,17 @@ import java.util.List;
 public class UserController {
 
     private final ProfileService profiles;
+    private final PostService posts;
     private final WorkService works;
     private final ActivityService activity;
     private final AchievementService achievements;
     private final IssueService issues;
     private final CurrentUser currentUser;
 
-    public UserController(ProfileService profiles, WorkService works, ActivityService activity,
+    public UserController(ProfileService profiles, PostService posts, WorkService works, ActivityService activity,
                           AchievementService achievements, IssueService issues, CurrentUser currentUser) {
         this.profiles = profiles;
+        this.posts = posts;
         this.works = works;
         this.activity = activity;
         this.achievements = achievements;
@@ -48,6 +51,13 @@ public class UserController {
     public List<WorkCard> works(@PathVariable Long userId) {
         profiles.requireExists(userId);
         return works.publicWorksOf(userId);
+    }
+
+    @GetMapping("/users/{userId}/posts")
+    public PageResponse<PostCard> posts(@PathVariable Long userId, @RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "20") int size) {
+        profiles.requireExists(userId);
+        return posts.byAuthor(userId, page, size);
     }
 
     @GetMapping("/users/{userId}/contributions")

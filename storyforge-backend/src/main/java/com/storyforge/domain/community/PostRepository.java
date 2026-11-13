@@ -30,6 +30,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     long countByAuthorId(Long authorId);
 
+    @EntityGraph(attributePaths = "author")
+    Page<Post> findByAuthorIdAndHiddenAtIsNullOrderByCreatedAtDesc(Long authorId, Pageable pageable);
+
     @Modifying
     @Query("update Post p set p.likeCount = p.likeCount + :delta where p.id = :id")
     void addLikes(@Param("id") Long id, @Param("delta") int delta);

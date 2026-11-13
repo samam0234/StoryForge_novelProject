@@ -188,6 +188,9 @@ export class CommunityApi {
   posts(q: { category?: PostCategory; q?: string; page?: number; size?: number }): Observable<PageResponse<PostCard>> {
     return this.http.get<PageResponse<PostCard>>(`${this.base}/posts`, { params: params(q) });
   }
+  userPosts(userId: number, page = 0, size = 20): Observable<PageResponse<PostCard>> {
+    return this.http.get<PageResponse<PostCard>>(`${this.base}/users/${userId}/posts`, { params: { page, size } });
+  }
   post(id: number): Observable<PostDetail> {
     return this.http.get<PostDetail>(`${this.base}/posts/${id}`);
   }
