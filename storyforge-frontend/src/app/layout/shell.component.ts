@@ -36,7 +36,7 @@ import { ThemeService } from './theme.service';
         <button mat-icon-button aria-label="메뉴" (click)="navOpen.set(!navOpen())"><mat-icon>menu</mat-icon></button>
       }
       <a routerLink="/issues" class="brand">
-        <mat-icon>auto_stories</mat-icon>
+        <span class="mark" aria-hidden="true"><mat-icon>auto_stories</mat-icon></span>
         <span>StoryForge</span>
       </a>
       <span class="sf-spacer"></span>
@@ -137,7 +137,8 @@ import { ThemeService } from './theme.service';
     }
     .topbar {
       border-bottom: 1px solid var(--sf-border);
-      background: var(--sf-surface);
+      background: color-mix(in srgb, var(--sf-surface) 88%, transparent);
+      backdrop-filter: blur(12px);
     }
     .terms-banner {
       padding: 8px 16px;
@@ -148,10 +149,27 @@ import { ThemeService } from './theme.service';
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       text-decoration: none;
-      font-weight: 700;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      font-size: 18px;
       color: var(--sf-emphasis);
+    }
+    .mark {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #fff;
+      background: linear-gradient(145deg, var(--sf-primary), var(--sf-secondary) 55%, var(--sf-accent));
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--sf-primary) 35%, transparent);
+    }
+    .mark mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
     }
     .user {
       font-size: 14px;
@@ -179,9 +197,10 @@ import { ThemeService } from './theme.service';
       background: var(--sf-bg);
     }
     .sidenav {
-      width: 220px;
+      width: 240px;
       border-right: 1px solid var(--sf-border);
-      background: var(--sf-surface);
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--sf-secondary) 10%, var(--sf-surface)), var(--sf-surface) 28%);
     }
     .guide {
       position: absolute;
@@ -202,7 +221,9 @@ import { ThemeService } from './theme.service';
       color: var(--sf-text-muted);
     }
     .active {
-      background: color-mix(in srgb, var(--sf-secondary) 18%, transparent);
+      background: linear-gradient(90deg, color-mix(in srgb, var(--sf-accent) 28%, transparent), color-mix(in srgb, var(--sf-secondary) 16%, transparent));
+      border-radius: 12px;
+      box-shadow: inset 3px 0 0 var(--sf-accent);
     }
   `,
 })

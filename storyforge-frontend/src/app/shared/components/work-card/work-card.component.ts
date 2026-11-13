@@ -14,6 +14,8 @@ import { UserChipComponent } from '../user-chip/user-chip.component';
       <a class="main" [routerLink]="['/works', work().id]">
         @if (work().coverUrl) {
           <img class="cover" [src]="work().coverUrl!" alt="" />
+        } @else {
+          <span class="cover-fallback" aria-hidden="true"></span>
         }
         <div class="sf-row meta">
           <span class="sf-badge">{{ kindLabel() }}</span>
@@ -63,27 +65,35 @@ import { UserChipComponent } from '../user-chip/user-chip.component';
       gap: 8px;
       height: 100%;
       box-sizing: border-box;
-      padding: 16px;
+      padding: 14px;
       border: 1px solid var(--sf-border);
       border-radius: var(--sf-radius);
-      background: var(--sf-surface);
-      transition: border-color 0.15s;
+      background:
+        linear-gradient(180deg, color-mix(in srgb, var(--sf-accent) 10%, var(--sf-surface)), var(--sf-surface) 36%);
+      box-shadow: var(--sf-shadow);
+      transition: transform 0.18s ease, border-color 0.18s ease;
     }
     .card:hover {
+      transform: translateY(-3px);
       border-color: var(--sf-secondary);
     }
     .main {
       text-decoration: none;
       flex: 1;
     }
-    .cover {
+    .cover,
+    .cover-fallback {
       display: block;
       width: 100%;
-      height: 140px;
+      height: 148px;
       object-fit: cover;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      background: var(--sf-surface-2);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+    .cover-fallback {
+      background:
+        radial-gradient(120px 80px at 20% 20%, color-mix(in srgb, #fff 35%, transparent), transparent 70%),
+        linear-gradient(135deg, var(--sf-primary), var(--sf-secondary) 48%, var(--sf-accent));
     }
     .meta {
       font-size: 12px;

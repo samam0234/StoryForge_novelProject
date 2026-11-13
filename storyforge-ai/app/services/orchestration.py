@@ -12,7 +12,7 @@ from app.models.schemas import (
 from app.services import bible_generator, chapter_generator, guide_assistant, mock_writer
 from app.services import outline_generator, package_continuity
 from app.services.continuity_checker import check_continuity
-from app.services.repetition_guard import RepetitionGuard
+from app.services.repetition_guard import RepetitionGuard, drop_repeated_sentences
 from app.services.chapter_analysis import analyze
 
 
@@ -34,7 +34,7 @@ class AiTaskOrchestrator:
                 guard.feed(chunk)
                 parts.append(chunk)
                 yield Token(chunk)
-        content = "".join(parts).strip()
+        content = drop_repeated_sentences("".join(parts).strip())
         if self.llm.is_mock:
             summary = await chapter_generator.summarize(self.llm, context, content)
             report = await check_continuity(self.llm, context, content)

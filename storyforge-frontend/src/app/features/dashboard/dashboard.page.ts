@@ -153,12 +153,19 @@ type Sort = 'recent' | 'title' | 'progress';
     </div>
   `,
   styles: `
+    .head {
+      margin-bottom: 20px;
+      padding: 22px 22px 18px;
+      border-radius: var(--sf-radius);
+      border: 1px solid var(--sf-border);
+      background:
+        radial-gradient(420px 160px at 100% 0%, color-mix(in srgb, var(--sf-accent) 35%, transparent), transparent 70%),
+        linear-gradient(120deg, color-mix(in srgb, var(--sf-primary) 12%, var(--sf-surface)), var(--sf-surface));
+      box-shadow: var(--sf-shadow);
+    }
     h1 {
       margin: 0 0 4px;
-      font-size: 24px;
-    }
-    .head {
-      margin-bottom: 16px;
+      font-size: 32px;
     }
     .cta {
       --mat-button-filled-container-color: var(--sf-accent);
