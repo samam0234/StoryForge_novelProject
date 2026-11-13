@@ -21,6 +21,13 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
   template: `
     <div class="sf-page narrow">
       <h1>계정 설정</h1>
+      <section class="preview" aria-label="프로필 미리보기">
+        <span class="avatar" [style.background]="avatarColor">{{ displayName.trim().slice(0, 1) || '?' }}</span>
+        <div>
+          <strong>{{ displayName.trim() || '이름' }}</strong>
+          <p class="sf-muted">{{ bio.trim() || '소개가 아직 없습니다.' }}</p>
+        </div>
+      </section>
       <mat-card appearance="outlined" class="card">
         <mat-card-header><mat-card-title>이메일 인증</mat-card-title></mat-card-header>
         <mat-card-content><p>{{ auth.user()?.emailVerified ? '인증된 이메일입니다.' : '아직 이메일을 인증하지 않았습니다.' }}</p></mat-card-content>
@@ -41,6 +48,7 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>소개</mat-label>
             <textarea matInput name="bio" rows="3" [(ngModel)]="bio" maxlength="500"></textarea>
+            <mat-hint align="end">{{ bio.length }}/500</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>웹사이트</mat-label>
@@ -80,10 +88,18 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>새 비밀번호 (8자 이상)</mat-label>
             <input matInput name="newPassword" type="password" autocomplete="new-password" maxlength="72" [(ngModel)]="newPassword" />
+            <mat-hint>{{ newPassword.length }}/72</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>새 비밀번호 확인</mat-label>
+            <input matInput name="confirmPassword" type="password" autocomplete="new-password" [(ngModel)]="confirmPassword" />
+            @if (confirmPassword && confirmPassword !== newPassword) {
+              <mat-error>비밀번호가 서로 다릅니다.</mat-error>
+            }
           </mat-form-field>
         </mat-card-content>
         <mat-card-actions align="end">
-          <button mat-stroked-button [disabled]="busy() || !currentPassword || newPassword.length < 8" (click)="savePassword()">변경</button>
+          <button mat-stroked-button [disabled]="busy() || !currentPassword || newPassword.length < 8 || newPassword !== confirmPassword" (click)="savePassword()">변경</button>
         </mat-card-actions>
       </mat-card>
 
@@ -125,6 +141,31 @@ const COLORS = ['#1f4e79', '#2a78d6', '#008300', '#6250d6', '#c2185b', '#b26a00'
   styles: `
     .narrow {
       max-width: 720px;
+    }
+    .preview {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 16px;
+      border-radius: var(--sf-radius);
+      border: 1px solid var(--sf-border);
+      background: var(--sf-surface);
+      box-shadow: var(--sf-shadow);
+    }
+    .avatar {
+      width: 56px;
+      height: 56px;
+      flex: none;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .preview p {
+      margin: 4px 0 0;
     }
     h1 {
       margin: 0 0 16px;
@@ -180,6 +221,7 @@ export class AccountSettingsPage {
   protected avatarColor = this.auth.user()?.avatarColor ?? null;
   protected currentPassword = '';
   protected newPassword = '';
+  protected confirmPassword = '';
   protected deletePassword = '';
 
   constructor() {
@@ -226,6 +268,7 @@ export class AccountSettingsPage {
         this.busy.set(false);
         this.currentPassword = '';
         this.newPassword = '';
+        this.confirmPassword = '';
         this.snack.open('비밀번호를 바꿨습니다. 다시 로그인하세요.', undefined, { duration: 3000 });
         this.auth.logout();
       },

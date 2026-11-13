@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### 2026-11-14
+
+- 이름 풀 225개를 ChromaDB 컬렉션 `characters`에 글자 겹침 벡터로 저장. 다시 넣기는 `python -m scripts.embed_characters`. 실행 데이터는 Git에서 제외
+
 ### 2026-11-11
 
 - Beat별 두 구간 스트리밍과 실제 앞 구간 본문 전달, 후반 목표 분량 조절. AI 72건·원격 백엔드 103건 검증

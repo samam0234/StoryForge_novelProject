@@ -11,7 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
 import { CommunityApi } from '../../core/api/community-api.service';
 import { errorMessage } from '../../core/api/storyforge-api.service';
-import { Achievement, ActivityEntry, Contributions, Profile, WorkCard } from '../../core/models/community';
+import { Achievement, ActivityEntry, Contributions, PostCard, Profile, WorkCard } from '../../core/models/community';
 import { ContributionHeatmapComponent } from '../../shared/components/contribution-heatmap/contribution-heatmap.component';
 import { WorkCardComponent } from '../../shared/components/work-card/work-card.component';
 import { AuthService } from '../../core/auth/auth.service';
@@ -58,7 +58,9 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
             </div>
           </div>
           @if (p.self) {
+            <button mat-stroked-button type="button" (click)="copyLink()"><mat-icon>link</mat-icon> 링크 복사</button>
             <a mat-stroked-button routerLink="/me/settings"><mat-icon>settings</mat-icon> 계정 설정</a>
+            <a mat-stroked-button routerLink="/me/works"><mat-icon>library_books</mat-icon> 내 작품</a>
           } @else if (auth.isLoggedIn()) {
             <button mat-stroked-button (click)="toggleBlock()" [attr.aria-pressed]="p.blockedByMe">
               <mat-icon>block</mat-icon> {{ p.blockedByMe ? '차단 해제' : '차단' }}
@@ -68,6 +70,8 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
         </header>
         <div class="stats">
           <div><strong>{{ p.stats.works | number }}</strong><span>공개 작품</span></div>
+          <div><strong>{{ p.stats.posts | number }}</strong><span>라운지 글</span></div>
+          <div><strong>{{ p.stats.comments | number }}</strong><span>댓글</span></div>
           <div><strong>{{ p.stats.likesReceived | number }}</strong><span>받은 추천</span></div>
           <div><strong>{{ p.stats.clonesReceived | number }}</strong><span>받은 Clone</span></div>
           <div><strong>{{ p.stats.achievements | number }}</strong><span>업적</span></div>
@@ -106,6 +110,26 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
                     <sf-work-card [work]="w" />
                   }
                 </div>
+              }
+            </div>
+          </mat-tab>
+          <mat-tab [label]="'라운지 ' + posts().length">
+            <div class="tab">
+              @if (!posts().length) {
+                <div class="sf-empty">공개된 라운지 글이 없습니다.</div>
+              } @else {
+                <ul class="feed">
+                  @for (post of posts(); track post.id) {
+                    <li>
+                      <mat-icon>chat</mat-icon>
+                      <div class="entry">
+                        <a [routerLink]="['/posts', post.id]">{{ post.title }}</a>
+                        <span class="sf-muted">추천 {{ post.likeCount }} · 댓글 {{ post.commentCount }}</span>
+                      </div>
+                      <span class="sf-muted when">{{ post.createdAt | date: 'yyyy-MM-dd' }}</span>
+                    </li>
+                  }
+                </ul>
               }
             </div>
           </mat-tab>
@@ -157,6 +181,7 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
                         <small class="sf-muted">{{ tierLabel(a.tier) }} · {{ a.earnedAt | date: 'yyyy-MM-dd' }} 달성</small>
                       } @else {
                         <small class="sf-muted">{{ tierLabel(a.tier) }} · {{ a.progress | number }} / {{ a.target | number }}</small>
+                        <span class="meter" [style.width.%]="(a.progress / a.target) * 100"></span>
                       }
                     </div>
                   </li>
@@ -171,9 +196,16 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
   styles: `
     .head {
       display: flex;
-      gap: 16px;
+      gap: 20px;
       align-items: flex-start;
       flex-wrap: wrap;
+      padding: 20px;
+      border: 1px solid var(--sf-border);
+      border-radius: var(--sf-radius);
+      background:
+        linear-gradient(135deg, color-mix(in srgb, var(--sf-secondary) 14%, transparent), transparent 42%),
+        var(--sf-surface);
+      box-shadow: var(--sf-shadow);
     }
     .avatar {
       width: 72px;
@@ -322,6 +354,13 @@ import { ReportDialog, ReportDialogData } from '../moderation/report.dialog';
       gap: 2px;
       font-size: 13px;
     }
+    .meter {
+      display: block;
+      height: 4px;
+      margin-top: 4px;
+      border-radius: 99px;
+      background: var(--sf-secondary);
+    }
   `,
 })
 export class ProfilePage {
@@ -333,6 +372,7 @@ export class ProfilePage {
 
   protected readonly profile = signal<Profile | null>(null);
   protected readonly works = signal<WorkCard[]>([]);
+  protected readonly posts = signal<PostCard[]>([]);
   protected readonly grass = signal<Contributions | null>(null);
   protected readonly feed = signal<ActivityEntry[]>([]);
   protected readonly feedTotal = signal(0);
@@ -356,6 +396,7 @@ export class ProfilePage {
         error: (e) => this.error.set(errorMessage(e)),
       });
       this.api.userWorks(id).subscribe((w) => this.works.set(w));
+      this.api.userPosts(id).subscribe((page) => this.posts.set(page.items));
       this.api.contributions(id).subscribe((g) => this.grass.set(g));
       this.api.achievements(id).subscribe((a) => this.achievements.set(a));
       // 날짜·페이지 변경은 loadFeed를 직접 부릅니다. 여기서 추적하면 프로필 전체를 다시 읽고 탭이 처음으로 돌아갑니다.
@@ -387,6 +428,14 @@ export class ProfilePage {
       this.feed.set(r.items);
       this.feedTotal.set(r.total);
     });
+  }
+
+  protected copyLink(): void {
+    const url = `${location.origin}/users/${this.userId()}`;
+    navigator.clipboard.writeText(url).then(
+      () => this.snack.open('프로필 링크를 복사했습니다.', '닫기', { duration: 2500 }),
+      () => this.snack.open('복사하지 못했습니다.', '닫기', { duration: 2500 }),
+    );
   }
 
   protected pickDay(date: string): void {
