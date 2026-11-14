@@ -48,8 +48,17 @@ public class GuideService {
     }
 
     public GuideChatResponse chat(String message, Long userId) {
-        GuideContext context = tx.execute(s -> context(userId));
-        GuideChatResponse response = ai.guideChat(new GuideChatRequest(message, Objects.requireNonNull(context)));
+        GuideChatResponse response = ai.guideChat(new GuideChatRequest(message, contextFor(userId)));
+        return decorate(response);
+    }
+
+    /** 웹소켓 가이드도 같은 사용자 상황을 넘깁니다. */
+    public GuideContext contextFor(Long userId) {
+        return Objects.requireNonNull(tx.execute(s -> context(userId)));
+    }
+
+    /** 모델이 준 외부 주소는 쓰지 않고 설정된 Codicomperchat 주소만 남깁니다. */
+    public GuideChatResponse decorate(GuideChatResponse response) {
         return resolveCollab(response);
     }
 

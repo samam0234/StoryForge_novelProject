@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(problemEntryPoint))
                 .exceptionHandling(e -> e.authenticationEntryPoint(problemEntryPoint))
                 // 사용자별로 세므로 토큰 인증 뒤에 둡니다. 빈으로 등록하면 서블릿 필터로 한 번 더 걸립니다.
+                .addFilterBefore(new WebSocketTokenFilter(), BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(new RateLimitFilter(rateLimit, objectMapper, Clock.systemUTC(),
                                 trusted(trustedProxies)),
                         BearerTokenAuthenticationFilter.class)
