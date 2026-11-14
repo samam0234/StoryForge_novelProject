@@ -17,6 +17,7 @@ from app.models.schemas import (
 )
 from app.prompts.orchestration import render
 from app.models.orchestration import chapter_prompt_context
+from app.services.plausibility import is_awkward
 
 _PENALTY = {"high": 30, "medium": 12, "low": 4}
 # 챕터 생성 프롬프트의 공백 포함 분량 목표. 경고만 추가하며 검토를 건너뛰지 않습니다.
@@ -53,6 +54,7 @@ def rule_checks(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
             )
         )
     issues.extend(_repetition_issues(ctx, content))
+    issues.extend(_bridge_issues(ctx, content))
     return issues
 
 
@@ -80,6 +82,22 @@ def _repetition_issues(ctx: ChapterContext, content: str) -> list[ContinuityIssu
             )
         )
     return found
+
+
+def _bridge_issues(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
+    """직전 장면과 첫머리가 끊기면 plot_thread로 남깁니다. 이슈를 없애거나 검토를 건너뛰지 않습니다."""
+    if not ctx.previous_chapters:
+        return []
+    ending = (ctx.previous_chapters[-1].ending_excerpt or "").strip()
+    if not is_awkward(ending, content):
+        return []
+    return [
+        ContinuityIssue(
+            type="plot_thread",
+            description="앞 장 마지막 장면과 이번 장 첫 장면의 인과가 끊겨 있습니다. 직전 행동의 다음 선택으로 잇는지 확인하세요.",
+            severity="medium",
+        )
+    ]
 
 
 def score(issues: list[ContinuityIssue]) -> int:
