@@ -84,8 +84,8 @@
 
 | 경로 | 프로토콜 | 기획서 근거 |
 |------|----------|-------------|
-| Angular → Spring Boot | HTTP REST + SSE (`fetch` 스트림) | §7.1 |
-| Spring Boot → FastAPI | 내부 HTTP (WebClient), 챕터는 SSE | §7.1, §7.3 |
+| Angular → Spring Boot | HTTP REST + SSE (`fetch` 스트림) + WebSocket `/api/v1/ws` | §7.1. 챕터 본문은 SSE. 가이드와 장면 개척만 웹소켓 |
+| Spring Boot → FastAPI | 내부 HTTP (WebClient), 챕터는 SSE, 실시간 요청은 `/internal/ws` | §7.1, §7.3 |
 | FastAPI → LLM Providers | Ollama HTTP 연결 풀 / Anthropic SDK 스트리밍 | §7.1 |
 | Spring Boot → PostgreSQL | JDBC (JPA, Flyway) | §7.1 |
 
@@ -100,6 +100,8 @@
 동일 작성자의 여러 대상을 일괄 정지·해제할 때 계정 변경·작성자 알림을 중복 실행하지 않습니다. 공백뿐인 스트림은 정상 생성으로 저장하지 않습니다. AI 실행 데이터(`storyforge-ai/data/used_characters.json`, `storyforge-ai/data/chroma/`)는 추적하지 않으며 이름 풀 `names.json`은 버전 관리합니다. [재현과 해결](../find_debug/2026-11-10.md).
 
 이름 풀 225개는 `python -m scripts.embed_characters`로 Chroma 컬렉션 `characters`에 넣습니다. 벡터는 256차원 글자·음절 겹침(`storyforge-overlap`)이며 신경망 모델을 받지 않습니다. 새 인물 설명은 같은 컬렉션에 추가되고, 거리 0.35 미만이면 다음 Bible 프롬프트에서 피하도록 넘깁니다. 저장 위치는 `storyforge-ai/data/chroma/`입니다.
+
+장면 연결 어색함은 `storyforge-ai/app/services/plausibility_weights.json`의 로지스틱 회귀로 계산합니다. 학습 데이터는 합성 문장이고 생성 모델을 받지 않습니다. 결과는 Continuity의 `plot_thread`에만 더합니다.
 
 `prod`에서는 `FRONTEND_ORIGIN`과 `CONSOLE_ORIGIN`을 각각 경로·와일드카드·후행 슬래시 없는 HTTPS 출처 하나로 명시합니다. 두 출처를 정확하게 허용하며, 개발 DB 자격 증명·빈 JWT 키 거부와 API 문서 비활성 정책은 유지합니다.
 

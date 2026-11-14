@@ -10,6 +10,14 @@
 {% if p.ending_excerpt %}마지막 장면: {{ p.ending_excerpt }}{% endif %}
 {% endfor %}
 </previous_chapters>
+{% if pioneering|default([]) %}
+<story_opening>
+직전 장면 다음을 아래 갈래 중 하나의 인과로 엽니다. 새 인물·장소·과거는 만들지 않습니다.
+{% for line in pioneering %}
+- {{ line }}
+{% endfor %}
+</story_opening>
+{% endif %}
 <story_outline>
 {% for chapter in story_outline %}
 {{ chapter.order }}장 {{ chapter.title }}: {{ chapter.beats|join(" / ") }}

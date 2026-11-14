@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription, forkJoin } from 'rxjs';
 import { ChapterStream } from '../../core/api/chapter-stream.service';
+import { LiveChannel, ScoutDirection } from '../../core/api/live-channel.service';
 import { StoryforgeApi, errorMessage } from '../../core/api/storyforge-api.service';
 import { Chapter, ChapterVersion, OutlineChapter, StoryBible } from '../../core/models/models';
 import { RichTextEditorComponent } from '../../shared/components/rich-text-editor/rich-text-editor.component';
@@ -155,6 +156,19 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
 
         <!-- 우측: Continuity + 캐릭터 상태 -->
         <aside class="col right">
+          <h3>다음 장면</h3>
+          <button mat-stroked-button type="button" (click)="scout()" [disabled]="scouting()">
+            <mat-icon>explore</mat-icon> 장면 개척
+          </button>
+          @for (d of directions(); track d.title) {
+            <article class="block">
+              <p><strong>{{ d.title }}</strong></p>
+              <p>{{ d.causalLink }}</p>
+              <p>{{ d.nextAction }}</p>
+              <p class="sf-muted">{{ d.avoid }}</p>
+            </article>
+          }
+
           <h3>Continuity Check</h3>
           @if (current()?.needsReview) {
             <p class="stale" role="status">본문이 바뀌었습니다. 승인할 때 요약과 검증을 다시 하며, 아래 결과는 이전 본문 기준입니다.</p>
@@ -260,6 +274,15 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
     }
     .block ul {
       padding-left: 18px;
+      margin: 4px 0;
+    }
+    .block {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      background: var(--sf-surface-2);
+    }
+    .block p {
       margin: 4px 0;
     }
     .ctx-panel {
@@ -391,6 +414,7 @@ export class ChapterWorkspacePage {
   protected readonly ctx = inject(ProjectContext);
   private readonly api = inject(StoryforgeApi);
   private readonly stream = inject(ChapterStream);
+  private readonly live = inject(LiveChannel);
   private readonly snack = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
@@ -402,6 +426,8 @@ export class ChapterWorkspacePage {
   protected readonly streaming = signal(false);
   protected readonly streamText = signal('');
   protected readonly busy = signal(false);
+  protected readonly scouting = signal(false);
+  protected readonly directions = signal<ScoutDirection[]>([]);
   protected readonly dirty = signal(false);
   protected editTitle = '';
   protected editContent = '';
@@ -451,6 +477,37 @@ export class ChapterWorkspacePage {
     if (this.dirty() && !confirm('저장하지 않은 수정이 있습니다. 이동할까요?')) return;
     this.selected.set(n);
     this.resetEdit();
+  }
+
+  protected scout(): void {
+    const id = this.ctx.projectId();
+    if (id == null || this.scouting()) return;
+    this.scouting.set(true);
+    this.live.connect();
+    const run = () => {
+      void this.live.scout(id).then(
+        (result) => {
+          this.directions.set(result.directions ?? []);
+          this.scouting.set(false);
+        },
+        (error: unknown) => {
+          this.scouting.set(false);
+          this.snack.open(error instanceof Error ? error.message : '장면 개척에 실패했습니다.', undefined, { duration: 4000 });
+        },
+      );
+    };
+    if (this.live.isOpen()) {
+      run();
+      return;
+    }
+    setTimeout(() => {
+      if (!this.live.isOpen()) {
+        this.scouting.set(false);
+        this.snack.open('실시간 연결이 없습니다. 백엔드와 AI 서버를 확인하세요.', undefined, { duration: 4000 });
+        return;
+      }
+      run();
+    }, 800);
   }
 
   protected generate(): void {

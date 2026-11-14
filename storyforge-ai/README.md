@@ -148,7 +148,7 @@ storyforge-ai/
 └── tests/                  # 72건. API·LLM·장면 연결·중단·반복·수명주기·도구 회귀
 ```
 
-실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다. 이름 225개를 로컬 Chroma에 넣으려면 `python -m scripts.embed_characters`를 실행합니다. 컬렉션 이름은 `characters`이고, 벡터는 다운로드 없는 글자 겹침입니다.
+실행 중 쌓이는 `data/used_characters.json`과 `data/chroma/`는 Git에서 제외합니다. 이름 풀 `data/names.json`은 버전 관리합니다. 이름 225개를 로컬 Chroma에 넣으려면 `python -m scripts.embed_characters`를 실행합니다. 컬렉션 이름은 `characters`이고, 벡터는 다운로드 없는 글자 겹침입니다. 가이드와 장면 개척의 내부 소켓은 `/internal/ws`이고, 챕터 토큰은 SSE입니다. 장면 연결 가중치는 `python -m scripts.train_plausibility`로 갱신합니다.
 
 서버 내부 작업의 공통 진입점은 `services/orchestration.py`의 `AiTaskOrchestrator`입니다. 프로젝트 상태 전이·DB 저장·사람의 승인 조정은 Spring Boot에 유지합니다. `data/`에는 실행 조정 코드를 두지 않습니다.
 

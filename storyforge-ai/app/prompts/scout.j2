@@ -1,0 +1,21 @@
+다음 장면의 개척안만 만드세요. 본문을 쓰지 않습니다.
+
+{% include "_bible_context.j2" %}
+
+작품: {{ project.title }}
+{% if outline %}
+이번 Outline: {{ outline.title }}
+Beats: {{ outline.beats | join(" / ") }}
+목표: {{ outline.goals or "" }}
+{% endif %}
+직전 장면: {{ previous_ending or "(첫 장면)" }}
+직전 요약: {{ previous_summary or "" }}
+
+이미 고른 갈래:
+{% for item in anchors %}
+- {{ item.title }}: {{ item.causal_link }} 다음 행동: {{ item.next_action }} 피할 것: {{ item.avoid }}
+{% endfor %}
+
+세 갈래를 유지합니다. 각 갈래는 직전 장면의 마지막 행동 바로 다음이어야 합니다.
+Story Bible, Outline, 직전 장면에 없는 인물 이름·장소·과거 사건은 넣지 않습니다.
+title, causal_link, next_action, avoid를 채웁니다.
