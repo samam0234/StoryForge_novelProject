@@ -165,7 +165,7 @@ AI SSE가 `done` 없이 종료된 경우도 `error`이며 부분 본문을 저�
 | Angular → Spring Boot | `GET /api/v1/ws?access_token=` 업그레이드 | 쿼리 토큰을 Bearer로 옮겨 기존 JWT를 검사 |
 | Spring Boot → FastAPI | `ws://<AI>/internal/ws` | 내부망. 브라우저는 이 주소로 접속하지 않음 |
 
-클라이언트 프레임은 `{id, op, ...}`입니다. `op`는 `ping`, `guide`, `scout`입니다. `scout`는 `projectId`만 보내고, Story Bible·Outline·직전 장면은 Spring Boot가 채웁니다. 응답은 같은 `id`로 돌아오며 상태 머신을 바꾸지 않습니다. 연결이 없으면 가이드는 기존 `POST /guide/chat`을 사용합니다.
+클라이언트 프레임은 `{id, op, ...}`입니다. `op`는 `ping`, `guide`, `scout`입니다. 브라우저 소켓이 열려 있는 동안 Spring Boot도 AI 소켓을 하나 유지하고, 같은 연결로 요청을 여러 번 보냅니다. `scout`는 `projectId`만 보내고, Story Bible·Outline·직전 장면은 Spring Boot가 채웁니다. 응답의 `carry`는 직전 장면에서 다음 문단으로 넘겨야 할 사실이고, `opening`은 그 사실로 시작하는 첫 문단입니다. 상태 머신은 바꾸지 않습니다. 연결이 없으면 가이드는 기존 `POST /guide/chat`을 사용합니다.
 
 장면 개척은 직전 행동 다음의 세 갈래를 돌려줍니다. 새 인물·장소·과거를 만들지 않는 문장을 프롬프트에 함께 넣지만, 그 문장만으로 챕터를 저장하거나 승인하지 않습니다.
 

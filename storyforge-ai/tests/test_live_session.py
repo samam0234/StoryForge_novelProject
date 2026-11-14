@@ -33,6 +33,9 @@ def test_rule_scout_stays_inside_the_previous_action_and_known_names():
     assert len(directions) == 3
     assert "전표를 찾아 주머니에 넣었다" in directions[0].causal_link
     assert "수신인을 확인한다" in directions[0].next_action
+    assert directions[0].carry
+    assert any("전표" in fact for fact in directions[0].carry)
+    assert "수신인을 확인한다" in directions[0].opening
     assert all("없는 인물" in item.avoid for item in directions)
 
 
@@ -54,12 +57,11 @@ def test_bridge_issue_uses_existing_plot_thread_type():
     assert not any("인과가 끊겨" in issue.description for issue in linked)
 
 
-def test_internal_websocket_ping_and_scout_round_trip():
+def test_internal_websocket_keeps_the_session_for_a_second_request():
     client = TestClient(create_app())
     with client.websocket_connect("/internal/ws") as socket:
         socket.send_text(json.dumps({"op": "ping", "id": "1"}))
         assert socket.receive_json() == {"op": "pong", "id": "1"}
-    with client.websocket_connect("/internal/ws") as socket:
         socket.send_text(json.dumps({
             "op": "scout",
             "id": "2",
@@ -72,3 +74,5 @@ def test_internal_websocket_ping_and_scout_round_trip():
         assert body["op"] == "scout" and body["id"] == "2"
         assert len(body["directions"]) == 3
         assert "문을 열고 안을 들여다보았다" in body["directions"][0]["causalLink"]
+        assert body["directions"][0]["carry"]
+        assert body["directions"][0]["opening"]
