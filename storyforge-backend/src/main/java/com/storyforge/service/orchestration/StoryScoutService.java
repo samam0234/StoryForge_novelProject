@@ -3,7 +3,6 @@ package com.storyforge.service.orchestration;
 import com.storyforge.client.AiDtos.BibleInfo;
 import com.storyforge.client.AiDtos.CharacterInfo;
 import com.storyforge.client.AiDtos.ProjectInfo;
-import com.storyforge.client.AiLiveClient;
 import com.storyforge.config.ProjectAccess;
 import com.storyforge.domain.bible.StoryBible;
 import com.storyforge.domain.chapter.Chapter;
@@ -22,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 로그인한 사용자의 프로젝트로 다음 장면 개척 요청을 만들고 AI 웹소켓에 넘깁니다.
- * 상태 머신을 옮기지 않습니다.
+ * 로그인한 사용자의 프로젝트로 다음 장면 개척 요청을 만듭니다.
+ * 전송은 브라우저 세션의 AI 웹소켓이 맡고, 상태 머신은 옮기지 않습니다.
  */
 @Service
 public class StoryScoutService {
@@ -33,21 +32,19 @@ public class StoryScoutService {
     private final BibleService bibles;
     private final OutlineRepository outlines;
     private final ChapterService chapters;
-    private final AiLiveClient live;
     private final ObjectMapper json;
 
     public StoryScoutService(ProjectRepository projects, ProjectAccess access, BibleService bibles,
-                             OutlineRepository outlines, ChapterService chapters, AiLiveClient live, ObjectMapper json) {
+                             OutlineRepository outlines, ChapterService chapters, ObjectMapper json) {
         this.projects = projects;
         this.access = access;
         this.bibles = bibles;
         this.outlines = outlines;
         this.chapters = chapters;
-        this.live = live;
         this.json = json;
     }
 
-    public String exchange(Long userId, Long projectId, String messageId) {
+    public String payload(Long userId, Long projectId, String messageId) {
         Project project = projects.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("프로젝트를 찾을 수 없습니다."));
         if (!access.canRead(project.getId(), userId)) {
@@ -78,11 +75,8 @@ public class StoryScoutService {
         body.put("previousEnding", last == null ? null : ending(last.getContent()));
         body.put("previousSummary", last == null ? null : last.getSummary());
         try {
-            return live.exchange(json.writeValueAsString(body));
+            return json.writeValueAsString(body);
         } catch (Exception e) {
-            if (e instanceof RuntimeException runtime) {
-                throw runtime;
-            }
             throw new IllegalStateException("장면 개척 요청을 만들지 못했습니다.", e);
         }
     }

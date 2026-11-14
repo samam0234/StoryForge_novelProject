@@ -42,6 +42,19 @@ public class LiveSessionHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         if (!(session.getAttributes().get("userId") instanceof Long)) {
             session.close(CloseStatus.NOT_ACCEPTABLE.withReason("로그인이 필요합니다."));
+            return;
+        }
+        try {
+            session.getAttributes().put("ai", live.open());
+        } catch (AiServiceException ignored) {
+            session.getAttributes().remove("ai");
+        }
+    }
+
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        if (session.getAttributes().get("ai") instanceof AiLiveClient.Session ai) {
+            ai.close();
         }
     }
 
@@ -68,10 +81,10 @@ public class LiveSessionHandler extends TextWebSocketHandler {
             if ("ping".equals(op)) {
                 send(session, "{\"op\":\"pong\",\"id\":" + json.writeValueAsString(id) + "}");
             } else if ("guide".equals(op)) {
-                send(session, guide(userId, id, node.path("message").asText("")));
+                send(session, guide(ai(session), userId, id, node.path("message").asText("")));
             } else if ("scout".equals(op)) {
                 long projectId = node.path("projectId").asLong(0);
-                send(session, scouts.exchange(userId, projectId, id));
+                send(session, ai(session).exchange(scouts.payload(userId, projectId, id)));
             } else {
                 send(session, error(id, "알 수 없는 요청입니다."));
             }
@@ -82,7 +95,7 @@ public class LiveSessionHandler extends TextWebSocketHandler {
         }
     }
 
-    private String guide(Long userId, String id, String message) throws Exception {
+    private String guide(AiLiveClient.Session ai, Long userId, String id, String message) throws Exception {
         String text = message == null ? "" : message.strip();
         if (text.isEmpty() || text.length() > 2000) {
             return error(id, "질문은 1자 이상 2000자 이하여야 합니다.");
@@ -91,7 +104,7 @@ public class LiveSessionHandler extends TextWebSocketHandler {
         ObjectNode outbound = (ObjectNode) json.readTree(request);
         outbound.put("op", "guide");
         outbound.put("id", id);
-        JsonNode raw = json.readTree(live.exchange(outbound.toString()));
+        JsonNode raw = json.readTree(ai.exchange(outbound.toString()));
         if ("error".equals(raw.path("op").asText())) {
             return error(id, raw.path("message").asText("요청을 처리하지 못했습니다."));
         }
@@ -106,6 +119,13 @@ public class LiveSessionHandler extends TextWebSocketHandler {
         response.put("reply", decorated.reply());
         response.set("actions", json.valueToTree(decorated.actions()));
         return response.toString();
+    }
+
+    private AiLiveClient.Session ai(WebSocketSession session) {
+        if (session.getAttributes().get("ai") instanceof AiLiveClient.Session value) {
+            return value;
+        }
+        throw new AiServiceException("AI 실시간 연결에 실패했습니다.", null);
     }
 
     private String error(String id, String message) throws Exception {
