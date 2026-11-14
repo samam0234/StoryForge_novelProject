@@ -75,13 +75,13 @@ public class LiveSessionHandler extends TextWebSocketHandler {
             send(session, error(null, "요청 형식이 올바르지 않습니다."));
             return;
         }
-        String id = node.path("id").asText("");
-        String op = node.path("op").asText("");
+        String id = node.path("id").asString("");
+        String op = node.path("op").asString("");
         try {
             if ("ping".equals(op)) {
                 send(session, "{\"op\":\"pong\",\"id\":" + json.writeValueAsString(id) + "}");
             } else if ("guide".equals(op)) {
-                send(session, guide(ai(session), userId, id, node.path("message").asText("")));
+                send(session, guide(ai(session), userId, id, node.path("message").asString("")));
             } else if ("scout".equals(op)) {
                 long projectId = node.path("projectId").asLong(0);
                 send(session, ai(session).exchange(scouts.payload(userId, projectId, id)));
@@ -105,14 +105,14 @@ public class LiveSessionHandler extends TextWebSocketHandler {
         outbound.put("op", "guide");
         outbound.put("id", id);
         JsonNode raw = json.readTree(ai.exchange(outbound.toString()));
-        if ("error".equals(raw.path("op").asText())) {
-            return error(id, raw.path("message").asText("요청을 처리하지 못했습니다."));
+        if ("error".equals(raw.path("op").asString(""))) {
+            return error(id, raw.path("message").asString("요청을 처리하지 못했습니다."));
         }
         List<GuideAction> actions = new ArrayList<>();
         for (JsonNode action : raw.path("actions")) {
-            actions.add(new GuideAction(action.path("label").asText(), action.path("kind").asText(), action.path("target").asText()));
+            actions.add(new GuideAction(action.path("label").asString(""), action.path("kind").asString(""), action.path("target").asString("")));
         }
-        GuideChatResponse decorated = guides.decorate(new GuideChatResponse(raw.path("reply").asText(""), actions));
+        GuideChatResponse decorated = guides.decorate(new GuideChatResponse(raw.path("reply").asString(""), actions));
         ObjectNode response = json.createObjectNode();
         response.put("op", "guide");
         response.put("id", id);

@@ -15,6 +15,7 @@
 - 챕터 스트림 출력 상한 24000, 구간 목표 글자 수를 올리고 첫 문단이 직전 장면을 잇도록 프롬프트 보강
 - 배포용 `docker-compose.deploy.yml`. AI 포트는 게시하지 않음. 외부 메일 수신과 약관 법률 검토는 아직 없음
 - Gmail SMTP는 접속됐지만 인증이 535로 거절됨. 그 실패가 `/actuator/health` 전체를 DOWN으로 만들지 않도록 메일 health 지표를 끔
+- 웹소켓 JSON은 폐기된 `JsonNode.asText` 대신 `asString`을 사용. SMTP 확인 스크립트의 예외 순서를 고쳐 도달할 수 없던 분기를 제거
 
 ### 2026-11-11
 
