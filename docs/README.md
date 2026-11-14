@@ -28,6 +28,8 @@ StoryForge의 개발 스펙, 아키텍처, 커밋 기록, 운영 문서를 모�
 
 현재 후속 작업은 [SMTP 계정 메일](guidance/account-mail.md), [실제 Gemma 측정](guidance/ollama-performance.md), [배포 제외 검증·통합 기록](vaildates/local-followup.md)에서 확인합니다.
 
+2026-11-14 기준으로 가이드와 장면 개척은 세션 웹소켓이고 챕터 본문은 SSE입니다. 루트 README의 호출 구조·프레임워크 이미지는 [docs/images](images/)의 PNG입니다. 편집기 미리보기는 SVG를 그리지 않습니다.
+
 코드 진단 수정 당시 218건 자동 테스트·두 빌드를 확인했고, 이후 AI 실행 계층 정리에서는 [AI 64건·타입 검사·CLI 검증](vaildates/diagnostics-integration.md)을 확인했습니다. [서버 진입점·패키지별 조정 책임](Architecture/system-overview.md#ai-서버-내부-실행-조정)에 구조를 정리했습니다. 사용자가 커밋·병합·푸시를 직접 요청해 이전 보류를 변경했습니다. [브라우저 연결 호스트 문제](repeater/browser-automation-host.md)와 실제 화면 검증은 통합 후에도 남는 확인 대상입니다.
 
 ## 루트 문서

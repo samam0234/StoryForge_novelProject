@@ -63,6 +63,7 @@ LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... .venv/Scripts/python -m uvic
 - 브라우저 `http://localhost:4200` → 로그인 화면. 이용약관에 동의하고 회원가입하면 내 프로젝트(`/`)로 이동
 - 새 프로젝트 → Story Bible 생성·확정 → Outline 생성·확정 → 챕터 탭에서 생성 시 "AI writing..."과 함께 본문이 흘러나오고, 우측에 Continuity 점수가 표시됩니다
 - mock 모드 생성물에는 "※ 개발용 mock 생성기 출력입니다" 표시가 붙습니다
+- 챕터 본문은 SSE입니다. 가이드와 장면 개척은 브라우저 → `/api/v1/ws` → AI `/internal/ws`이며, 프론트 프록시의 `"ws": true`가 있어야 개발 서버가 그 연결을 넘깁니다. 장면 개척은 프로젝트 상태를 바꾸지 않습니다
 
 ## 테스트
 

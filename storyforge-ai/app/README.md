@@ -26,6 +26,7 @@ orchestration.lifespan → core/orchestration (공급자 선택·예열·연결 
 | `api/v1/chapter.py` | `POST /internal/generate/chapter` — SSE (`token` → `done` 또는 `error`), `POST /internal/generate/review` — 재요약·재검증 |
 | `api/v1/package.py` | `POST /internal/package/continuity` — 패키지 작품 사이의 검사 |
 | `api/v1/guide.py` | `POST /internal/guide/chat` — AI 가이드챗 |
+| `api/v1/live.py` | `WS /internal/ws` — 연결을 유지한 채 `ping`, `guide`, `scout` |
 | `core/ollama.py` | HTTP 연결 풀, 추론 슬롯, 예열·모델 상주, JSON 스키마·스트림 완료 검증 |
 | `core/config.py` | 환경 변수 설정 (`LLM_PROVIDER`, `LLM_MODEL`, `LLM_EFFORT` 등) |
 | `core/orchestration.py` | `RoutingLLM`, 프로세스 단위 `get_llm()`, 시작 예열·종료·캐시 해제 |
