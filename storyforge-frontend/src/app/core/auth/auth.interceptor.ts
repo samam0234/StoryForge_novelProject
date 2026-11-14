@@ -1,6 +1,6 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 
@@ -13,12 +13,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = auth.token();
   const request = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
-  const isLoginCall = req.url.endsWith('/auth/login') || req.url.endsWith('/auth/register');
+  const isSessionCall = req.url.endsWith('/auth/login') || req.url.endsWith('/auth/register')
+    || req.url.endsWith('/auth/refresh') || req.url.endsWith('/auth/logout');
 
   return next(request).pipe(
     catchError((e: unknown) => {
-      if (e instanceof HttpErrorResponse && e.status === 401 && !isLoginCall) auth.expire();
-      return throwError(() => e);
+      if (!(e instanceof HttpErrorResponse) || e.status !== 401 || isSessionCall) return throwError(() => e);
+      if (!auth.hasRefresh()) {
+        auth.expire();
+        return throwError(() => e);
+      }
+      return auth.refreshSession().pipe(
+        switchMap(() => next(req.clone({ setHeaders: { Authorization: `Bearer ${auth.token() ?? ''}` } }))),
+        catchError((refreshError: unknown) => {
+          auth.expire();
+          return throwError(() => refreshError);
+        }),
+      );
     }),
   );
 };

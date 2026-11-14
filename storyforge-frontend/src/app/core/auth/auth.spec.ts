@@ -85,6 +85,28 @@ describe('authInterceptor', () => {
     expect(ctrl.expectOne('https://example.com/x').request.headers.has('Authorization')).toBe(false);
   });
 
+  it('401이고 갱신 토큰이 있으면 한 번 갱신한 뒤 다시 요청한다', () => {
+    const { auth, http, ctrl } = setup();
+    auth.login({ email: 'a@b.c', password: 'password1' }).subscribe();
+    ctrl.expectOne(`${API}/auth/login`).flush({
+      ...response(),
+      refreshToken: 'refresh-1',
+      refreshExpiresAt: future(),
+    });
+    http.get(`${API}/projects`).subscribe();
+    ctrl.expectOne(`${API}/projects`).flush({}, { status: 401, statusText: 'Unauthorized' });
+    ctrl.expectOne(`${API}/auth/refresh`).flush({
+      ...response(),
+      accessToken: 'token-2',
+      refreshToken: 'refresh-2',
+      refreshExpiresAt: future(),
+    });
+    const retry = ctrl.expectOne(`${API}/projects`);
+    expect(retry.request.headers.get('Authorization')).toBe('Bearer token-2');
+    retry.flush([]);
+    expect(auth.token()).toBe('token-2');
+  });
+
   it('401이면 세션을 만료시킨다', () => {
     const { auth, http, ctrl } = loggedIn();
     const expire = vi.spyOn(auth, 'expire').mockImplementation(() => undefined);
