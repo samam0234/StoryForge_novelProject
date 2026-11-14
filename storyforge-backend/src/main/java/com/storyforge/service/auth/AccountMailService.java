@@ -36,13 +36,16 @@ public class AccountMailService {
     private final boolean enabled;
     private final String from;
     private final String origin;
+    private final RefreshTokenService refreshTokens;
     private final SecureRandom random = new SecureRandom();
 
     public AccountMailService(JdbcTemplate jdbc, AppUserRepository users, PasswordEncoder encoder, JavaMailSender mail,
+            RefreshTokenService refreshTokens,
             @Value("${storyforge.mail.enabled:false}") boolean enabled,
             @Value("${storyforge.mail.from:}") String from,
             @Value("${storyforge.mail.frontend-origin:http://localhost:4200}") String origin) {
         this.jdbc = jdbc; this.users = users; this.encoder = encoder; this.mail = mail;
+        this.refreshTokens = refreshTokens;
         this.enabled = enabled; this.from = from; this.origin = origin;
         if (enabled) {
             java.net.URI uri = java.net.URI.create(origin);
@@ -126,6 +129,7 @@ public class AccountMailService {
                 throw new InvalidStateException("비밀번호는 UTF-8 기준 72바이트 이하여야 합니다.");
             }
             user.changePassword(encoder.encode(password));
+            refreshTokens.revokeAll(user.getId());
             jdbc.update("delete from account_mail_token where user_id = ?", user.getId());
         } else {
             user.verifyEmail();

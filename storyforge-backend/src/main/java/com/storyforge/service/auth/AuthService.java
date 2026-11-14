@@ -27,13 +27,16 @@ public class AuthService {
     private final AppUserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokens;
+    private final RefreshTokenService refreshTokens;
     private final AccountPolicy policy;
 
-    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens, AccountPolicy policy) {
+    public AuthService(AppUserRepository users, PasswordEncoder passwordEncoder, TokenService tokens,
+                       RefreshTokenService refreshTokens, AccountPolicy policy) {
         this.policy = policy;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.tokens = tokens;
+        this.refreshTokens = refreshTokens;
     }
 
     @Transactional
@@ -50,6 +53,7 @@ public class AuthService {
         return tokens.issue(Objects.requireNonNull(users.save(user)));
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         AppUser user = users.findByEmail(normalizeEmail(request.email()))
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
@@ -58,6 +62,16 @@ public class AuthService {
             throw new ForbiddenException("이용이 정지된 계정입니다." + (user.getSuspendedReason() == null ? "" : " 사유: " + user.getSuspendedReason()));
         }
         return tokens.issue(user);
+    }
+
+    @Transactional
+    public AuthResponse refresh(String refreshToken) {
+        return tokens.issue(refreshTokens.consume(refreshToken));
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        refreshTokens.revoke(refreshToken);
     }
 
     public UserResponse me(Long userId) {

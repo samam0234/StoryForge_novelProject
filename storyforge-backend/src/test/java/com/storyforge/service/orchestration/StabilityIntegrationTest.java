@@ -9,8 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -46,6 +50,8 @@ class StabilityIntegrationTest extends IntegrationTestBase {
     private ProjectRepository projects;
     @Autowired
     private TransactionTemplate tx;
+    @Autowired
+    private JdbcTemplate jdbc;
 
     private void forceStatus(long id, ProjectStatus status) {
         tx.executeWithoutResult(s -> {
@@ -54,11 +60,18 @@ class StabilityIntegrationTest extends IntegrationTestBase {
         });
     }
 
+    /** 다른 서버에서 방금 시작한 생성은 복구하지 않으므로, 죽은 생성은 시각을 뒤로 돌립니다. */
+    private void ageGeneration(long id) {
+        jdbc.update("update project set updated_at = ? where id = ?",
+                Timestamp.from(Instant.now().minus(Duration.ofMinutes(10))), id);
+    }
+
     @Test
     void stuckFirstChapterRecoversToOutlineConfirmed() throws Exception {
         String token = newUser();
         long project = projectAtOutlineConfirmed(token, 2);
         forceStatus(project, ProjectStatus.CHAPTER_GENERATING);
+        ageGeneration(project);
 
         assertThat(recovery.recoverStuckProjects()).isGreaterThanOrEqualTo(1);
         assertThat(status(project, token)).isEqualTo("OUTLINE_CONFIRMED");
@@ -72,9 +85,21 @@ class StabilityIntegrationTest extends IntegrationTestBase {
         generateChapter(project, 1, token);
         call("PUT", "/chapters/" + chapterId(project, 1, token) + "/confirm", null, token);
         forceStatus(project, ProjectStatus.CHAPTER_GENERATING);
+        ageGeneration(project);
 
         recovery.recoverStuckProjects();
         assertThat(status(project, token)).isEqualTo("CHAPTER_REVIEW");
+    }
+
+    @Test
+    void freshGenerationOnAnotherInstanceIsLeftAlone() throws Exception {
+        String token = newUser();
+        long project = projectAtOutlineConfirmed(token, 2);
+        forceStatus(project, ProjectStatus.CHAPTER_GENERATING);
+
+        recovery.recoverStuckProjects();
+
+        assertThat(status(project, token)).isEqualTo("CHAPTER_GENERATING");
     }
 
     @Test

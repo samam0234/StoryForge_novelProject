@@ -2,6 +2,8 @@ package com.storyforge.controller;
 
 import com.storyforge.domain.user.AuthDtos.AuthResponse;
 import com.storyforge.domain.user.AuthDtos.LoginRequest;
+import com.storyforge.domain.user.AuthDtos.LogoutRequest;
+import com.storyforge.domain.user.AuthDtos.RefreshRequest;
 import com.storyforge.domain.user.AuthDtos.RegisterRequest;
 import com.storyforge.domain.user.AuthDtos.UserResponse;
 import com.storyforge.service.auth.AuthService;
@@ -31,6 +33,19 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@Valid @RequestBody RefreshRequest request) {
+        return authService.refresh(request.refreshToken());
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@RequestBody(required = false) LogoutRequest request) {
+        if (request != null) {
+            authService.logout(request.refreshToken());
+        }
     }
 
     @GetMapping("/me")
