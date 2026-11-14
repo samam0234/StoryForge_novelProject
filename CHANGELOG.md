@@ -10,6 +10,7 @@
 - 가이드와 장면 개척은 Angular → Spring Boot `/api/v1/ws` → FastAPI `/internal/ws`. 브라우저 연결 동안 AI 소켓도 유지. 챕터 생성은 SSE
 - 장면 개척은 직전 문장에서 남길 사실과 첫 문단을 돌려주고, 끊긴 연결은 로지스틱 회귀가 기존 `plot_thread`에 추가. 자동 승인 없음
 - README 호출 구조와 프레임워크 도식은 PNG. 편집기 미리보기에서 SVG가 보이지 않아 바꿈
+- README 프레임워크 소개에 Angular, Spring Boot, FastAPI, PostgreSQL 카드를 각각 넣음. 서비스 README와 로컬 실행 가이드에 세션 웹소켓·장면 개척을 보충
 
 ### 2026-11-11
 

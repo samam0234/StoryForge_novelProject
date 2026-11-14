@@ -62,16 +62,33 @@ stateDiagram-v2
 
 ![호출 구조. Angular는 Spring Boot만 보고, 챕터는 SSE, 가이드와 장면 개척은 웹소켓](docs/images/architecture.png)
 
-![프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.png)
+![네 프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.png)
 
-| 계층 | 프레임워크 | 이 저장소에서 맡는 일 |
-|------|------------|------------------------|
-| 화면 | Angular 21, Material, TipTap, RxJS | 로그인, 에디터, 커뮤니티, 챕터 SSE 수신, `/api/v1/ws` |
-| 오케스트레이션 | Spring Boot 4.1, Security, JPA, Flyway, WebSocket | JWT, 프로젝트 상태 머신, 저장, AI 중계 |
-| 생성 | FastAPI, Pydantic, Jinja2 | 프롬프트 조립, LLM 스트림, Continuity, 장면 개척 |
-| 데이터 | PostgreSQL 16, ChromaDB, JSON 가중치 | 원고 영속화, 이름 벡터, 장면 연결 회귀 |
+### 화면 — Angular 21
 
-챕터 본문은 SSE로 중계합니다. 가이드 질문과 다음 장면 개척만 웹소켓을 쓰며, 브라우저는 FastAPI 주소로 접속하지 않습니다. 직전 장면과 첫머리가 끊기면 로지스틱 회귀가 기존 `plot_thread` 이슈를 추가합니다. 그 점수로 챕터를 자동 승인하지 않습니다.
+![Angular 21. Material, TipTap, RxJS. 챕터는 SSE이고 가이드와 장면 개척은 웹소켓](docs/images/framework-angular.png)
+
+로그인, 에디터, 커뮤니티 화면을 담당합니다. 챕터 본문은 SSE로 받고, 가이드 질문과 장면 개척만 `/api/v1/ws`로 보냅니다. 개발 서버의 `/api` 프록시는 웹소켓을 그대로 8080에 넘깁니다.
+
+### 오케스트레이션 — Spring Boot 4.1
+
+![Spring Boot 4.1. JWT, JPA, Flyway. 브라우저가 연결된 동안 AI 소켓을 유지](docs/images/framework-spring.png)
+
+인증, 프로젝트 상태 머신, 저장, AI 중계를 맡습니다. 브라우저 소켓이 열려 있는 동안 FastAPI 소켓도 하나 유지하고, 같은 연결로 가이드와 장면 개척을 여러 번 보냅니다. 상태 전이는 이 계층에서만 일어납니다.
+
+### 생성 — FastAPI
+
+![FastAPI. Pydantic, Jinja2. 프롬프트, Continuity, 장면 개척, 개연 회귀](docs/images/framework-fastapi.png)
+
+프롬프트를 조립하고 LLM 스트림과 Continuity를 수행합니다. 장면 개척은 직전 문장에서 남길 사실(`carry`)과 이어 쓸 첫 문단(`opening`)을 돌려줍니다. 주소는 `127.0.0.1:8001`이며 브라우저는 이 주소로 접속하지 않습니다.
+
+### 데이터 — PostgreSQL 16
+
+![PostgreSQL 16. Flyway 스키마와 원고 저장. 이름 벡터는 ChromaDB, 가중치는 JSON](docs/images/framework-postgres.png)
+
+원고와 계정, 커뮤니티 데이터는 PostgreSQL 16에 둡니다. 이름 225개의 글자 겹침 벡터는 AI 프로세스의 ChromaDB이고, 장면 연결 회귀 가중치는 JSON 파일입니다. 둘 다 챕터를 자동 승인하지 않습니다.
+
+챕터 본문은 SSE로 중계합니다. 직전 장면과 첫머리가 끊기면 로지스틱 회귀가 기존 `plot_thread` 이슈를 추가합니다. 그 점수로 챕터를 자동 승인하지 않습니다.
 
 버전과 포트의 기준값은 [CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)입니다.
 
@@ -168,11 +185,13 @@ PowerShell에서는 `$env:LLM_PROVIDER="anthropic"; $env:ANTHROPIC_API_KEY="sk-a
 | DB | PostgreSQL 16 (Docker) | 5433 | [docker-compose.yml](docker-compose.yml) |
 
 ```
-브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP──▶ FastAPI(8001) ──▶ LLM
+브라우저 ──▶ Angular(4200) ──/api 프록시──▶ Spring Boot(8080) ──내부 HTTP·WS──▶ FastAPI(8001) ──▶ LLM
                                               │
                                               ▼
                                        PostgreSQL(5433)
 ```
+
+챕터 토큰은 HTTP SSE입니다. 가이드와 장면 개척만 웹소켓이며, 프록시 설정에 `"ws": true`가 있어야 개발 서버가 그 연결을 넘깁니다.
 
 - **Angular는 FastAPI를 직접 호출하지 않습니다.** 모든 요청은 Spring Boot를 거칩니다.
 - 버전·포트·환경 변수의 기준값은 [docs/plan/CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)에 있습니다. 바꿀 때는 이 문서를 먼저 고칩니다.

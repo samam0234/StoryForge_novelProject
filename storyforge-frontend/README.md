@@ -32,7 +32,7 @@ npx ng serve          # 또는 npm start
 
 - 주소: http://localhost:4200
 - 코드를 저장하면 자동으로 다시 빌드됩니다.
-- `/api`로 시작하는 요청은 [proxy.conf.json](proxy.conf.json)이 `http://localhost:8080`으로 전달합니다. 그래서 개발 중에는 CORS 설정 없이 동작합니다.
+- `/api`로 시작하는 요청은 [proxy.conf.json](proxy.conf.json)이 `http://localhost:8080`으로 전달합니다. `"ws": true`가 있어 가이드와 장면 개척 웹소켓도 같은 대상으로 갑니다. 개발 중에는 CORS 설정 없이 동작합니다.
 
 ### 명령어
 
@@ -63,7 +63,7 @@ npx ng serve          # 또는 npm start
 | Story Bible | `/projects/:id/bible` | AI 생성, Overview/Characters/World/Themes 탭 편집, 확정 | §6.1, §9.6-2 |
 | Outline | `/projects/:id/outline` | AI 생성, 드래그 앤 드롭 재배치, Beats 편집, 확정 | §6.2, §9.6-3 |
 | 설정 | `/projects/:id/settings` | 제목, 장르, 모델, 기본 톤, 내보내기 형식, 삭제 | §9.6-5 |
-| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, TipTap 편집, Continuity 리포트, 승인·재생성. 고친 원고는 승인 때 재검증 | §6.3, §9.6-4 |
+| 챕터 | `/projects/:id/chapters` | 3단 워크스페이스, 스트리밍 생성, TipTap 편집, Continuity 리포트, 승인·재생성, 장면 개척. 고친 원고는 승인 때 재검증 | §6.3, §9.6-4 |
 | 작업 기록 | `/projects/:id/activity` | 작업 그래프, 작업 기록표, 함께 창작 초대와 작업 커밋 | |
 | 게시 | `/projects/:id/publish` | 승인된 챕터를 작품으로 게시 | |
 | 원본 비교 | `/projects/:id/upstream` | Clone 원본과의 Diff, 원본으로 덮어쓰기, 확인 표시 | |
@@ -109,7 +109,7 @@ storyforge-frontend/
     ├── environments/      # apiBaseUrl
     ├── styles/            # 디자인 토큰, Material 테마
     └── app/
-        ├── core/          # api(REST·SSE 래퍼), models(타입), auth(세션·인터셉터·가드)
+        ├── core/          # api(REST·SSE·`/api/v1/ws`), models(타입), auth(세션·인터셉터·가드)
         ├── shared/        # 공통 컴포넌트 (에디터, 이력, 그래프, 카드)
         ├── features/      # 화면. 표는 src/app/features/README.md
         └── layout/        # 셸, 테마 서비스, 알림 종
