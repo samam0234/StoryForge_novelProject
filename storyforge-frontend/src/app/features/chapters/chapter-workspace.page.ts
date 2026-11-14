@@ -157,14 +157,21 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
         <!-- 우측: Continuity + 캐릭터 상태 -->
         <aside class="col right">
           <h3>다음 장면</h3>
+          <p class="sf-muted">{{ live.connected() ? '실시간 연결로 직전 장면을 잇습니다.' : '연결되면 직전 장면의 사실을 다음 문단으로 넘깁니다.' }}</p>
           <button mat-stroked-button type="button" (click)="scout()" [disabled]="scouting()">
             <mat-icon>explore</mat-icon> 장면 개척
           </button>
           @for (d of directions(); track d.title) {
             <article class="block">
               <p><strong>{{ d.title }}</strong></p>
+              @if (d.opening) {
+                <p>{{ d.opening }}</p>
+              }
               <p>{{ d.causalLink }}</p>
               <p>{{ d.nextAction }}</p>
+              @if (d.carry?.length) {
+                  <p class="sf-muted">남길 사실: {{ d.carry?.join(' · ') }}</p>
+              }
               <p class="sf-muted">{{ d.avoid }}</p>
             </article>
           }
@@ -414,7 +421,7 @@ export class ChapterWorkspacePage {
   protected readonly ctx = inject(ProjectContext);
   private readonly api = inject(StoryforgeApi);
   private readonly stream = inject(ChapterStream);
-  private readonly live = inject(LiveChannel);
+  protected readonly live = inject(LiveChannel);
   private readonly snack = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
 
@@ -483,31 +490,29 @@ export class ChapterWorkspacePage {
     const id = this.ctx.projectId();
     if (id == null || this.scouting()) return;
     this.scouting.set(true);
-    this.live.connect();
-    const run = () => {
-      void this.live.scout(id).then(
-        (result) => {
-          this.directions.set(result.directions ?? []);
+    void this.live.whenOpen(1200).then(
+      (opened) => {
+        if (!opened) {
           this.scouting.set(false);
-        },
-        (error: unknown) => {
-          this.scouting.set(false);
-          this.snack.open(error instanceof Error ? error.message : '장면 개척에 실패했습니다.', undefined, { duration: 4000 });
-        },
-      );
-    };
-    if (this.live.isOpen()) {
-      run();
-      return;
-    }
-    setTimeout(() => {
-      if (!this.live.isOpen()) {
+          this.snack.open('실시간 연결이 없습니다. 백엔드와 AI 서버를 확인하세요.', undefined, { duration: 4000 });
+          return;
+        }
+        return this.live.scout(id).then(
+          (result) => {
+            this.directions.set(result.directions ?? []);
+            this.scouting.set(false);
+          },
+          (error: unknown) => {
+            this.scouting.set(false);
+            this.snack.open(error instanceof Error ? error.message : '장면 개척에 실패했습니다.', undefined, { duration: 4000 });
+          },
+        );
+      },
+      () => {
         this.scouting.set(false);
         this.snack.open('실시간 연결이 없습니다. 백엔드와 AI 서버를 확인하세요.', undefined, { duration: 4000 });
-        return;
-      }
-      run();
-    }, 800);
+      },
+    );
   }
 
   protected generate(): void {

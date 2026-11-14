@@ -31,6 +31,7 @@ const SHORTCUTS = ['/도움말', '/상태', '/게시', '/클론', '/패키지', 
     <header class="sf-row head">
       <mat-icon aria-hidden="true">support_agent</mat-icon>
       <strong>AI 가이드</strong>
+      <span class="sf-muted">{{ live.connected() ? '실시간 연결' : '일반 연결' }}</span>
       <span class="sf-spacer"></span>
       <button mat-icon-button aria-label="가이드 닫기" (click)="closed.emit()"><mat-icon>close</mat-icon></button>
     </header>
@@ -140,7 +141,7 @@ const SHORTCUTS = ['/도움말', '/상태', '/게시', '/클론', '/패키지', 
 })
 export class GuideChatComponent {
   private readonly api = inject(CommunityApi);
-  private readonly live = inject(LiveChannel);
+  protected readonly live = inject(LiveChannel);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly log = viewChild.required<ElementRef<HTMLElement>>('log');
@@ -160,18 +161,22 @@ export class GuideChatComponent {
     this.text = '';
     this.push({ from: 'me', text: message, actions: [] });
     this.busy.set(true);
-    this.live.connect();
-    if (this.live.isOpen()) {
-      void this.live.guide(message).then(
-        (r) => {
-          this.busy.set(false);
-          this.push({ from: 'guide', text: r.reply, actions: r.actions ?? [] });
-        },
-        () => this.byHttp(message),
-      );
+    void this.deliver(message);
+  }
+
+  private async deliver(message: string): Promise<void> {
+    const opened = await this.live.whenOpen(700);
+    if (!opened) {
+      this.byHttp(message);
       return;
     }
-    this.byHttp(message);
+    try {
+      const reply = await this.live.guide(message);
+      this.busy.set(false);
+      this.push({ from: 'guide', text: reply.reply, actions: reply.actions ?? [] });
+    } catch {
+      this.byHttp(message);
+    }
   }
 
   private byHttp(message: string): void {
