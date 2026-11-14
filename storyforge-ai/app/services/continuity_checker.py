@@ -18,6 +18,7 @@ from app.models.schemas import (
 from app.prompts.orchestration import render
 from app.models.orchestration import chapter_prompt_context
 from app.services.plausibility import is_awkward
+from app.services.story_scout import carry_facts
 
 _PENALTY = {"high": 30, "medium": 12, "low": 4}
 # 챕터 생성 프롬프트의 공백 포함 분량 목표. 경고만 추가하며 검토를 건너뛰지 않습니다.
@@ -91,10 +92,15 @@ def _bridge_issues(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
     ending = (ctx.previous_chapters[-1].ending_excerpt or "").strip()
     if not is_awkward(ending, content):
         return []
+    facts = carry_facts(ending, [c.name for c in ctx.bible.characters])
+    missing = [fact for fact in facts if fact not in content[:500]]
+    detail = f" 이어야 할 사실: {', '.join(missing[:3])}." if missing else ""
     return [
         ContinuityIssue(
             type="plot_thread",
-            description="앞 장 마지막 장면과 이번 장 첫 장면의 인과가 끊겨 있습니다. 직전 행동의 다음 선택으로 잇는지 확인하세요.",
+            description="앞 장 마지막 장면과 이번 장 첫 장면의 인과가 끊겨 있습니다."
+            + detail
+            + " 직전 행동의 다음 선택으로 잇는지 확인하세요.",
             severity="medium",
         )
     ]

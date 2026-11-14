@@ -18,7 +18,7 @@ _WEIGHTS = Path(__file__).with_name("plausibility_weights.json")
 
 
 def features(previous: str, opening: str) -> list[float]:
-    """직전 장면과 새 첫머리에서 6개 연결 특징을 뽑습니다."""
+    """직전 장면과 새 첫머리에서 연결 특징을 뽑습니다. 마지막 값은 직전 문장의 단어가 첫머리에 다시 나오는 비율입니다."""
     prev = previous.strip()
     head = opening.strip()[:180]
     prev_words = set(re.findall(r"[가-힣]{2,}", prev))
@@ -33,7 +33,10 @@ def features(previous: str, opening: str) -> list[float]:
     skip = 1.0 if any(word in head[:40] for word in _SKIPS) else 0.0
     novel = len(head_words - prev_words) / len(head_words) if head_words else 1.0
     echo = 1.0 if len(prev) >= 8 and prev[-8:] in head else 0.0
-    return [shared, char_overlap, connective, skip, novel, echo]
+    last = re.split(r"[.!?。]\s*", prev)[-1] or prev
+    last_words = set(re.findall(r"[가-힣]{2,}", last[-48:]))
+    recall = len(last_words & head_words) / len(last_words) if last_words else 0.0
+    return [shared, char_overlap, connective, skip, novel, echo, recall]
 
 
 def _sigmoid(value: float) -> float:
