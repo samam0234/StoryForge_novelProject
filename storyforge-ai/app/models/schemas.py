@@ -229,6 +229,8 @@ class ScoutDirection(Schema):
     causal_link: str
     next_action: str
     avoid: str
+    carry: list[str] = Field(default_factory=list)
+    opening: str = ""
 
 
 class ScoutResponse(Schema):

@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { GuideReply } from '../models/community';
 
@@ -8,6 +8,8 @@ export interface ScoutDirection {
   causalLink: string;
   nextAction: string;
   avoid: string;
+  carry?: string[];
+  opening?: string;
 }
 
 interface Waiter {
@@ -22,6 +24,7 @@ export class LiveChannel {
   private socket: WebSocket | null = null;
   private seq = 0;
   private readonly pending = new Map<string, Waiter>();
+  readonly connected = signal(false);
 
   isOpen(): boolean {
     return typeof WebSocket !== 'undefined' && this.socket?.readyState === WebSocket.OPEN;
@@ -36,14 +39,33 @@ export class LiveChannel {
       const url = `${location.origin.replace(/^http/, 'ws')}/api/v1/ws?access_token=${encodeURIComponent(token)}`;
       const socket = new WebSocket(url);
       this.socket = socket;
+      socket.addEventListener('open', () => this.connected.set(true));
       socket.addEventListener('message', (event) => this.onMessage(String(event.data)));
       socket.addEventListener('close', () => {
+        this.connected.set(false);
         this.failAll(new Error('실시간 연결이 닫혔습니다.'));
         if (this.socket === socket) this.socket = null;
       });
     } catch {
       this.socket = null;
     }
+  }
+
+  /** 토큰이 없으면 바로 false입니다. 있으면 연결이 열릴 때까지 짧게 기다립니다. */
+  whenOpen(timeoutMs = 1200): Promise<boolean> {
+    if (this.isOpen()) return Promise.resolve(true);
+    this.connect();
+    const socket = this.socket;
+    if (!socket) return Promise.resolve(false);
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(this.isOpen()), timeoutMs);
+      const finish = (open: boolean) => {
+        clearTimeout(timer);
+        resolve(open);
+      };
+      socket.addEventListener('open', () => finish(true), { once: true });
+      socket.addEventListener('close', () => finish(false), { once: true });
+    });
   }
 
   guide(message: string): Promise<GuideReply> {

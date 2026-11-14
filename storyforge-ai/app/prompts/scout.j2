@@ -13,9 +13,9 @@ Beats: {{ outline.beats | join(" / ") }}
 
 이미 고른 갈래:
 {% for item in anchors %}
-- {{ item.title }}: {{ item.causal_link }} 다음 행동: {{ item.next_action }} 피할 것: {{ item.avoid }}
+- {{ item.title }}: 첫 문단 「{{ item.opening }}」 / 남길 사실 {{ item.carry | join(", ") }} / {{ item.causal_link }} 다음 행동: {{ item.next_action }} 피할 것: {{ item.avoid }}
 {% endfor %}
 
 세 갈래를 유지합니다. 각 갈래는 직전 장면의 마지막 행동 바로 다음이어야 합니다.
 Story Bible, Outline, 직전 장면에 없는 인물 이름·장소·과거 사건은 넣지 않습니다.
-title, causal_link, next_action, avoid를 채웁니다.
+title, causal_link, next_action, avoid, carry, opening을 채웁니다. carry는 직전 장면에 있던 사실만 넣습니다.
