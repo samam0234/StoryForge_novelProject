@@ -29,6 +29,14 @@
 {% endfor %}
 </story_outline>
 전체 흐름에서 이번 장의 역할을 지킵니다. 미래 장의 반전과 해결을 앞당기지 않습니다.
+{% if pioneering|default([]) %}
+<story_opening>
+이번 장은 아래 갈래 중 하나의 인과로 직전 장면 다음을 엽니다. 새 인물·장소·과거는 만들지 않습니다.
+{% for line in pioneering %}
+- {{ line }}
+{% endfor %}
+</story_opening>
+{% endif %}
 
 <this_chapter>
 제목: {{ outline.title }}

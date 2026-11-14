@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 
 from app.models.schemas import ChapterContext, ChapterGenerateResult
+from app.services.story_scout import lines as pioneering_lines
 
 
 @dataclass
@@ -23,4 +24,5 @@ def chapter_prompt_context(context: ChapterContext) -> dict[str, object]:
         "previous_chapters": context.previous_chapters,
         "outline": context.outline_chapter,
         "story_outline": context.story_outline,
+        "pioneering": pioneering_lines(context),
     }

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { Router } from '@angular/router';
 import { CommunityApi } from '../../core/api/community-api.service';
+import { LiveChannel } from '../../core/api/live-channel.service';
 import { LlmNoticeComponent } from './llm-notice.component';
 import { errorMessage } from '../../core/api/storyforge-api.service';
 import { GuideAction } from '../../core/models/community';
@@ -139,6 +140,7 @@ const SHORTCUTS = ['/도움말', '/상태', '/게시', '/클론', '/패키지', 
 })
 export class GuideChatComponent {
   private readonly api = inject(CommunityApi);
+  private readonly live = inject(LiveChannel);
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
   private readonly log = viewChild.required<ElementRef<HTMLElement>>('log');
@@ -158,6 +160,21 @@ export class GuideChatComponent {
     this.text = '';
     this.push({ from: 'me', text: message, actions: [] });
     this.busy.set(true);
+    this.live.connect();
+    if (this.live.isOpen()) {
+      void this.live.guide(message).then(
+        (r) => {
+          this.busy.set(false);
+          this.push({ from: 'guide', text: r.reply, actions: r.actions ?? [] });
+        },
+        () => this.byHttp(message),
+      );
+      return;
+    }
+    this.byHttp(message);
+  }
+
+  private byHttp(message: string): void {
     this.api.guide(message).subscribe({
       next: (r) => {
         this.busy.set(false);

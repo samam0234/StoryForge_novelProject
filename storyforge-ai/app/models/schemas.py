@@ -214,6 +214,27 @@ class GuideChatResponse(Schema):
     actions: list[GuideAction] = Field(default_factory=list)
 
 
+class ScoutRequest(Schema):
+    """웹소켓 장면 개척. 상태 전이를 하지 않습니다."""
+
+    project: ProjectInfo
+    bible: BibleInfo
+    outline_chapter: OutlineChapter | None = None
+    previous_ending: str | None = None
+    previous_summary: str | None = None
+
+
+class ScoutDirection(Schema):
+    title: str
+    causal_link: str
+    next_action: str
+    avoid: str
+
+
+class ScoutResponse(Schema):
+    directions: list[ScoutDirection] = Field(default_factory=list)
+
+
 class CompleteRequest(Schema):
     before: str = Field(default="", max_length=8000)
     after: str = Field(default="", max_length=2000)
