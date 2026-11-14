@@ -60,9 +60,9 @@ stateDiagram-v2
 | AI 서비스 | FastAPI, Pydantic, Jinja2, 장면 연결 로지스틱 회귀, Ollama(`gemma4:e4b`) + Anthropic SDK (개발 기본 `mock`) |
 | 개발 환경 | Docker Compose(DB), Maven Wrapper |
 
-![호출 구조. Angular는 Spring Boot만 보고, 챕터는 SSE, 가이드와 장면 개척은 웹소켓](docs/images/architecture.svg)
+![호출 구조. Angular는 Spring Boot만 보고, 챕터는 SSE, 가이드와 장면 개척은 웹소켓](docs/images/architecture.png)
 
-![프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.svg)
+![프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.png)
 
 | 계층 | 프레임워크 | 이 저장소에서 맡는 일 |
 |------|------------|------------------------|
