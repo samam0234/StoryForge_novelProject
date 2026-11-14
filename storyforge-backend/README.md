@@ -67,7 +67,9 @@ cd storyforge-backend
 | `CONSOLE_ORIGIN` | `http://localhost:4201` | 독립 운영 콘솔 출처 |
 | `FRONTEND_ORIGIN` | `http://localhost:4200` | 개발 CORS 출처. prod는 정확한 HTTPS 출처 하나 |
 | `JWT_SECRET` | (없음) | 32바이트 이상. 비우면 시작할 때 무작위로 만들고 경고를 남깁니다 (재시작하면 로그인 풀림). **운영에서는 필수** |
-| `JWT_TTL` | `12h` | 토큰 유효 기간 |
+| `JWT_TTL` | `12h` | 액세스 토큰 유효 기간 |
+| `JWT_REFRESH_TTL` | `14d` | 갱신 토큰. `POST /api/v1/auth/refresh` |
+| `METRICS_TOKEN` | (없음) | 값이 있을 때만 `X-Metrics-Token`으로 Prometheus |
 | `RATE_LIMIT_AUTH_PER_MINUTE` | `20` | IP당 로그인·가입 요청 |
 | `RATE_LIMIT_GENERATE_PER_MINUTE` | `30` | 사용자당 AI 호출 (생성, 가이드챗, 패키지 검사) |
 | `RATE_LIMIT_COMMUNITY_PER_MINUTE` | `60` | 사용자당 글·댓글·공유·Clone·신고, IP당 공유 방문 |
@@ -149,11 +151,10 @@ storyforge-backend/
 
 ## 아직 없는 것
 
-- 리프레시 토큰 (토큰이 만료되면 다시 로그인)
-- SMTP 실제 공급자·발신 주소 확정과 외부 수신 검증 ([로컬 검증 완료](../docs/guidance/account-mail.md))
+- SMTP 실제 공급자·발신 주소 확정과 외부 수신함 확인 ([접속 확인](scripts/check_smtp.py), [로컬 검증](../docs/guidance/account-mail.md))
 - Bible·Outline 확정 취소 (기획서에 정의 없음)
-- Prometheus 지표 (기획서 §12)
-- 여러 서버 구성 지원 (Rate Limiting과 상태 복구가 서버 한 대 기준, [stability.md](../docs/plan/stability.md))
+- Codicomperchat 연동 규격. http(s) 주소가 아니면 이동 버튼을 만들지 않음
+- 이용약관 법률 검토. 화면에는 초안이라고 표시함
 
 ## 관련 문서
 

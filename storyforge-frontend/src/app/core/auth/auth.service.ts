@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, finalize, shareReplay, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthResponse, User } from '../models/models';
 
@@ -10,6 +10,8 @@ const STORAGE_KEY = 'storyforge.session';
 interface Session {
   token: string;
   expiresAt: string;
+  refreshToken?: string;
+  refreshExpiresAt?: string;
   user: User;
 }
 
@@ -21,18 +23,34 @@ export class AuthService {
   private readonly base = `${environment.apiBaseUrl}/auth`;
 
   private readonly session = signal<Session | null>(restore());
+  private refreshing: Observable<AuthResponse> | null = null;
   readonly user = computed(() => this.session()?.user ?? null);
-  readonly isLoggedIn = computed(() => this.session() !== null);
+  readonly isLoggedIn = computed(() => this.token() !== null || this.hasRefresh());
 
-  /** 만료된 토큰은 돌려주지 않습니다. */
+  /** 만료된 액세스 토큰은 돌려주지 않습니다. 갱신 토큰이 있으면 세션은 유지합니다. */
   token(): string | null {
     const s = this.session();
-    if (!s) return null;
-    if (isExpired(s)) {
-      this.clear();
-      return null;
-    }
+    if (!s || isExpired(s.expiresAt)) return null;
     return s.token;
+  }
+
+  hasRefresh(): boolean {
+    const s = this.session();
+    return !!s?.refreshToken && !!s.refreshExpiresAt && !isExpired(s.refreshExpiresAt);
+  }
+
+  /** 동시에 여러 401이 나도 갱신 요청은 한 번만 보냅니다. */
+  refreshSession(): Observable<AuthResponse> {
+    const refreshToken = this.session()?.refreshToken;
+    if (!refreshToken) return throwError(() => new Error('갱신 토큰이 없습니다.'));
+    if (!this.refreshing) {
+      this.refreshing = this.http.post<AuthResponse>(`${this.base}/refresh`, { refreshToken }).pipe(
+        tap((r) => this.store(r)),
+        finalize(() => { this.refreshing = null; }),
+        shareReplay(1),
+      );
+    }
+    return this.refreshing;
   }
 
   login(body: { email: string; password: string }): Observable<AuthResponse> {
@@ -55,6 +73,10 @@ export class AuthService {
   }
 
   logout(): void {
+    const refreshToken = this.session()?.refreshToken;
+    if (refreshToken) {
+      this.http.post(`${this.base}/logout`, { refreshToken }).subscribe({ error: () => undefined });
+    }
     this.clear();
     this.router.navigate(['/login']);
   }
@@ -72,7 +94,13 @@ export class AuthService {
   }
 
   private store(r: AuthResponse): void {
-    this.persist({ token: r.accessToken, expiresAt: r.expiresAt, user: r.user });
+    this.persist({
+      token: r.accessToken,
+      expiresAt: r.expiresAt,
+      refreshToken: r.refreshToken,
+      refreshExpiresAt: r.refreshExpiresAt,
+      user: r.user,
+    });
   }
 
   private persist(s: Session): void {
@@ -94,8 +122,8 @@ export class AuthService {
   }
 }
 
-function isExpired(s: Session): boolean {
-  return new Date(s.expiresAt).getTime() <= Date.now();
+function isExpired(iso: string): boolean {
+  return new Date(iso).getTime() <= Date.now();
 }
 
 function restore(): Session | null {
@@ -103,7 +131,9 @@ function restore(): Session | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw) as Session;
-    return s.token && s.user && !isExpired(s) ? s : null;
+    if (!s.token || !s.user) return null;
+    if (!isExpired(s.expiresAt)) return s;
+    return s.refreshToken && s.refreshExpiresAt && !isExpired(s.refreshExpiresAt) ? s : null;
   } catch {
     return null;
   }

@@ -47,7 +47,7 @@ async def stream_scenes(llm: LLMClient, ctx: ChapterContext) -> AsyncGenerator[s
             yield "\n\n"
         prompt = render("chapter_scenes", **chapter_prompt_context(ctx),
                         scene_beats=scene_beats, scene_number=index + 1, written="".join(written),
-                        target_chars=max(1000, 5000 - sum(map(len, written))) if index else 2500)
+                        target_chars=max(1600, 5600 - sum(map(len, written))) if index else 3200)
         async with aclosing(llm.stream(system=render("system"), prompt=prompt, model=ctx.project.model)) as stream:
             async for chunk in stream:
                 written.append(chunk)

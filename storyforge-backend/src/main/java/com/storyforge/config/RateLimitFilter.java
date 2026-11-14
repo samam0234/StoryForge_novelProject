@@ -15,34 +15,33 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 1분 고정 창 Rate Limiting (기획서 §13). 메모리 기반이라 서버 한 대 기준입니다.
+ * 1분 고정 창 Rate Limiting (기획서 §13).
+ * 운영은 PostgreSQL 창을 써서 서버 여러 대가 같은 한도를 공유합니다. 단위 테스트는 메모리 창을 씁니다.
  * 로그인·가입은 IP별, AI 생성·가이드챗과 커뮤니티 작성은 사용자별로 셉니다. 공유 방문은 IP별로 셉니다.
  * 신뢰하는 프록시 뒤에서만 X-Forwarded-For의 실제 클라이언트를 씁니다.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
-    private static final long WINDOW_MILLIS = 60_000;
-    private static final int MAX_TRACKED_KEYS = 10_000;
-
-    private record Window(long startMillis, int count) {
-    }
-
-    private final Map<String, Window> windows = new ConcurrentHashMap<>();
     private final RateLimitProperties properties;
     private final ObjectMapper objectMapper;
     private final Clock clock;
     private final Set<String> trustedProxies;
+    private final RateLimitCounter counter;
 
     public RateLimitFilter(RateLimitProperties properties, ObjectMapper objectMapper, Clock clock, Set<String> trustedProxies) {
+        this(properties, objectMapper, clock, trustedProxies, new MemoryRateLimitCounter());
+    }
+
+    public RateLimitFilter(RateLimitProperties properties, ObjectMapper objectMapper, Clock clock,
+                           Set<String> trustedProxies, RateLimitCounter counter) {
         this.properties = properties;
         this.objectMapper = objectMapper;
         this.clock = clock;
         this.trustedProxies = trustedProxies == null ? Set.of() : Set.copyOf(trustedProxies);
+        this.counter = counter;
     }
 
     @Override
@@ -84,13 +83,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     private boolean tryAcquire(String key, int limit) {
-        long now = clock.millis();
-        if (windows.size() > MAX_TRACKED_KEYS) {
-            windows.values().removeIf(w -> now - w.startMillis() >= WINDOW_MILLIS);
-        }
-        Window updated = windows.merge(key, new Window(now, 1), (old, first) ->
-                now - old.startMillis() >= WINDOW_MILLIS ? first : new Window(old.startMillis(), old.count() + 1));
-        return updated.count() <= limit;
+        return counter.tryAcquire(key, limit, clock.millis());
     }
 
     private void reject(HttpServletResponse response) throws IOException {

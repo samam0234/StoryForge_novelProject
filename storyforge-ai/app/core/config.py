@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     ollama_queue_timeout: float = Field(default=5, gt=0, le=60)
     ollama_timeout: float = Field(default=180, gt=0, le=600)
     ollama_structured_max_tokens: int = Field(default=8000, ge=256, le=64000)
-    ollama_stream_max_tokens: int = Field(default=16000, ge=256, le=64000)
+    ollama_stream_max_tokens: int = Field(default=24000, ge=256, le=64000)
     # Claude Opus 5.5의 기본 effort는 medium입니다. 소설 생성은 추론을 더 쓰도록 high로 올렸습니다.
     llm_effort: Literal["low", "medium", "high", "xhigh", "max"] = "high"
     # 비워 두면 SDK가 ANTHROPIC_API_KEY 등 표준 경로에서 자격 증명을 찾습니다.

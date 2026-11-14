@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { Chapter } from '../models/models';
@@ -22,7 +22,7 @@ export class ChapterStream {
     return new Observable<ChapterStreamEvent>((sub) => {
       const ctrl = new AbortController();
       (async () => {
-        const res = await fetch(url, {
+        let res = await fetch(url, {
           method: 'POST',
           // fetch는 HttpClient 인터셉터를 거치지 않으므로 토큰을 직접 붙입니다.
           headers: {
@@ -31,6 +31,23 @@ export class ChapterStream {
           },
           signal: ctrl.signal,
         });
+        if (res.status === 401 && this.auth.hasRefresh()) {
+          try {
+            await firstValueFrom(this.auth.refreshSession());
+            res = await fetch(url, {
+              method: 'POST',
+              headers: {
+                Accept: 'text/event-stream, application/problem+json',
+                Authorization: `Bearer ${this.auth.token() ?? ''}`,
+              },
+              signal: ctrl.signal,
+            });
+          } catch {
+            this.auth.expire();
+            sub.complete();
+            return;
+          }
+        }
         if (res.status === 401) {
           this.auth.expire();
           sub.complete();

@@ -50,6 +50,8 @@
 | `CONSOLE_ORIGIN` | backend | `http://localhost:4201` | 운영 콘솔 CORS 허용 출처 |
 | `JWT_SECRET` | backend | (없음) | 32바이트 이상. 비우면 시작할 때 무작위 생성(재시작하면 로그인 풀림). **운영에서는 필수** |
 | `JWT_TTL` | backend | `12h` | 액세스 토큰 유효 기간 |
+| `JWT_REFRESH_TTL` | backend | `14d` | 갱신 토큰 유효 기간. 비밀번호를 바꾸면 이전 토큰은 거부 |
+| `METRICS_TOKEN` | backend | (없음) | 있으면 `X-Metrics-Token`으로 `/actuator/prometheus`. 없으면 404 |
 | `MAIL_ENABLED` | backend | `false` | SMTP 계정 인증·비밀번호 재설정 |
 | `MAIL_FROM` | backend | (없음) | 메일 활성화 시 필수 발신 주소 |
 | `SMTP_HOST` / `SMTP_PORT` | backend | `localhost` / `1025` | 로컬 수신기 기준 |
@@ -76,7 +78,7 @@
 | `OLLAMA_QUEUE_TIMEOUT` | ai | `5` | 추론 슬롯 대기 제한(초) |
 | `OLLAMA_TIMEOUT` | ai | `180` | Ollama HTTP 읽기 제한(초), 연결·풀 대기는 5초 |
 | `OLLAMA_STRUCTURED_MAX_TOKENS` | ai | `8000` | JSON 생성 출력 상한. 잘리면 실패 |
-| `OLLAMA_STREAM_MAX_TOKENS` | ai | `16000` | 챕터 스트림 출력 상한. 잘리면 실패 |
+| `OLLAMA_STREAM_MAX_TOKENS` | ai | `24000` | 챕터 스트림 출력 상한. 잘리면 실패 |
 | `LLM_EFFORT` | ai | `high` | 소설 생성·이어쓰기 추론. Claude 선택 모델은 Haiku high, Sonnet·Opus medium |
 | `ANTHROPIC_API_KEY` | ai | (없음) | 비우면 SDK 표준 자격 증명 경로 사용 |
 

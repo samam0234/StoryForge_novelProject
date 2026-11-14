@@ -72,9 +72,12 @@ storyforge:
     # 비우면 시작할 때 무작위 키를 만듭니다. 운영에서는 반드시 지정 (docs/plan/auth.md)
     secret: ${JWT_SECRET:}
     ttl: ${JWT_TTL:12h}
+    refresh-ttl: ${JWT_REFRESH_TTL:14d}
+  metrics:
+    token: ${METRICS_TOKEN:}
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus

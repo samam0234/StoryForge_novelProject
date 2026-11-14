@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -81,12 +82,26 @@ public class GuideService {
         for (GuideAction action : response.actions()) {
             if (!"collab".equals(action.kind())) {
                 actions.add(action);
-            } else if (collabUrl.startsWith("https://") || collabUrl.startsWith("http://")) {
+            } else if (allowedCollab(collabUrl)) {
                 actions.add(new GuideAction(action.label(), "external", collabUrl));
-            } else {
+            } else if (collabUrl.isBlank()) {
                 reply += "\n\n(Codicomperchat 연결 주소가 아직 설정되지 않아 이동 버튼을 표시하지 않았습니다.)";
+            } else {
+                reply += "\n\n(Codicomperchat 주소가 http(s) 호스트가 아닙니다. 연동 규격이 오기 전에는 이동 버튼을 표시하지 않습니다.)";
             }
         }
         return new GuideChatResponse(reply, actions);
+    }
+
+    /** 주소만 여는 단계입니다. MCP 규격이 없으면 호스트 있는 http(s)만 새 창으로 보냅니다. */
+    private static boolean allowedCollab(String url) {
+        try {
+            URI uri = URI.create(url);
+            String scheme = uri.getScheme();
+            return ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme))
+                    && uri.getHost() != null && !uri.getHost().isBlank();
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 }
