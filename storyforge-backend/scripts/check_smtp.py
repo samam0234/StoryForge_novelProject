@@ -27,11 +27,11 @@ def main() -> int:
                 smtp.login(user, password)
                 print(f"SMTP 인증 확인: {host}:{port}. 메일은 보내지 않았고 수신함은 확인하지 않았습니다.")
                 return 0
-    except OSError as exc:
-        print(f"SMTP 접속 실패: {host}:{port} ({exc.__class__.__name__})")
-        return 1
     except smtplib.SMTPException as exc:
         print(f"SMTP 인증 실패: {host}:{port} ({exc.__class__.__name__})")
+        return 1
+    except OSError as exc:
+        print(f"SMTP 접속 실패: {host}:{port} ({exc.__class__.__name__})")
         return 1
     print(f"SMTP 접속 확인: {host}:{port}. 수신함 도달은 확인하지 않았습니다.")
     return 0
