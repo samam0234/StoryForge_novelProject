@@ -91,6 +91,7 @@ cd storyforge-backend
 | Bible 생성 / 저장 / 확정 | `POST .../bible/generate`, `PUT .../bible`, `PUT .../bible/confirm` | `BIBLE_DRAFT` |
 | Outline 생성 / 저장 / 확정 | `POST .../outline/generate`, `PUT .../outline`, `PUT .../outline/confirm` | `BIBLE_CONFIRMED`, `OUTLINE_DRAFT` |
 | 챕터 생성 (SSE) | `POST .../chapters/{num}/generate` | `OUTLINE_CONFIRMED`, `CHAPTER_REVIEW` |
+| 가이드·장면 개척 | `GET /api/v1/ws?access_token=` | 로그인 필요. 챕터 본문은 이 소켓으로 보내지 않음 |
 | 챕터 승인 | `PUT /api/v1/chapters/{id}/confirm` | `CHAPTER_REVIEW` |
 | 내보내기 | `GET /api/v1/projects/{id}/export?format=md\|txt\|docx\|pdf\|html\|epub\|odt\|rtf` | 승인된 챕터가 있을 때 |
 | 게시 | `POST /api/v1/projects/{id}/publish` | 승인된 챕터가 있을 때. 상태는 바뀌지 않음 |
@@ -102,6 +103,7 @@ cd storyforge-backend
 - 고친 챕터는 승인할 때 AI로 다시 검증합니다. AI가 꺼져 있으면 승인이 **502**입니다.
 - 허용되지 않는 상태에서 요청하면 **409**, AI 서비스 장애는 **502**입니다.
 - 챕터는 "확정된 챕터 수 + 1"번만 생성할 수 있습니다. 앞 챕터를 승인해야 다음으로 넘어갑니다.
+- 브라우저 웹소켓이 열려 있는 동안 `AiLiveClient`가 FastAPI `/internal/ws` 연결을 하나 유지합니다. 가이드는 그 연결이 없으면 기존 `POST /api/v1/guide/chat`으로 돌아갑니다. 장면 개척은 프로젝트 상태를 바꾸지 않습니다.
 - 상태 전이는 [PipelineStateMachine](src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java)에서만 일어납니다.
 
 Spring Boot는 `.env`를 자동으로 읽지 않습니다. `ADMIN_EMAILS`, `JWT_SECRET`, DB 변수 등은 백엔드를 실행하는 셸이나 배포 도구로 주입합니다.
@@ -126,8 +128,8 @@ storyforge-backend/
     │   │   ├── community/        # 게시, Clone, 공유, 패키지, 라운지, 활동, 업적, 이슈, 가이드챗
     │   │   ├── moderation/ notification/   # 신고·관리, 알림
     │   ├── domain/               # Entity, DTO, Repository (user, project, bible, outline, chapter, community, activity, moderation, notification)
-    │   ├── client/               # FastAPI WebClient + 내부 계약(AiDtos)
-    │   ├── config/               # Security, JWT, 주인·공동 창작자 검사, WebClient, OpenAPI
+    │   ├── client/               # FastAPI WebClient, AiLiveClient 세션, 내부 계약(AiDtos)
+    │   ├── config/               # Security, JWT, LiveSocketConfig, 주인·공동 창작자 검사, WebClient, OpenAPI
     │   └── exception/            # ProblemDetail 변환
     ├── main/resources/
     │   ├── application.yml

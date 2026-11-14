@@ -108,6 +108,7 @@ curl -X POST http://127.0.0.1:8001/internal/generate/bible \
 | `POST /internal/generate/review` | `{summary, report}`. 사람이 고친 본문의 재요약·재검증 |
 | `POST /internal/package/continuity` | `{issues[], score}`. 패키지 작품 사이의 충돌 검사 |
 | `POST /internal/guide/chat` | `{reply, actions[]}`. 명령어는 LLM 없이 답함. 이동 버튼은 서버의 표에서만 만듦 |
+| `WS /internal/ws` | 연결이 열려 있는 동안 `ping`, `guide`, `scout`를 여러 번 받음. `scout` 응답의 `carry`는 남길 사실, `opening`은 첫 문단 |
 | `GET /health` | `{status, provider, model}` |
 
 JSON 필드는 camelCase이며, 백엔드 [AiDtos.java](../storyforge-backend/src/main/java/com/storyforge/client/AiDtos.java)와 [schemas.py](app/models/schemas.py)가 짝입니다. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다. 상세 형식은 [docs/plan/api-v1.md](../docs/plan/api-v1.md)에 있습니다.

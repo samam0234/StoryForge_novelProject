@@ -12,17 +12,15 @@
 | `bible_generator.py` | Story Bible 생성 |
 | `outline_generator.py` | Outline 생성, order 재번호 |
 | `chapter_generator.py` | 본문 스트림·두 구간 사건 배분·이어쓰기. 실제 앞 구간 본문을 다음 구간에 전달하며 생성 전체는 `orchestration.py`에서 관리 |
-| `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산 |
+| `continuity_checker.py` | 규칙 기반 검사 + LLM 검증, 점수 계산. 직전 장면과 첫머리가 끊기면 `plot_thread`를 추가 |
+| `story_scout.py` | 장면 개척. 직전 문장의 사실(`carry`)과 이어 쓸 첫 문단(`opening`). 저장·승인은 하지 않음 |
+| `plausibility.py` | 장면 연결 로지스틱 회귀. 가중치는 `plausibility_weights.json`. 재학습은 `python -m scripts.train_plausibility` |
+| `character_bank.py` | 이름 풀과 ChromaDB `characters` 컬렉션. 벡터가 없어도 JSON 중복 방지는 동작 |
 | `package_continuity.py` | 패키지 작품 사이의 규칙 검사 + LLM 검증 ([규칙](../../../docs/novel/continuity-rules.md)) |
 | `guide_assistant.py` | AI 가이드챗: 명령어 안내, 키워드 매칭, 자유 질문. 이동 버튼은 이 파일의 표에서만 만듦 |
 | `mock_writer.py` | `LLM_PROVIDER=mock`용 결정적 생성기 (mock 표시 포함) |
 
-## 들어갈 것
-
-- `bible_generator.py` — Story Bible 초기 생성 (§6.1)
-- `outline_generator.py` — Outline 생성·부분 재생성 (§6.2)
-- `chapter_generator.py` — 챕터 생성. 컨텍스트: Bible 관련 항목 + Outline + 이전 챕터 요약 + 캐릭터 상태 (§6.3)
-- `continuity_checker.py` — 설정 충돌, 캐릭터 일관성, 타임라인, 플롯 스레드 검증 (§6.3)
+위 표의 생성·검증 파일이 기획서 §6.1~§6.3의 Bible, Outline, 챕터, Continuity를 맡습니다. 캐릭터 상태 자동 갱신은 Phase 2라 이 폴더에 없습니다.
 
 ## 들어가지 않을 것
 
