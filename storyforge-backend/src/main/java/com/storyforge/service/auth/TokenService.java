@@ -17,14 +17,16 @@ import java.time.Instant;
 public class TokenService {
 
     private final AccountPolicy policy;
+    private final RefreshTokenService refreshTokens;
 
     private final JwtEncoder encoder;
     private final JwtProperties properties;
 
-    public TokenService(JwtEncoder encoder, JwtProperties properties, AccountPolicy policy) {
+    public TokenService(JwtEncoder encoder, JwtProperties properties, AccountPolicy policy, RefreshTokenService refreshTokens) {
         this.policy = policy;
         this.encoder = encoder;
         this.properties = properties;
+        this.refreshTokens = refreshTokens;
     }
 
     public AuthResponse issue(AppUser user) {
@@ -39,6 +41,7 @@ public class TokenService {
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         String token = encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
-        return new AuthResponse(token, "Bearer", expiresAt, policy.view(user));
+        RefreshTokenService.Issued refresh = refreshTokens.create(user);
+        return new AuthResponse(token, "Bearer", expiresAt, policy.view(user), refresh.token(), refresh.expiresAt());
     }
 }

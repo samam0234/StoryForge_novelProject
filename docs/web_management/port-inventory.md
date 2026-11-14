@@ -14,6 +14,15 @@
 
 같은 PC의 다른 프로젝트와 겹쳐 AI는 8000 대신 8001, DB는 5432 대신 5433을 씁니다. [../repeater/local-port-conflicts.md](../repeater/local-port-conflicts.md)
 
-## 개발 서버, 운영
+## 배포 구성
 
-아직 없습니다. 배포 구성(Dockerfile, 프록시, 도메인)을 정하면 이 표를 채웁니다.
+[docker-compose.deploy.yml](../../docker-compose.deploy.yml)이 PostgreSQL, AI, 백엔드, 프론트를 한 네트워크에 올립니다. 개발용 `docker compose up`은 바꾸지 않습니다.
+
+| 서비스 | 호스트 게시 | 비고 |
+|--------|-------------|------|
+| frontend | `${FRONTEND_PORT:-80}` | nginx가 `/api`와 웹소켓을 backend로 넘김 |
+| backend | `${BACKEND_PORT:-8080}` | `JWT_SECRET`, `FRONTEND_ORIGIN`, `CONSOLE_ORIGIN` 필수 |
+| ai | 없음 | 컨테이너 안에서만 8001. 브라우저는 이 주소로 접속하지 않음 |
+| postgres | 없음 | 컨테이너 안에서만 5432 |
+
+운영 콘솔은 이 구성에 포함하지 않습니다. 콘솔 출처는 `CONSOLE_ORIGIN`으로 CORS에만 넣습니다. 도메인과 TLS는 이 파일 앞단의 프록시에서 정합니다. 시크릿은 이미지에 넣지 않습니다.

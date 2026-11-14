@@ -11,6 +11,9 @@
 - 장면 개척은 직전 문장에서 남길 사실과 첫 문단을 돌려주고, 끊긴 연결은 로지스틱 회귀가 기존 `plot_thread`에 추가. 자동 승인 없음
 - README 호출 구조와 프레임워크 도식은 PNG. 편집기 미리보기에서 SVG가 보이지 않아 바꿈
 - README 프레임워크 소개에 Angular, Spring Boot, FastAPI, PostgreSQL 카드를 각각 넣음. 서비스 README와 로컬 실행 가이드에 세션 웹소켓·장면 개척을 보충
+- 갱신 토큰, PostgreSQL 공유 요청 제한, 210초가 지난 생성만 복구, `METRICS_TOKEN`이 있을 때만 Prometheus
+- 챕터 스트림 출력 상한 24000, 구간 목표 글자 수를 올리고 첫 문단이 직전 장면을 잇도록 프롬프트 보강
+- 배포용 `docker-compose.deploy.yml`. AI 포트는 게시하지 않음. 외부 메일 수신과 약관 법률 검토는 아직 없음
 
 ### 2026-11-11
 

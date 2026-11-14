@@ -8,6 +8,7 @@ import com.storyforge.domain.user.AppUserRepository;
 import com.storyforge.domain.user.AuthDtos.UserResponse;
 import com.storyforge.exception.InvalidStateException;
 import com.storyforge.service.auth.AccountPolicy;
+import com.storyforge.service.auth.RefreshTokenService;
 import com.storyforge.exception.NotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,14 @@ public class ProfileService {
     private final AccountPolicy policy;
     private final UserBlockRepository blocks;
     private final ContentPolicy contentPolicy;
+    private final RefreshTokenService refreshTokens;
 
     public ProfileService(AppUserRepository users, WorkRepository works, PostRepository posts, CommentRepository comments,
                           AchievementService achievements, PasswordEncoder passwordEncoder,
-                          AccountPolicy policy, UserBlockRepository blocks, ContentPolicy contentPolicy) {
+                          AccountPolicy policy, UserBlockRepository blocks, ContentPolicy contentPolicy,
+                          RefreshTokenService refreshTokens) {
         this.contentPolicy = contentPolicy;
+        this.refreshTokens = refreshTokens;
         this.policy = policy;
         this.blocks = blocks;
         this.users = users;
@@ -88,6 +92,7 @@ public class ProfileService {
             throw new InvalidStateException("비밀번호가 너무 깁니다.");
         }
         user.changePassword(passwordEncoder.encode(request.newPassword()));
+        refreshTokens.revokeAll(user.getId());
     }
 
     /** 계정 삭제. 내 프로젝트·작품·댓글이 함께 지워지고, 다른 사람의 Clone은 남습니다. */

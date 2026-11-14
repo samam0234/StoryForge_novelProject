@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -32,8 +33,9 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationEntryPoint problemEntryPoint,
-                                            RateLimitProperties rateLimit, ObjectMapper objectMapper,
-                                            @Value("${storyforge.client-ip.trusted-proxies:}") String trustedProxies) throws Exception {
+                                            RateLimitProperties rateLimit, ObjectMapper objectMapper, JdbcTemplate jdbc,
+                                            @Value("${storyforge.client-ip.trusted-proxies:}") String trustedProxies,
+                                            @Value("${storyforge.metrics.token:}") String metricsToken) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -41,8 +43,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 챕터 SSE는 비동기 재디스패치로 응답을 마칩니다. 인증은 최초 요청에서 끝났습니다.
                         .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                        .requestMatchers("/actuator/health", "/actuator/prometheus", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login",
+                                "/api/v1/auth/refresh", "/api/v1/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/mail/status").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/mail/reset-request", "/api/v1/auth/mail/reset", "/api/v1/auth/mail/verify").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/llm-notice").permitAll()
@@ -61,9 +64,10 @@ public class SecurityConfig {
                         .authenticationEntryPoint(problemEntryPoint))
                 .exceptionHandling(e -> e.authenticationEntryPoint(problemEntryPoint))
                 // 사용자별로 세므로 토큰 인증 뒤에 둡니다. 빈으로 등록하면 서블릿 필터로 한 번 더 걸립니다.
+                .addFilterBefore(new MetricsTokenFilter(metricsToken), BearerTokenAuthenticationFilter.class)
                 .addFilterBefore(new WebSocketTokenFilter(), BearerTokenAuthenticationFilter.class)
                 .addFilterAfter(new RateLimitFilter(rateLimit, objectMapper, Clock.systemUTC(),
-                                trusted(trustedProxies)),
+                                trusted(trustedProxies), new JdbcRateLimitCounter(jdbc)),
                         BearerTokenAuthenticationFilter.class)
                 .build();
     }

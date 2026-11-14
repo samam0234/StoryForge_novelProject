@@ -65,6 +65,36 @@ class AuthIntegrationTest extends IntegrationTestBase {
     }
 
     @Test
+    void refreshRotatesAndPasswordChangeRevokes() throws Exception {
+        String email = email();
+        Response registered = call("POST", "/auth/register",
+                Map.of("email", email, "acceptTerms", true, "password", "password123", "displayName", "가"), null);
+        String refresh = registered.json().get("refreshToken").asString();
+        assertThat(refresh).isNotBlank();
+
+        Response rotated = call("POST", "/auth/refresh", Map.of("refreshToken", refresh), null);
+        assertThat(rotated.status()).isEqualTo(200);
+        String next = rotated.json().get("refreshToken").asString();
+        assertThat(next).isNotEqualTo(refresh);
+        assertThat(call("GET", "/auth/me", null, rotated.json().get("accessToken").asString()).status()).isEqualTo(200);
+        assertThat(call("POST", "/auth/refresh", Map.of("refreshToken", refresh), null).status()).isEqualTo(401);
+
+        assertThat(call("PUT", "/me/password", Map.of("currentPassword", "password123", "newPassword", "password456"),
+                rotated.json().get("accessToken").asString()).status()).isEqualTo(204);
+        assertThat(call("POST", "/auth/refresh", Map.of("refreshToken", next), null).status()).isEqualTo(401);
+        assertThat(call("POST", "/auth/logout", Map.of("refreshToken", next), null).status()).isEqualTo(204);
+    }
+
+    @Test
+    void prometheusStaysHiddenWithoutMetricsToken() throws Exception {
+        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder(
+                java.net.URI.create("http://localhost:" + port + "/actuator/prometheus")).GET().build();
+        java.net.http.HttpResponse<String> response = java.net.http.HttpClient.newHttpClient()
+                .send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(404);
+    }
+
+    @Test
     void apiRequiresValidToken() throws Exception {
         assertThat(call("GET", "/projects", null, null).status()).isEqualTo(401);
         Response bad = call("GET", "/projects", null, "not-a-token");

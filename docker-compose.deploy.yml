@@ -1,0 +1,56 @@
+# 배포용 구성. 개발용 docker-compose.yml(PostgreSQL만)은 그대로 둡니다.
+# AI 포트는 게시하지 않습니다. JWT_SECRET, DB 비밀번호, 웹 출처는 환경 변수로 넣습니다.
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_NAME:?DB_NAME}
+      POSTGRES_USER: ${DB_USER:?DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD}
+    volumes:
+      - storyforge-deploy-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  ai:
+    build: ./storyforge-ai
+    environment:
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  backend:
+    build: ./storyforge-backend
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      AI_SERVICE_URL: http://ai:8001
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?FRONTEND_ORIGIN}
+      CONSOLE_ORIGIN: ${CONSOLE_ORIGIN:?CONSOLE_ORIGIN}
+      METRICS_TOKEN: ${METRICS_TOKEN:-}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai:
+        condition: service_started
+
+  frontend:
+    build: ./storyforge-frontend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+
+volumes:
+  storyforge-deploy-pg:

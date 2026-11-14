@@ -22,11 +22,18 @@ public final class AuthDtos {
     public record LoginRequest(@NotBlank String email, @NotBlank String password) {
     }
 
+    public record RefreshRequest(@NotBlank String refreshToken) {
+    }
+
+    public record LogoutRequest(String refreshToken) {
+    }
+
     /** 내 정보. admin과 termsAccepted는 AccountPolicy가 채웁니다. */
     public record UserResponse(Long id, String email, String displayName, String bio, String website, String avatarColor,
                                boolean admin, boolean termsAccepted, boolean emailVerified) {
     }
 
-    public record AuthResponse(String accessToken, String tokenType, Instant expiresAt, UserResponse user) {
+    public record AuthResponse(String accessToken, String tokenType, Instant expiresAt, UserResponse user,
+                               String refreshToken, Instant refreshExpiresAt) {
     }
 }
