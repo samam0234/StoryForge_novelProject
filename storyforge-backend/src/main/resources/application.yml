@@ -77,6 +77,10 @@ storyforge:
     token: ${METRICS_TOKEN:}
 
 management:
+  health:
+    mail:
+      # SMTP 인증 실패가 /actuator/health 전체를 DOWN으로 만들지 않습니다. 발송 실패는 그 요청만 503입니다.
+      enabled: false
   endpoints:
     web:
       exposure:
