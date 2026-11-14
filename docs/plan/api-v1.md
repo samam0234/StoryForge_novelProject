@@ -156,6 +156,21 @@
 
 AI SSE가 `done` 없이 종료된 경우도 `error`이며 부분 본문을 저장하지 않습니다. 첫 장은 `OUTLINE_CONFIRMED`, 이후 장은 `CHAPTER_REVIEW`로 돌아갑니다.
 
+### 실시간 웹소켓
+
+챕터 본문 스트림은 위 SSE를 유지합니다. 가이드 질문과 장면 개척만 양방향 소켓을 씁니다.
+
+| 구간 | 주소 | 인증 |
+|------|------|------|
+| Angular → Spring Boot | `GET /api/v1/ws?access_token=` 업그레이드 | 쿼리 토큰을 Bearer로 옮겨 기존 JWT를 검사 |
+| Spring Boot → FastAPI | `ws://<AI>/internal/ws` | 내부망. 브라우저는 이 주소로 접속하지 않음 |
+
+클라이언트 프레임은 `{id, op, ...}`입니다. `op`는 `ping`, `guide`, `scout`입니다. `scout`는 `projectId`만 보내고, Story Bible·Outline·직전 장면은 Spring Boot가 채웁니다. 응답은 같은 `id`로 돌아오며 상태 머신을 바꾸지 않습니다. 연결이 없으면 가이드는 기존 `POST /guide/chat`을 사용합니다.
+
+장면 개척은 직전 행동 다음의 세 갈래를 돌려줍니다. 새 인물·장소·과거를 만들지 않는 문장을 프롬프트에 함께 넣지만, 그 문장만으로 챕터를 저장하거나 승인하지 않습니다.
+
+직전 장면과 이번 장 첫머리가 끊기면 기존 `plot_thread` 이슈로 남습니다. 점수는 합성 문장으로 맞춘 로지스틱 회귀이며, 이 점수가 다른 이슈를 지우거나 검토를 통과시키지는 않습니다. 가중치 갱신은 `python -m scripts.train_plausibility`입니다.
+
 ## 내부 API (FastAPI, Spring Boot만 호출)
 
 | 메서드 | 경로 | 요청 | 응답 |
@@ -166,6 +181,7 @@ AI SSE가 `done` 없이 종료된 경우도 `error`이며 부분 본문을 저�
 | POST | `/internal/generate/review` | `{context, title, content}` | `{summary, report}` |
 | POST | `/internal/package/continuity` | `{title, worldNote, works[], links[]}` | `{issues[], score}` |
 | POST | `/internal/guide/chat` | `{message, context}` | `{reply, actions[{label, kind, target}]}` |
+| WebSocket | `/internal/ws` | 요청 하나: `ping`, `guide`, `scout` | 응답 하나 후 종료. 챕터 생성은 이 소켓을 쓰지 않습니다 |
 | GET | `/health` | — | `{status, provider, model}` |
 
 계약 정의 위치: 백엔드 `client/AiDtos.java` ↔ AI `app/models/schemas.py`. 한쪽을 바꾸면 다른 쪽도 같은 커밋에서 바꿉니다.

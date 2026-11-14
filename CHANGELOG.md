@@ -7,6 +7,8 @@
 ### 2026-11-14
 
 - 이름 풀 225개를 ChromaDB 컬렉션 `characters`에 글자 겹침 벡터로 저장. 다시 넣기는 `python -m scripts.embed_characters`. 실행 데이터는 Git에서 제외
+- 가이드와 장면 개척은 Angular → Spring Boot `/api/v1/ws` → FastAPI `/internal/ws`. 챕터 생성은 SSE
+- 직전 장면과 첫머리의 연결을 로지스틱 회귀로 보고, 끊기면 기존 `plot_thread`에 추가. 자동 승인 없음
 
 ### 2026-11-11
 

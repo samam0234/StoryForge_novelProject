@@ -56,9 +56,22 @@ stateDiagram-v2
 | 영역 | 기술 |
 |------|------|
 | 프론트엔드 | Angular 21, Angular Material, TipTap, RxJS |
-| 백엔드 | Spring Boot 4.1 (Java 21), Spring Security(JWT), Flyway, PostgreSQL 16 |
-| AI 서비스 | FastAPI, Pydantic, Jinja2, Ollama(`gemma4:e4b`) + Anthropic SDK (개발 기본 `mock`) |
+| 백엔드 | Spring Boot 4.1 (Java 21), Spring Security(JWT), WebSocket, Flyway, PostgreSQL 16 |
+| AI 서비스 | FastAPI, Pydantic, Jinja2, 장면 연결 로지스틱 회귀, Ollama(`gemma4:e4b`) + Anthropic SDK (개발 기본 `mock`) |
 | 개발 환경 | Docker Compose(DB), Maven Wrapper |
+
+![호출 구조. Angular는 Spring Boot만 보고, 챕터는 SSE, 가이드와 장면 개척은 웹소켓](docs/images/architecture.svg)
+
+![프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.svg)
+
+| 계층 | 프레임워크 | 이 저장소에서 맡는 일 |
+|------|------------|------------------------|
+| 화면 | Angular 21, Material, TipTap, RxJS | 로그인, 에디터, 커뮤니티, 챕터 SSE 수신, `/api/v1/ws` |
+| 오케스트레이션 | Spring Boot 4.1, Security, JPA, Flyway, WebSocket | JWT, 프로젝트 상태 머신, 저장, AI 중계 |
+| 생성 | FastAPI, Pydantic, Jinja2 | 프롬프트 조립, LLM 스트림, Continuity, 장면 개척 |
+| 데이터 | PostgreSQL 16, ChromaDB, JSON 가중치 | 원고 영속화, 이름 벡터, 장면 연결 회귀 |
+
+챕터 본문은 SSE로 중계합니다. 가이드 질문과 다음 장면 개척만 웹소켓을 쓰며, 브라우저는 FastAPI 주소로 접속하지 않습니다. 직전 장면과 첫머리가 끊기면 로지스틱 회귀가 기존 `plot_thread` 이슈를 추가합니다. 그 점수로 챕터를 자동 승인하지 않습니다.
 
 버전과 포트의 기준값은 [CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)입니다.
 
