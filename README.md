@@ -13,7 +13,7 @@ StoryForge는 세계관(Story Bible) → 줄거리(Outline) → 챕터 순서로
 | **상태** | 개발 단계. 정식 릴리스와 공개 배포는 아직 없습니다 |
 | **구성** | 사용자 웹(Angular) · 운영 콘솔(Angular) · 오케스트레이터(Spring Boot) · AI 서비스(FastAPI) · PostgreSQL |
 | **언어 모델** | 개발 기본 `mock`(키 불필요), 일반 출력 Ollama `gemma4:e4b`, 선택 Anthropic `claude-*` |
-| **자동 검증** | 테스트 247건(백엔드 108 · AI 77 · 사용자 웹 54 · 콘솔 8), 타입 검사, 두 Angular 빌드 — [검증 현황](#테스트와-검증) |
+| **자동 검증** | 테스트 249건(백엔드 108 · AI 77 · 사용자 웹 56 · 콘솔 8), 타입 검사, 두 Angular 빌드, 수동 브라우저 점검 34건 — [검증 현황](#테스트와-검증) |
 | **라이선스** | [독점 (All rights reserved)](LICENSE). 공개 저장소지만 사용 허락은 부여하지 않습니다 |
 | **기획 원본** | [StoryForge_기획서_v1.2.md](docs/plan/Proposal/StoryForge_기획서_v1.2.md) (문서 버전 1.3). 모든 결정의 최우선 기준 |
 
@@ -344,12 +344,13 @@ npm start          # http://localhost:4201
 |--------|---------------------------|------|
 | 백엔드 | `./mvnw test` — 통합 테스트는 Docker로 실제 PostgreSQL을 띄웁니다 | 108 |
 | AI 서비스 | `.venv/Scripts/python -m pytest -q`, `.venv/Scripts/pyright --project ..` | 77 |
-| 사용자 웹 | `npx ng test --watch=false`, **`npx ng build`** | 54 |
+| 사용자 웹 | `npx ng test --watch=false`, **`npx ng build`** | 56 |
 | 운영 콘솔 | `npm test`, `npm run build` | 8 |
 
 - 건수는 2026-11-15 로컬 실행 기준입니다. 백엔드는 Docker가 꺼져 있으면 통합 테스트가 실패가 아니라 **건너뜀**으로 표시되므로 결과의 Skipped를 확인하세요.
 - 사용자 웹은 **빌드까지** 확인합니다. 단위 테스트는 spec이 가져오는 파일만 컴파일하므로 화면 템플릿 오류를 놓칩니다. 실제로 테스트는 통과한 채 빌드가 깨져 `main`까지 올라간 적이 있습니다 ([2026-11-04 일지](docs/find_debug/2026-11-04.md)).
 - AI 테스트는 mock과 가짜 LLM만 씁니다. 실제 모델을 호출하지 않습니다.
+- 브라우저 점검은 전체 스택과 실제 브라우저가 필요해 CI에 넣지 않았습니다. 수동 도구는 [browser-check.mjs](storyforge-frontend/scripts/browser-check.mjs)이고 실행법은 [사용자 웹 README](storyforge-frontend/README.md#브라우저-점검-수동)에 있습니다.
 - GitHub Actions([ci.yml](.github/workflows/ci.yml))가 `develop`, `main`으로 가는 푸시와 PR에서 네 서비스의 테스트, 두 Angular 빌드, AI 타입 검사를 실행합니다.
 
 실제 모델과 수동 확인 결과는 [docs/vaildates/](docs/vaildates/README.md)에 날짜별로 있습니다.
@@ -368,7 +369,7 @@ npm start          # http://localhost:4201
 
 - **실제 Claude 호출:** 한 번도 검증하지 못했습니다. 자동 테스트는 가짜 LLM을 씁니다.
 - **원고 분량:** 실제 Gemma로 40분 동안 95회를 생성했을 때 목표 분량(4,000~6,000자)을 채운 것은 27회였습니다. 짧은 결과는 검토 화면에 낮은 심각도 이슈로 표시되며 자동으로 거부되거나 승인되지 않습니다.
-- **브라우저 확인:** 2026-11-10 이후에 추가한 화면(운영 콘솔, 메일 인증·재설정 등)은 실제 브라우저에서 확인하지 못했습니다. 자동 테스트와 빌드 통과를 화면 검증으로 간주하지 않습니다.
+- **브라우저 확인:** 2026-11-15에 수동 점검 34건(가입, 프로젝트 화면, 게시·읽기, 로그아웃 상태, 좁은 화면, 운영 콘솔 로그인과 화면)이 통과했습니다. **메일 인증·재설정 화면, 콘솔의 신고 일괄 조치, 화면에서의 챕터 생성·Clone·패키지 흐름은 아직 브라우저로 확인하지 못했습니다.** [점검 기록](docs/vaildates/browser-check-2026-11-15.md)
 - **외부 메일:** Gmail SMTP 접속과 STARTTLS는 됐지만 인증이 거절됐습니다(535). 수신함 도달은 확인하지 못했습니다.
 - **내보낸 파일:** EPUB, ODT, RTF를 실제 뷰어에서 열어 본 기록이 없습니다. 자동 테스트는 파일 구조까지만 봅니다.
 

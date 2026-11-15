@@ -91,6 +91,7 @@ StoryForge의 기획, 스펙, 구조, 실행 방법, 검증 기록, 문제 해�
 
 | 문서 | 내용 | 상태 |
 |------|------|------|
+| [browser-check-2026-11-15.md](vaildates/browser-check-2026-11-15.md) | 수동 브라우저 점검 34건과 확인하지 않은 범위 | 2026-11-15 |
 | [docs-overhaul-2026-11-15.md](vaildates/docs-overhaul-2026-11-15.md) | 문서 개편 전 자동 검사 전체와 발견 사항 | 2026-11-15 |
 | [community-release.md](vaildates/community-release.md) | 커뮤니티 공개 배포 전 체크리스트 | 아직 수행 전 |
 | [operations-console-release.md](vaildates/operations-console-release.md) | 운영 콘솔, 운영 API, Ollama | 2026-11-10. 브라우저 미검증 |

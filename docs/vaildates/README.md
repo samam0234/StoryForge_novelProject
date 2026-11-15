@@ -41,6 +41,7 @@
 
 | 문서 | 대상 | 최근 확인일 |
 |------|------|-------------|
+| [browser-check-2026-11-15.md](browser-check-2026-11-15.md) | 수동 브라우저 점검 34건과 확인하지 않은 범위 | 2026-11-15 |
 | [docs-overhaul-2026-11-15.md](docs-overhaul-2026-11-15.md) | 문서 개편 전 자동 검사 전체와 발견 사항 | 2026-11-15 |
 | [community-release.md](community-release.md) | 커뮤니티 공개 배포 전 | 아직 수행 전 |
 | [operations-console-release.md](operations-console-release.md) | 콘솔·운영 API·Ollama | 2026-11-10, 브라우저 미검증 |
