@@ -11,6 +11,15 @@ StoryForge는 아래 오픈소스 구성 요소를 사용합니다. 각 구성 �
 | 나눔고딕 (NanumGothic Regular, Bold) | `storyforge-backend/src/main/resources/fonts/` | SIL Open Font License 1.1 | PDF 내보내기에 내장. 글꼴과 함께 `OFL.txt`를 배포해야 합니다. 저작권: NHN Corporation |
 | Maven Wrapper | `storyforge-backend/mvnw`, `.mvn/` | Apache-2.0 | start.spring.io에서 생성 |
 
+### README 이미지 (`docs/images/`)
+
+| 구성 요소 | 위치 | 라이선스 | 비고 |
+|-----------|------|----------|------|
+| Simple Icons 로고 SVG | `docs/images/logos/src/` | CC0 1.0 | 각 로고의 **상표는 해당 소유자**에게 있습니다. 사용 기술 표시용이며 보증·제휴를 뜻하지 않습니다 |
+| 로고 타일·배너·다이어그램에 그려진 글꼴 | `docs/images/*.png` | Pretendard, Noto Serif KR, Noto Sans KR: SIL OFL 1.1 / Material Icons Round: Apache-2.0 | 이미지로 렌더링된 글자만 포함하며 글꼴 파일은 저장소에 없습니다 |
+
+이미지를 만드는 도구는 실행할 때만 `playwright-core`(Apache-2.0)와 `imageio-ffmpeg`가 내려받는 ffmpeg를 씁니다. 둘 다 저장소와 `package.json`에 넣지 않습니다.
+
 ## 실행 중 외부에서 불러오는 리소스 (저장소에 없음)
 
 | 구성 요소 | 출처 | 라이선스 |
