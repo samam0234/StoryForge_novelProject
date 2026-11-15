@@ -1,6 +1,6 @@
 # storyforge-backend/src/test/
 
-백엔드 테스트 101건입니다. `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
+백엔드 테스트 108건입니다 (2026-11-15). `./mvnw test`로 실행합니다. 패키지 구조는 `src/main/java`와 같습니다.
 
 **통합 테스트는 Docker로 실제 PostgreSQL을 띄웁니다.** Docker가 꺼져 있으면 통합 테스트는 실패가 아니라 **건너뜀**으로 처리되므로, 결과의 "Skipped"를 확인하세요.
 
@@ -9,6 +9,7 @@
 | 위치 (`java/com/storyforge/`) | 내용 |
 |-------------------------------|------|
 | `support/IntegrationTestBase` | Testcontainers PostgreSQL 한 개를 공유, 실제 HTTP 호출·상태 준비 도우미. 요청 제한은 테스트에서 사실상 해제 |
+| `support/LocalSmtpServer` | 임의 루프백 포트의 SMTP 수신기. 외부로 전달하지 않음 |
 | `support/StubAiServer` | FastAPI 내부 API를 흉내 내는 서버(실제 HTTP/SSE). 실패·지연·중단 모드 전환 |
 | `controller/AuthIntegrationTest` | 가입·로그인, 이메일 대소문자, 401, 다른 사용자의 리소스 404 |
 | `service/orchestration/PipelineIntegrationTest` | 전체 파이프라인, 컨텍스트 주입, 단계·검토 건너뛰기 차단, 재생성, 실패 시 상태 복귀 |
@@ -22,6 +23,7 @@
 | `service/community/PackageContinuityIntegrationTest` | 패키지 전체 검사, 비공개 설정 제외, 원본 가져오기, 확인 표시 |
 | `service/moderation/ModerationIntegrationTest` | 신고, 숨김·복원, 정지, 삭제된 토큰, 차단, 약관, 관리자 판별, 알림 |
 | `service/moderation/ConsoleIntegrationTest` | 운영자 권한, 회원 검색·정지, 입력 검증, 중복 대상 처리, 일괄 실패 롤백, 동시 조치·감사 기록, 동일 작성자의 서로 다른 대상 정지·해제와 알림 중복 방지 |
+| `config/WebSocketTokenFilterTest` | 웹소켓 업그레이드의 쿼리 토큰을 Bearer 헤더로 옮기는 필터 |
 | `config/RateLimitFilterTest` | 요청 제한과 시간 창 초기화, 가이드챗·커뮤니티 쓰기 제한 |
 
 ## 규칙
