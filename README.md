@@ -1,26 +1,55 @@
-# StoryForge
+<div align="center">
 
-**한 줄 아이디어에서 설정이 무너지지 않는 장편 소설까지.**
-StoryForge는 세계관(Story Bible) → 줄거리(Outline) → 챕터 순서로 소설을 만들고, 챕터마다 앞선 설정과 어긋나는지 검증한 뒤 **사람이 승인해야만 다음으로 넘어가는** AI 창작 웹 플랫폼입니다.
+<img src="docs/images/hero.png" alt="StoryForge — 한 줄 아이디어에서 설정이 무너지지 않는 장편 소설까지" width="100%">
 
-```
-아이디어 ─▶ Story Bible ─▶ Outline ─▶ 챕터 1 ─▶ 챕터 2 ─▶ … ─▶ 완성 ─▶ 게시 · 공유 · Clone
-              확정           확정      검증·승인   검증·승인
-```
+<br>
 
-| | |
-|---|---|
-| **상태** | 개발 단계. 정식 릴리스와 공개 배포는 아직 없습니다 |
-| **구성** | 사용자 웹(Angular) · 운영 콘솔(Angular) · 오케스트레이터(Spring Boot) · AI 서비스(FastAPI) · PostgreSQL |
-| **언어 모델** | 개발 기본 `mock`(키 불필요), 일반 출력 Ollama `gemma4:e4b`, 선택 Anthropic `claude-*` |
-| **자동 검증** | 테스트 249건(백엔드 108 · AI 77 · 사용자 웹 56 · 콘솔 8), 타입 검사, 두 Angular 빌드, 수동 브라우저 점검 34건 — [검증 현황](#테스트와-검증) |
-| **라이선스** | [독점 (All rights reserved)](LICENSE). 공개 저장소지만 사용 허락은 부여하지 않습니다 |
-| **기획 원본** | [StoryForge_기획서_v1.2.md](docs/plan/Proposal/StoryForge_기획서_v1.2.md) (문서 버전 1.3). 모든 결정의 최우선 기준 |
+**Story Bible → Outline → 챕터 → Continuity 검증 → 사람의 승인**<br>
+AI와 함께 쓰되, 설정은 무너지지 않고 결정은 사람이 하는 장편 소설 창작 플랫폼
 
-## 목차
+<br>
 
+[![CI](https://github.com/samam0234/StoryForge_novelProject/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/samam0234/StoryForge_novelProject/actions/workflows/ci.yml)
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.158-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Status](https://img.shields.io/badge/status-in_development-E8A838)
+![License](https://img.shields.io/badge/license-proprietary-555)
+
+**[영상으로 보기](#영상으로-먼저-보기)** · **[화면 둘러보기](#화면-둘러보기)** · **[아키텍처](#아키텍처)** · **[기술 스택](#기술-스택)** · **[빠른 시작](#빠른-시작)** · **[문서](#문서-지도)**
+
+</div>
+
+<br>
+
+## 영상으로 먼저 보기
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/images/demo/tour.mp4"><img src="docs/images/demo/tour-poster.png" alt="투어 영상 보기. 누르면 MP4가 열립니다"></a>
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/images/demo/generate.gif" alt="챕터 생성. 본문이 스트리밍으로 흘러나오고 끝나면 Continuity 결과가 붙습니다">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><b>전체 투어</b> · 10개 화면을 33초에 (MP4, 3.3MB)</td>
+    <td align="center"><b>챕터 생성</b> · 쓰이는 대로 흘러나오고, 끝나면 검증 결과가 붙습니다 · <a href="docs/images/demo/generate.mp4">MP4</a></td>
+  </tr>
+</table>
+
+> [!NOTE]
+> 화면 속 작가, 작품, 문장은 소개를 위해 **직접 쓴 샘플 데이터**입니다. 실제 사용자와 무관하고, 언어 모델이 쓴 글도 아닙니다.
+> 챕터 생성 장면은 API 키 없이 동작하는 **mock 생성기**로 찍었습니다(화면에 "개발용 mock 생성기 출력" 표시가 보입니다). 실제 모델의 문장 품질을 보여 주는 영상이 아닙니다. 촬영 방법은 [docs/images/README.md](docs/images/README.md)에 있습니다.
+
+<details>
+<summary><b>목차</b></summary>
+
+- [영상으로 먼저 보기](#영상으로-먼저-보기)
 - [무엇을 해결하나](#무엇을-해결하나)
-- [창작 파이프라인](#창작-파이프라인)
+- [화면 둘러보기](#화면-둘러보기)
 - [주요 기능](#주요-기능)
 - [아키텍처](#아키텍처)
 - [기술 스택](#기술-스택)
@@ -33,10 +62,9 @@ StoryForge는 세계관(Story Bible) → 줄거리(Outline) → 챕터 순서로
 - [현재 구현 범위와 한계](#현재-구현-범위와-한계)
 - [저장소 구조](#저장소-구조)
 - [문서 지도](#문서-지도)
-- [작업 규칙](#작업-규칙)
-- [보안](#보안) · [라이선스](#라이선스)
+- [작업 규칙](#작업-규칙) · [보안](#보안) · [라이선스](#라이선스)
 
----
+</details>
 
 ## 무엇을 해결하나
 
@@ -48,16 +76,9 @@ StoryForge는 세계관(Story Bible) → 줄거리(Outline) → 챕터 순서로
 | **매번 다시 알려 준다** | 챕터를 생성할 때마다 Bible, 해당 장의 Outline, 승인된 이전 챕터의 요약을 컨텍스트로 넣습니다 |
 | **검증하고, 사람이 결정한다** | 생성 직후 Continuity 검사 결과를 보여 주고, 사용자가 승인해야 다음 챕터로 갑니다. **자동 승인은 없습니다** |
 
+<img src="docs/images/pipeline.png" alt="창작 파이프라인. Story Bible, Outline, 챕터 생성, Continuity 검증, 사용자 승인, 게시와 공유" width="100%">
+
 사람이 원고를 고치면 승인할 때 요약과 검증을 다시 만듭니다. 고친 내용과 어긋난 옛 요약이 다음 챕터로 넘어가지 않게 하기 위해서입니다.
-
-## 창작 파이프라인
-
-| 단계 | 하는 일 | AI | 사용자 |
-|------|---------|----|--------|
-| **Story Bible** | 세계관, 캐릭터, 테마, 톤 | 아이디어로 초안 생성 | 편집, 버전 비교, 확정 |
-| **Outline** | 챕터별 Beats, 등장 캐릭터, 연속성 포인트 | 챕터 수만큼 생성 | 드래그 앤 드롭 재배치, 편집, 확정 |
-| **챕터** | Bible + Outline + 이전 요약으로 순차 생성 | 스트리밍 생성, 요약, Continuity 검증 | 리포트 확인, 편집, 승인·재생성 |
-| **내보내기** | 승인된 챕터를 원고 파일로 | — | Markdown · TXT · DOCX · PDF · HTML · EPUB · ODT · RTF |
 
 프로젝트는 아래 상태를 순서대로 지납니다. 상태 전이는 백엔드의 한 곳([PipelineStateMachine](storyforge-backend/src/main/java/com/storyforge/service/orchestration/PipelineStateMachine.java))에서만 일어납니다.
 
@@ -77,6 +98,175 @@ stateDiagram-v2
 
 **Continuity 검사**는 네 가지를 봅니다: 설정 충돌, 캐릭터 일관성, 타임라인, 플롯 스레드. 점수는 100에서 시작해 심각도(high 30, medium 12, low 4)만큼 깎습니다. 심각한 이슈가 있어도 사용자가 확인하면 진행할 수 있습니다. 판단은 사람이 합니다. 기준은 [continuity-rules.md](docs/novel/continuity-rules.md), 전이 규칙과 실패 복귀는 [pipeline-state-machine.md](docs/Architecture/pipeline-state-machine.md)에 있습니다.
 
+---
+
+## 화면 둘러보기
+
+### ① 쓰기 전에 — 설정을 고정합니다
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/bible.png" alt="Story Bible의 인물 탭. 이름, 설명, 성격, 관계"></td>
+    <td width="50%"><img src="docs/images/screens/outline.png" alt="Outline. 챕터별 제목, Beats, 등장 인물, 목표, 연속성 포인트"></td>
+  </tr>
+  <tr>
+    <td><b>Story Bible</b> — 세계관, 테마, 톤, 인물을 정리하고 확정합니다. 버전 이력에서 이전 내용과 비교할 수 있습니다.</td>
+    <td><b>Outline</b> — 챕터마다 Beats, 등장 인물, 감정 목표, 지켜야 할 연속성 포인트를 적습니다. 드래그로 순서를 바꿉니다.</td>
+  </tr>
+</table>
+
+### ② 쓰는 동안 — 검증을 보고 사람이 승인합니다
+
+<img src="docs/images/screens/chapter.png" alt="챕터 작업 화면. 왼쪽 챕터 목록과 Outline, 가운데 본문, 오른쪽 장면 개척과 Continuity 검사, 인물" width="100%">
+
+| 영역 | 하는 일 |
+|------|---------|
+| **왼쪽** | 챕터 목록과 진행 상태, 이 장의 Outline(목표, Beats, 연속성 포인트), Bible 컨텍스트 |
+| **가운데** | 스트리밍으로 생성된 본문을 TipTap 에디터에서 바로 고칩니다. 이력에서 버전을 비교합니다 |
+| **오른쪽** | **Continuity 점수와 이슈.** 위 화면에서는 규칙 검사가 "Outline 인물의 전체 이름이 본문에 없다", "목표 분량보다 짧다"를 짚었습니다. 그 아래에 장면 개척과 인물 카드가 있습니다 |
+
+승인 버튼을 눌러야 다음 장이 열립니다. 고친 본문은 승인할 때 요약과 검증을 다시 합니다.
+
+### ③ 내 작업실
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/dashboard.png" alt="내 프로젝트. 진행 중, 완료, 게시 수와 단계별 프로젝트 목록"></td>
+    <td width="50%"><img src="docs/images/screens/activity.png" alt="작업 그래프. 수동과 에이전트의 작업 비율, 날짜별 막대, 작업 기록표"></td>
+  </tr>
+  <tr>
+    <td><b>내 프로젝트</b> — 프로젝트마다 지금 단계와 다음 할 일이 보입니다. 사람이 쓴 양과 에이전트가 쓴 양의 비율도 함께 나옵니다.</td>
+    <td><b>작업 그래프</b> — 날짜별로 누가(사람/에이전트) 얼마나 썼는지 막대로 보고, 막대를 누르면 그날의 작업만 표에 남습니다.</td>
+  </tr>
+</table>
+
+### ④ 함께 읽고, 이어 씁니다
+
+<img src="docs/images/screens/board.png" alt="롱품 게시판. 표지, 장르, 요약, 태그, 추천과 Clone 수가 있는 작품 카드" width="100%">
+
+완성한 작품을 게시하면 게시판에 올라갑니다. 프로젝트(비공개 작업실)와 작품(공개 스냅샷)은 분리되어 있어, 게시한 뒤 프로젝트를 고쳐도 게시본은 그대로입니다.
+
+<div align="center">
+  <img src="docs/images/demo/community.gif" alt="작품 화면의 탭. 읽기, 세계관, 작업 그래프, 공유 그래프, Clone 네트워크, 댓글" width="88%">
+  <br><sub>작품 하나에 읽기 · 세계관 · 작업 그래프 · 공유 그래프 · Clone 네트워크 · 댓글이 함께 있습니다</sub>
+</div>
+
+<br>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/work-share.png" alt="공유 그래프. 작가에서 채널로 이어지는 선과 방문 수 표"></td>
+    <td width="50%"><img src="docs/images/screens/work-network.png" alt="Clone 네트워크. 원작에서 파생작으로 이어지는 트리와 Clone 기록"></td>
+  </tr>
+  <tr>
+    <td><b>공유 그래프</b> — 누가 어디에 공유했고, 그 링크로 몇 명이 들어왔는지</td>
+    <td><b>Clone 네트워크</b> — 이 작품을 이어 쓴 파생작의 계보. 세계관·플롯·전체 원고 중 어디까지 가져갔는지</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/clone.png" alt="Clone 창. 세계관, 플롯, 전체 원고 중 범위 선택"></td>
+    <td width="50%"><img src="docs/images/screens/work-graph.png" alt="공개 작품의 작업 그래프"></td>
+  </tr>
+  <tr>
+    <td><b>Clone</b> — 범위를 골라 내 프로젝트로 가져옵니다. 원본은 바뀌지 않고, 원본 비교와 가져오기가 남습니다</td>
+    <td><b>공개 작업 그래프</b> — 게시하면 요약만 공개됩니다. 본문은 공개하지 않습니다</td>
+  </tr>
+</table>
+
+### ⑤ 여러 작품을 하나의 세계로 — 패키지포지
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/package.png" alt="패키지포지 편집. 독서 순서, 작품 추가, 전체 Continuity 검사 결과"></td>
+    <td width="50%"><img src="docs/images/screens/package-characters.png" alt="통합 인물 사전. 여러 작품에 나온 인물과 교차 등장 표시"></td>
+  </tr>
+  <tr>
+    <td><b>패키지 편집</b> — 작품을 유니버스·옴니버스·사가 등으로 묶고 독서 순서를 정합니다. <b>작품 사이의 Continuity 검사</b>가 같은 인물의 설명이 어긋난 곳을 짚습니다</td>
+    <td><b>통합 인물 사전</b> — 묶인 작품의 인물을 한곳에 모으고, 여러 작품에 나온 인물에는 "교차 등장"을 표시합니다</td>
+  </tr>
+</table>
+
+### ⑥ 커뮤니티
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/profile.png" alt="프로필. 활동 통계, 활동 잔디, 작품 목록"></td>
+    <td width="50%"><img src="docs/images/screens/issues.png" alt="이슈 게시판. 달성 축하와 최근 7일 인기작"></td>
+  </tr>
+  <tr>
+    <td><b>프로필</b> — 활동 잔디, 받은 추천과 Clone, 업적</td>
+    <td><b>이슈</b> — 조회·추천·Clone 달성 소식과 최근 7일 인기작</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/lounge.png" alt="창작하기. 시작 방식, 장르, 함께 창작, 창작 라운지 글 목록"></td>
+    <td width="50%"><img src="docs/images/screens/guide.png" alt="AI 가이드챗. /상태 명령에 다음 할 일과 이어서 작업 버튼으로 답함"></td>
+  </tr>
+  <tr>
+    <td><b>창작하기와 라운지</b> — 장편·단편·세계관 가져오기로 시작하고, 팁과 콜라보 모집 글을 나눕니다</td>
+    <td><b>AI 가이드챗</b> — <code>/상태</code>, <code>/챕터</code>, <code>/게시</code> 같은 명령어로 다음 할 일을 안내하고 그 화면으로 보냅니다</td>
+  </tr>
+</table>
+
+### ⑦ 어디서나, 밝게도
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/mobile.png" alt="휴대폰 화면. 게시판과 작품 읽기"></td>
+    <td width="50%"><img src="docs/images/screens/board-light.png" alt="라이트 테마의 게시판"></td>
+  </tr>
+  <tr>
+    <td><b>좁은 화면</b> — 390px 폭에서도 가로로 넘치지 않습니다 (수동 브라우저 점검 항목)</td>
+    <td><b>라이트 테마</b> — 다크가 기본이고 상단 버튼으로 바꿉니다. 선택은 브라우저에 저장됩니다</td>
+  </tr>
+</table>
+
+### ⑧ 운영 콘솔 — 운영자 전용 앱
+
+<div align="center">
+  <img src="docs/images/demo/console.gif" alt="운영 콘솔. 현황, 신고 목록, 일괄 조치, 회원, 감사 기록" width="88%">
+</div>
+
+<br>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/console-overview.png" alt="운영 현황. 회원, 프로젝트, 작품, 대기 신고 수와 파이프라인 분포"></td>
+    <td width="50%"><img src="docs/images/screens/console-reports.png" alt="신고 관리. 두 건을 골라 콘텐츠 숨김 조치와 사유 입력"></td>
+  </tr>
+  <tr>
+    <td><b>운영 현황</b> — 회원, 프로젝트, 작품, 대기 신고와 파이프라인 단계별 분포</td>
+    <td><b>신고 일괄 조치</b> — 여러 건을 골라 사유와 함께 처리합니다. <b>하나라도 실패하면 전체를 되돌립니다</b></td>
+  </tr>
+</table>
+
+사용자 웹과 따로 빌드·배포하는 독립 Angular 앱입니다. 서버는 모든 운영 API에서 관리자 권한을 다시 확인하고, 조치와 알림과 감사 기록을 한 트랜잭션으로 묶습니다. 자세한 내용은 [storyforge-console/README.md](storyforge-console/README.md)에 있습니다.
+
+<details>
+<summary><b>더 많은 화면</b> — 작품 읽기, 콘솔 로그인, 회원 관리, 감사 기록</summary>
+<br>
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/work.png" alt="작품 읽기. 제목, 줄거리, 통계, Clone·공유·내보내기 버튼과 챕터 본문"></td>
+    <td width="50%"><img src="docs/images/screens/console-login.png" alt="운영 콘솔 로그인"></td>
+  </tr>
+  <tr>
+    <td><b>작품 읽기</b> — 로그인 없이 읽을 수 있고, Clone·공유·내보내기(8종)를 고릅니다</td>
+    <td><b>콘솔 로그인</b> — 관리자로 지정된 기존 계정만 들어갑니다. 가입 화면은 없습니다</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/screens/console-users.png" alt="운영 콘솔 회원 관리. 검색, 정지 상태 필터, 정지와 해제"></td>
+    <td width="50%"><img src="docs/images/screens/console-audit.png" alt="운영 콘솔 감사 기록. 누가 언제 어떤 조치를 했는지"></td>
+  </tr>
+  <tr>
+    <td><b>회원 관리</b> — 이름·이메일 검색, 정지 상태 필터, 사유를 남기는 정지·해제</td>
+    <td><b>감사 기록</b> — 모든 운영 조치가 조치와 같은 트랜잭션에 남습니다. 수정·삭제 API는 없습니다</td>
+  </tr>
+</table>
+
+</details>
+
+---
+
 ## 주요 기능
 
 ### 창작
@@ -94,7 +284,7 @@ stateDiagram-v2
 
 ### 커뮤니티
 
-완성한 작품은 게시판에 올립니다. 프로젝트(비공개 작업실)와 작품(공개 스냅샷)은 분리되어 있어, 게시한 뒤 프로젝트를 고쳐도 게시본은 그대로입니다. 스펙은 [community.md](docs/plan/community.md)에 있습니다.
+스펙은 [community.md](docs/plan/community.md)에 있습니다.
 
 | 기능 | 내용 |
 |------|------|
@@ -118,18 +308,7 @@ stateDiagram-v2
 
 ## 아키텍처
 
-![호출 구조. Angular는 Spring Boot만 보고, 챕터는 SSE, 가이드와 장면 개척은 웹소켓](docs/images/architecture.png)
-
-```mermaid
-flowchart LR
-    U[브라우저] --> W[사용자 웹<br/>Angular · 4200]
-    O[운영자] --> C[운영 콘솔<br/>Angular · 4201]
-    W -- "REST · SSE · WebSocket" --> B[Spring Boot<br/>8080]
-    C -- REST --> B
-    B -- "내부 HTTP · SSE · WebSocket" --> A[FastAPI<br/>8001 · 내부 전용]
-    B --> D[(PostgreSQL 16<br/>5433)]
-    A --> L[언어 모델<br/>mock · Ollama · Claude]
-```
+<img src="docs/images/architecture-logos.png" alt="아키텍처. 사용자 웹과 운영 콘솔은 Spring Boot만 호출하고, Spring Boot가 PostgreSQL과 내부망의 FastAPI를 부르며, FastAPI가 언어 모델을 호출합니다" width="100%">
 
 | 서비스 | 맡는 일 | 맡지 않는 일 |
 |--------|---------|--------------|
@@ -158,6 +337,8 @@ flowchart LR
 
 ## 기술 스택
 
+<img src="docs/images/stack.png" alt="기술 스택. 화면 Angular·TypeScript·RxJS·Material·Vitest, 오케스트레이션 Spring Boot·Java·Flyway·Maven·JUnit, AI FastAPI·Python·Pydantic·Jinja2·Ollama·Claude, 데이터와 운영 PostgreSQL·Docker·GitHub Actions·Node.js" width="100%">
+
 | 영역 | 기술 |
 |------|------|
 | 사용자 웹 | Angular 21.2 (standalone, signals, zoneless), Angular Material, TipTap 3, RxJS 7.8, TypeScript 5.9, Vitest |
@@ -169,36 +350,7 @@ flowchart LR
 
 버전과 포트의 기준값은 [CURRENT_STACK.md](docs/plan/CURRENT_STACK.md)입니다. 바꿀 때는 그 문서를 먼저 고칩니다.
 
-![네 프레임워크. Angular, Spring Boot, FastAPI, PostgreSQL](docs/images/frameworks.png)
-
-<details>
-<summary><b>계층별 소개 이미지 펼치기</b></summary>
-
-### 화면 — Angular 21
-
-![Angular 21. Material, TipTap, RxJS. 챕터는 SSE이고 가이드와 장면 개척은 웹소켓](docs/images/framework-angular.png)
-
-로그인, 에디터, 커뮤니티 화면을 담당합니다. 챕터 본문은 SSE로 받고, 가이드 질문과 장면 개척만 `/api/v1/ws`로 보냅니다.
-
-### 오케스트레이션 — Spring Boot 4.1
-
-![Spring Boot 4.1. JWT, JPA, Flyway. 브라우저가 연결된 동안 AI 소켓을 유지](docs/images/framework-spring.png)
-
-인증, 프로젝트 상태 머신, 저장, AI 중계를 맡습니다. 브라우저 소켓이 열려 있는 동안 FastAPI 소켓도 하나 유지합니다.
-
-### 생성 — FastAPI
-
-![FastAPI. Pydantic, Jinja2. 프롬프트, Continuity, 장면 개척, 개연 회귀](docs/images/framework-fastapi.png)
-
-프롬프트를 조립하고 LLM 스트림과 Continuity를 수행합니다. 직전 장면과 첫머리가 끊기면 로지스틱 회귀가 `plot_thread` 이슈를 추가합니다.
-
-### 데이터 — PostgreSQL 16
-
-![PostgreSQL 16. Flyway 스키마와 원고 저장. 이름 벡터는 ChromaDB, 가중치는 JSON](docs/images/framework-postgres.png)
-
-원고와 계정, 커뮤니티 데이터를 둡니다. 이름 벡터는 AI 프로세스의 ChromaDB에, 장면 연결 가중치는 JSON 파일에 있습니다. 둘 다 챕터를 자동 승인하지 않습니다.
-
-</details>
+로고는 [Simple Icons](https://simpleicons.org/)(CC0)의 SVG이며 각 상표는 소유자에게 있습니다. 위치와 출처는 [docs/images/README.md](docs/images/README.md)에 있습니다.
 
 ---
 
@@ -384,6 +536,7 @@ StoryForge/
 ├── storyforge-backend/         # 오케스트레이터 (Spring Boot)
 ├── storyforge-ai/              # AI 서비스 (FastAPI)
 ├── docs/                       # 스펙, 아키텍처, 가이드, 검증, 커밋 기록
+│   ├── images/                 # README의 화면, GIF, 영상, 로고, 다이어그램
 │   └── plan/Proposal/          # 기획 원본, 제3자 라이선스 고지
 ├── docker-compose.yml          # 개발용 PostgreSQL
 ├── docker-compose.deploy.yml   # 배포용 전체 구성
@@ -413,6 +566,7 @@ README는 서비스 루트와 핵심 폴더에만 둡니다. 그 밖의 폴더 �
 | 버전과 포트, 환경 변수 | [CURRENT_STACK.md](docs/plan/CURRENT_STACK.md) |
 | 무엇이 검증됐나 | [검증 기록](docs/vaildates/README.md), [진행 현황](docs/plan/roadmap-progress.md) |
 | 문제가 생겼을 때 | [디버그 일지](docs/find_debug/README.md), [재발 이슈](docs/repeater/README.md) |
+| README의 이미지와 영상 | [docs/images/README.md](docs/images/README.md) — 무엇을 어떻게 찍었고 다시 만드는 법 |
 | 문서 전체 안내 | [docs/README.md](docs/README.md) |
 
 ## 작업 규칙

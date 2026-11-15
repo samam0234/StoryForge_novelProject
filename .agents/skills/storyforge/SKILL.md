@@ -185,6 +185,7 @@ app/
 | `web_management/` | 배포 전/중/후 문서와 포트 인벤토리. |
 | `trainings/` | 설계 판단과 연구 노트. "왜 그렇게 정했는지"만 작성. 코드, 프롬프트 원문, 실유저 데이터, 생성 소설 원문은 넣지 않습니다. |
 | `novel/` | 세계관 템플릿, 프롬프트 가이드, Continuity 규칙 등 창작 관련 문서. |
+| `images/` | 루트 README가 쓰는 화면 캡처, GIF, 영상, 로고, 다이어그램. `storyforge-frontend/scripts/readme-assets/`로 다시 만듭니다. 실제 사용자 데이터와 시크릿은 찍지 않습니다. |
 
 ### docs에서 하지 말 것
 

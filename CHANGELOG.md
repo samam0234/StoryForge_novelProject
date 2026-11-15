@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+### 2026-11-16
+
+#### README 소개 자료
+
+- 루트 README를 화면 중심으로 다시 구성: 히어로 배너, 투어 영상(MP4)과 챕터 생성 GIF, 8개 묶음의 화면 둘러보기, 로고가 들어간 아키텍처·기술 스택·파이프라인 그림
+- 실제 앱 화면 24장, GIF 3개(챕터 생성, 작품 탭, 운영 콘솔), 영상 2개, 로고 타일 20개, 소셜 미리보기 이미지 추가 (`docs/images/`)
+- 자료를 다시 만드는 도구 `storyforge-frontend/scripts/readme-assets/` 추가: 별도 데모 DB에 직접 쓴 샘플 데이터를 채우고 Chrome으로 촬영, ffmpeg로 GIF·MP4 인코딩
+- 쓰이지 않게 된 옛 소개 이미지 6장(`architecture.png`, `frameworks.png`, `framework-*.png`) 삭제
+- 화면 속 작품과 문장은 샘플이고 생성 장면은 mock 생성기로 찍었음을 README와 `docs/images/README.md`에 명시
+
 ### 2026-11-15
 
 #### 문서

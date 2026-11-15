@@ -157,7 +157,7 @@ storyforge-frontend/
 ├── angular.json           # 빌드 설정 (proxyConfig, budgets)
 ├── Dockerfile, nginx.conf # 배포 이미지 (정적 파일 + /api 프록시)
 ├── public/                # 그대로 복사되는 파일
-├── scripts/               # 수동 브라우저 점검 (browser-check.mjs)
+├── scripts/               # 수동 브라우저 점검(browser-check.mjs), README 소개 자료 도구(readme-assets/)
 └── src/
     ├── environments/      # apiBaseUrl
     ├── styles/            # 디자인 토큰, Material 테마
@@ -221,6 +221,10 @@ node scripts/browser-check.mjs               # HEADED=1 이면 창을 띄웁니�
 | 페이지 오류와 콘솔 오류 없음 | 전체 실행 동안 수집 |
 
 확인하지 **않는** 것: 메일 인증·재설정 화면, 콘솔의 신고 일괄 조치, 화면에서 누르는 챕터 생성(스트리밍), Clone, 패키지포지 흐름, 내보낸 파일 열기. 환경 변수는 `WEB`, `CONSOLE`, `API`, `ADMIN_EMAIL`입니다. 결과는 [검증 기록](../docs/vaildates/browser-check-2026-11-15.md)에 있습니다.
+
+## README 소개 자료 (수동)
+
+루트 README의 화면 캡처, GIF, 투어 영상, 배너, 로고는 [scripts/readme-assets/](scripts/readme-assets/)로 만듭니다. 별도의 데모 DB에 샘플 데이터를 채운 뒤 실제 앱을 Chrome으로 찍습니다. 절차와 촬영 조건(샘플 데이터, mock 생성기)은 [docs/images/README.md](../docs/images/README.md)에 있습니다. 자동 테스트나 CI가 아닙니다.
 
 ## 배포 빌드
 
