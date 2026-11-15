@@ -47,7 +47,7 @@ StoryForge의 기획, 스펙, 구조, 실행 방법, 검증 기록, 문제 해�
 | [web_management/](web_management/README.md) | 어디에 떠 있는가 | 배포 전·중·후 기록, 포트 인벤토리 | 배포 환경을 다룰 때 |
 | [novel/](novel/README.md) | 좋은 소설의 규칙은 무엇인가 | 세계관 템플릿, 프롬프트 가이드, Continuity 규칙 | 창작 파이프라인 규칙을 정리할 때 |
 | [branchs/](branchs/README.md) | 언제 무엇을 커밋했는가 | 브랜치 목록, 커밋 기록 | 브랜치가 바뀔 때, 기록이 필요할 때 |
-| [images/](images/) | — | 루트 README가 쓰는 구조·프레임워크 소개 이미지(PNG) | 소개 그림을 바꿀 때 |
+| [images/](images/README.md) | README는 어떻게 보이는가 | 루트 README의 화면 캡처, GIF, 투어 영상, 로고, 배너, 다이어그램과 다시 만드는 법 | 화면이 바뀌어 캡처가 낡았을 때 |
 
 > `vaildates/`의 스펠링은 의도적입니다. 교정하지 않습니다.
 
