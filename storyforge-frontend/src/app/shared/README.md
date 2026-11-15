@@ -15,6 +15,8 @@
 | `clone-network/` | 원작 → 파생작 트리와 Clone 기록 |
 | `package-map/` | 패키지 작품 연결 지도 |
 | `contribution-heatmap/` | 활동 잔디 |
+| `review-diff/` | 작업 앞뒤를 코드 리뷰처럼 표시. 삭제·추가·맞바뀐 구간을 색과 범례로 구분 |
+| `image-drop/` | 표지 이미지를 파일 선택·끌어다 놓기·붙여넣기로 올림 |
 | `version-history/` | 두 버전을 골라 단어 단위 Diff로 비교하고, 선택한 버전을 편집기로 불러오는 다이얼로그 |
 
 ## 규칙

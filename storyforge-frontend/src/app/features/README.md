@@ -5,6 +5,7 @@
 | 폴더 | 파일 | 화면 (경로) | 기획서 |
 |------|------|-------------|--------|
 | `auth/` | `login.page.ts` | 로그인·가입 (`/login`) | §7.1 |
+| | `account-mail.page.ts` | 메일 링크로 들어오는 이메일 인증·비밀번호 재설정 (`/account-mail`) | |
 | `dashboard/` | `dashboard.page.ts` | 내 프로젝트: 다음 할 일, 상태 필터, 진행률, 수동·에이전트 비율, 게시·Clone 표시 (`/`) | §9.6-1 |
 | `projects/` | `project-shell.page.ts` | 프로젝트 상단(제목, 파이프라인 단계, 내보내기)과 Bible/Outline/챕터/설정 탭 (`/projects/:id`) | §9.1 |
 | | `project-context.ts` | 프로젝트·상태 신호를 하위 화면과 공유 | |

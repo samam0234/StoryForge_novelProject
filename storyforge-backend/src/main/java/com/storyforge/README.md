@@ -17,7 +17,9 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 
 | 파일 | 내용 |
 |------|------|
-| `AuthController` | `/auth/register`, `/auth/login`, `/auth/me` |
+| `AuthController` | `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me` |
+| `AccountMailController` | 이메일 인증, 비밀번호 재설정 (`/auth/mail/*`) |
+| `MediaController` | 표지 이미지. 읽기는 공개, 올리기는 로그인 사용자만 |
 | `ProjectController` | 프로젝트 CRUD, 설정, 상태, 내보내기 |
 | `BibleController` | Bible 조회·저장·생성·확정, 버전 이력 |
 | `OutlineController` | Outline 조회·저장·생성·확정 |
@@ -44,7 +46,7 @@ controller → service(orchestration, project, bible, chapter, auth) → domain(
 | `project/` | `ProjectService`, `OutlineService`, `ExportService`, `CollaborationService` | 프로젝트·Outline, 내보내기, 함께 창작. `ManuscriptBlocks`가 Markdown을 블록으로 바꾸고 `ManuscriptDocxWriter`·`ManuscriptPdfWriter`·`ManuscriptWriters`(TXT, HTML, RTF, EPUB, ODT)가 파일을 만듦 |
 | `bible/` | `BibleService` | Bible 전체 교체 저장, 버전 증가, 이력 |
 | `chapter/` | `ChapterService` | 챕터 Draft·리포트 저장, 수정, 재검증 결과 반영, Clone·원본 가져오기, 이력 |
-| `auth/` | `AuthService`, `TokenService`, `CurrentUser`, `AccountPolicy` | 가입·로그인, HS256 토큰 발급, 요청 스레드의 사용자, 관리자·약관 판별 |
+| `auth/` | `AuthService`, `TokenService`, `RefreshTokenService`, `AccountMailService`, `CurrentUser`, `AccountPolicy` | 가입·로그인, HS256 토큰 발급, 갱신 토큰(해시만 저장, 한 번 쓰면 폐기 후 재발급), 계정 메일 토큰, 요청 스레드의 사용자, 관리자·약관 판별 |
 
 기획서 §8.2에는 `service/outline`과 `service/auth`가 없어, Outline은 `project/`에 두고 `auth/`는 인증 구현을 위해 추가했습니다 ([auth.md](../../../../../../docs/plan/auth.md)).
 
