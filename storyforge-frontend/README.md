@@ -7,7 +7,7 @@ StoryForge의 **사용자 웹**입니다. 소설을 쓰는 화면(내 프로젝�
 | **기술** | Angular 21.2 (standalone 컴포넌트, signals, zoneless), Angular Material, TipTap 3, RxJS 7.8, TypeScript 5.9 |
 | **주소** | 개발 http://localhost:4200 |
 | **호출 대상** | Spring Boot(`/api/v1`)만. FastAPI는 호출하지 않습니다 |
-| **테스트** | Vitest 54건 + 프로덕션 빌드 |
+| **테스트** | Vitest 56건(화면 스모크 포함) + 프로덕션 빌드 + 수동 브라우저 점검 |
 | **운영자 화면** | 별도 앱 [storyforge-console](../storyforge-console/README.md) |
 
 이 앱은 **보여 주고 요청만 합니다.** 프로젝트가 어느 단계인지, 다음에 무엇을 할 수 있는지는 백엔드가 알려 준 상태를 그대로 따릅니다. LLM 호출, Continuity 판단, 상태 전이는 여기에 없습니다.
@@ -65,7 +65,8 @@ npx ng serve          # 또는 npm start
 | 다른 포트로 실행 | `npx ng serve --port 4300` | 백엔드 `FRONTEND_ORIGIN`도 맞춰야 합니다 |
 | 프로덕션 빌드 | `npx ng build` | `dist/storyforge-frontend/browser/` |
 | 빌드 감시 | `npm run watch` | 변경 시 개발 빌드 |
-| 단위 테스트 | `npx ng test --watch=false` | Vitest 54건 |
+| 단위 테스트 | `npx ng test --watch=false` | Vitest 56건 |
+| 브라우저 점검 | `node scripts/browser-check.mjs` | [수동](#브라우저-점검-수동). 전체 스택 필요 |
 
 ### 백엔드 주소를 바꾸려면
 
@@ -156,6 +157,7 @@ storyforge-frontend/
 ├── angular.json           # 빌드 설정 (proxyConfig, budgets)
 ├── Dockerfile, nginx.conf # 배포 이미지 (정적 파일 + /api 프록시)
 ├── public/                # 그대로 복사되는 파일
+├── scripts/               # 수동 브라우저 점검 (browser-check.mjs)
 └── src/
     ├── environments/      # apiBaseUrl
     ├── styles/            # 디자인 토큰, Material 테마
@@ -186,15 +188,39 @@ storyforge-frontend/
 ## 테스트
 
 ```bash
-npx ng test --watch=false     # Vitest 54건
+npx ng test --watch=false     # Vitest 56건
 npx ng build                  # 반드시 함께 확인
 ```
 
 | 다루는 것 | 다루지 않는 것 |
 |-----------|----------------|
-| SSE 파서, 인증·세션·가드, 메일 복구 화면, 공통 컴포넌트, 그래프, 가이드챗, 알림 | 대부분의 화면 템플릿, 실제 브라우저 동작 |
+| SSE 파서, 인증·세션·가드, 메일 복구 화면, 공통 컴포넌트, 그래프, 가이드챗, 알림. **모든 라우트의 화면이 템플릿 오류 없이 만들어지는지**(`routes.smoke.spec.ts`) | 화면의 동작, 실제 브라우저 |
 
-**단위 테스트만으로 끝내지 않습니다.** 테스트 빌드는 spec이 가져오는 파일만 컴파일합니다. 어떤 spec도 가져오지 않는 화면은 템플릿이 깨져도 테스트가 통과합니다. 실제로 그렇게 빌드가 깨진 채 `main`까지 올라간 적이 있어([2026-11-04 일지](../docs/find_debug/2026-11-04.md)), `ng build`를 필수 확인으로 두고 CI에서도 돌립니다.
+**`ng build`를 빼먹지 않습니다.** 테스트 빌드는 spec이 가져오는 파일만 컴파일하므로, 어떤 spec도 가져오지 않는 화면은 템플릿이 깨져도 테스트가 통과했습니다. 실제로 그렇게 빌드가 깨진 채 `main`까지 올라간 적이 있어([2026-11-04 일지](../docs/find_debug/2026-11-04.md)) 두 가지를 더했습니다. ① `routes.smoke.spec.ts`가 라우트에 연결된 모든 화면을 실제로 만들어 보므로 같은 오류가 `ng test`에서도 실패합니다 (일부러 남는 `</div>`를 넣어 `NG5002`로 실패하는 것을 확인했습니다). ② `ng build`를 필수 확인으로 두고 CI에서도 돌립니다. 스모크 테스트는 화면이 **그려지는지**만 봅니다. 동작은 검증하지 않습니다.
+
+## 브라우저 점검 (수동)
+
+실제 Chrome으로 주요 화면을 확인하는 도구입니다. 자동 테스트가 아니고 **CI에 들어가지 않습니다.** 전체 스택이 떠 있어야 하고 새 계정과 작품을 만들기 때문입니다. 로컬 개발 DB에서만 실행하세요.
+
+```bash
+# 백엔드를 점검용 관리자 이메일로 실행해 둡니다 (콘솔 로그인 확인용)
+ADMIN_EMAILS=browser-admin@example.com ./mvnw spring-boot:run     # storyforge-backend
+
+cd storyforge-frontend
+npm install --no-save playwright-core        # package.json에는 넣지 않습니다
+node scripts/browser-check.mjs               # HEADED=1 이면 창을 띄웁니다
+```
+
+| 확인하는 것 | 방법 |
+|-------------|------|
+| 가입(약관 미동의 시 버튼 비활성, 동의 후 이동) | 화면 조작 |
+| 프로젝트 목록, Bible·Outline·챕터·작업 기록·게시·설정 화면, 챕터 제목 | API로 준비한 뒤 화면 확인 |
+| 로그아웃 상태: 게시판·작품 읽기, 응답에 이메일 없음, 보호된 화면은 로그인으로 | 별도 브라우저 |
+| 좁은 화면(390px)에서 가로 넘침 없음 | 화면 폭 지정 |
+| 운영 콘솔: 일반 계정 거부, 관리자 로그인, 현황·신고·회원·감사 화면 | 화면 조작 |
+| 페이지 오류와 콘솔 오류 없음 | 전체 실행 동안 수집 |
+
+확인하지 **않는** 것: 메일 인증·재설정 화면, 콘솔의 신고 일괄 조치, 화면에서 누르는 챕터 생성(스트리밍), Clone, 패키지포지 흐름, 내보낸 파일 열기. 환경 변수는 `WEB`, `CONSOLE`, `API`, `ADMIN_EMAIL`입니다. 결과는 [검증 기록](../docs/vaildates/browser-check-2026-11-15.md)에 있습니다.
 
 ## 배포 빌드
 
@@ -228,7 +254,7 @@ npx ng build                  # 반드시 함께 확인
 
 ## 한계
 
-- 2026-11-10 이후 추가한 화면(메일 인증·재설정 등)은 실제 브라우저에서 확인하지 못했습니다. 자동 테스트와 빌드는 통과했습니다.
+- 메일 인증·재설정 화면은 실제 브라우저에서 확인하지 못했습니다. 주요 화면은 2026-11-15 수동 점검으로 확인했지만 위 "확인하지 않는 것"은 남아 있습니다.
 - 알림은 실시간이 아니라 1분마다 확인합니다.
 - 캐릭터 상태 자동 갱신은 Phase 2 항목이라 없습니다.
 - 이용약관 문구는 법률 검토 전 초안입니다.

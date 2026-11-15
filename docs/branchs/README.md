@@ -44,6 +44,23 @@
 
 | 일시 | 커밋 ID | 커밋 이름 | 브랜치 | 기록 |
 |------|---------|-----------|--------|------|
+| 2026-11-15 13:57 | `9a64cb7` | docs(agents): 어댑터 27개에 ng build 확인과 scripts 배치 규칙을 정본과 맞춤 | `feature/auth` | [기록](commits/261115_1357_9a64cb7_adapters-sync_feature-auth.md) |
+| 2026-11-15 13:57 | `3cbdfa6` | test(web): 모든 라우트 화면을 만들어 보는 스모크 테스트 추가 | `feature/auth` | [기록](commits/261115_1357_3cbdfa6_route-smoke-test_feature-auth.md) |
+| 2026-11-15 13:57 | `5d30889` | test(web): 수동 브라우저 점검 도구 추가 | `feature/auth` | [기록](commits/261115_1357_5d30889_browser-check-tool_feature-auth.md) |
+| 2026-11-15 13:57 | `d005753` | docs(docs): 스모크 테스트와 브라우저 점검 결과, 확인하지 않은 범위를 문서에 반영 | `feature/auth` | [기록](commits/261115_1357_d005753_docs-browser-check_feature-auth.md) |
+| 2026-11-15 13:48 | `00d01b0` | merge: develop into main (no-ff) | `main` | [기록](commits/261115_1348_00d01b0_merge-docs-overhaul-main_main.md) |
+| 2026-11-15 13:46 | `a405c3f` | docs(docs): 확정 스택의 누적 문단을 절로 정리하고 시스템 개요 제목 구조 수정 | `feature/auth` | [기록](commits/261115_1346_a405c3f_docs-current-stack_feature-auth.md) |
+| 2026-11-15 13:46 | `b648a22` | docs(docs): 하위 README에 빠진 파일과 현재 테스트 수 반영 | `feature/auth` | [기록](commits/261115_1346_b648a22_docs-sub-readmes_feature-auth.md) |
+| 2026-11-15 13:46 | `95d0003` | docs(docs): 2026-11-15 검증 기록과 진행 현황, 변경 내역 갱신 | `feature/auth` | [기록](commits/261115_1346_95d0003_docs-validation-log_feature-auth.md) |
+| 2026-11-15 13:46 | `fa98aa0` | merge: feature/auth into develop (no-ff) | `develop` | [기록](commits/261115_1346_fa98aa0_merge-docs-overhaul_develop.md) |
+| 2026-11-15 13:42 | `251549a` | docs(web): 사용자 웹 README에 화면 지도와 통신·세션 구조 추가 | `feature/auth` | [기록](commits/261115_1342_251549a_docs-web-readme_feature-auth.md) |
+| 2026-11-15 13:42 | `d7e23a7` | docs(console): 운영 콘솔 README에 권한 확인과 조치 처리 방식 추가 | `feature/auth` | [기록](commits/261115_1342_d7e23a7_docs-console-readme_feature-auth.md) |
+| 2026-11-15 13:42 | `4e634af` | docs(api): 백엔드 README에 요청 흐름과 환경 변수 전체, 운영 프로필 추가 | `feature/auth` | [기록](commits/261115_1342_4e634af_docs-backend-readme_feature-auth.md) |
+| 2026-11-15 13:42 | `fc299cf` | docs(ai): AI 서비스 README에 공급자 라우팅과 생성·검증 과정 추가 | `feature/auth` | [기록](commits/261115_1342_fc299cf_docs-ai-readme_feature-auth.md) |
+| 2026-11-15 13:41 | `efffda7` | docs(docs): 루트와 문서 진입점 README를 소개 중심으로 전면 개편 | `feature/auth` | [기록](commits/261115_1341_efffda7_docs-root-readme_feature-auth.md) |
+| 2026-11-04 23:45 | `bb230af` | merge: develop into main (no-ff) | `main` | [기록](commits/261104_2345_bb230af_merge-ci-main_main.md) |
+| 2026-11-04 23:44 | `a174dc3` | merge: feature/auth into develop (no-ff) | `develop` | [기록](commits/261104_2344_a174dc3_merge-ci_develop.md) |
+| 2026-11-04 23:43 | `992ddc7` | ci(docs): GitHub Actions로 세 서비스의 테스트와 ng build 실행 | `feature/auth` | [기록](commits/261104_2343_992ddc7_ci-workflow_feature-auth.md) |
 | 2026-11-04 20:55 | `377d6fe` | fix(api): VS Code Java 경고 정리 | `feature/auth` | [기록](commits/261104_2055_377d6fe_java-warnings_feature-auth.md) |
 | 2026-11-04 20:52 | `0770835` | docs(docs): 재검증, 신고·관리, 패키지 검사를 반영해 문서 전체 갱신 | `feature/auth` | [기록](commits/261104_2052_0770835_docs-overhaul_feature-auth.md) |
 | 2026-11-04 20:44 | `dad7fd2` | feat(web): 알림, 신고, 관리자, 이용약관, 차단, 패키지 검사, 원본 가져오기 화면 추가 | `feature/auth` | [기록](commits/261104_2044_dad7fd2_moderation-web_feature-auth.md) |
