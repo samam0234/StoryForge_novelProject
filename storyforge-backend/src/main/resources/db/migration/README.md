@@ -19,6 +19,8 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 | `V11__operations_console.sql` | 운영 조치 잠금, 감사 기록, 안정적인 페이지 조회 인덱스 |
 | `V12__account_mail_tokens.sql` | 이메일 인증, 일회용 메일 토큰 해시, 자격 증명 버전과 계정 낙관적 잠금 |
 | `V13__chapter_optimistic_lock.sql` | 챕터 낙관적 잠금. 재검증 중 바뀐 원고에 이전 결과 적용 방지 |
+| `V14__project_creative_brief.sql` | 프로젝트의 최초 창작 프롬프트 `creative_brief`(nullable text). 기존 프로젝트는 빈 값으로 두고 다음 성공한 Bible 생성부터 저장 |
+| `V15__refresh_and_rate_limit.sql` | 갱신 토큰(해시만 저장), 여러 서버가 함께 쓰는 1분 요청 제한 창 |
 
 ## 들어갈 것
 
@@ -35,4 +37,3 @@ PostgreSQL 스키마를 관리하는 **Flyway 마이그레이션 SQL**을 둡니
 ## 관련 문서
 
 - [기획서 §8.2, §10, §12](../../../../../../docs/plan/Proposal/StoryForge_기획서_v1.2.md)
-V14는 프로젝트의 최초 창작 프롬프트 `creative_brief`를 nullable text로 추가합니다. 기존 프로젝트는 빈 값으로 유지하고 다음 성공한 Bible 생성부터 저장합니다.
