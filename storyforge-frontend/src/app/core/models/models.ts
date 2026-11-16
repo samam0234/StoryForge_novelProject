@@ -143,6 +143,9 @@ export interface Outline {
 }
 
 export interface ContinuityIssue {
+  evidence?: string | null;
+  reference?: string | null;
+  suggestion?: string | null;
   type: string;
   description: string;
   severity: 'low' | 'medium' | 'high' | string;
