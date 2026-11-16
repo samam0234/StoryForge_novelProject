@@ -103,6 +103,9 @@ class ContinuityIssue(Schema):
     type: IssueType
     description: str
     severity: Severity
+    evidence: str | None = None
+    reference: str | None = None
+    suggestion: str | None = None
 
 
 class ContinuityIssues(Schema):

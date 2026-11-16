@@ -25,6 +25,15 @@ _PENALTY = {"high": 30, "medium": 12, "low": 4}
 _MIN_LENGTH = 4000
 
 
+def verified_evidence(issues: list[ContinuityIssue], content: str) -> list[ContinuityIssue]:
+    """모델이 만들어 낸 인용문은 실제 본문 근거로 표시하지 않습니다."""
+    return [
+        issue.model_copy(update={"evidence": None})
+        if issue.evidence and issue.evidence not in content else issue
+        for issue in issues
+    ]
+
+
 def rule_checks(ctx: ChapterContext, content: str) -> list[ContinuityIssue]:
     issues: list[ContinuityIssue] = []
     for name in ctx.outline_chapter.characters:
@@ -123,5 +132,5 @@ async def check_continuity(llm: LLMClient, ctx: ChapterContext, content: str) ->
             schema=ContinuityIssues,
             model=ctx.project.model,
         )
-        issues.extend(found.issues)
+        issues.extend(verified_evidence(found.issues, content))
     return ContinuityResult(issues=issues, score=score(issues))

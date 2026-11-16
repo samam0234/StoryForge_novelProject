@@ -193,6 +193,15 @@ import { LlmNoticeComponent } from '../guide/llm-notice.component';
                   <span class="sev">{{ i.severity }}</span>
                   <span class="type">{{ i.type }}</span>
                   <p>{{ i.description }}</p>
+                  @if (i.evidence) {
+                    <blockquote>{{ i.evidence }}</blockquote>
+                  }
+                  @if (i.reference) {
+                    <p><strong>비교 근거</strong> {{ i.reference }}</p>
+                  }
+                  @if (i.suggestion) {
+                    <p><strong>수정 제안</strong> {{ i.suggestion }}</p>
+                  }
                 </li>
               }
             </ul>

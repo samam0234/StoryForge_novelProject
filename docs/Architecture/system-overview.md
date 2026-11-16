@@ -192,6 +192,8 @@ V13은 챕터의 내부 낙관적 잠금 버전을 추가합니다. 승인 요�
 API는 의존성 주입으로 작업 조정기를 받고 개별 서비스는 상위 계층을 역참조하지 않습니다. 수동 파이프라인·반복 검증도 같은 작업 조정기를 사용합니다. 데이터 폴더에는 실행 조정 코드를 추가하지 않습니다. Spring Boot의 상태 머신·DB 저장·사용자 검토 단계와 기존 HTTP·SSE 계약은 유지합니다.
 
 ## 관련 문서
+검증 리포트는 선택 필드 `evidence`(본문 인용), `reference`(비교 근거), `suggestion`(수정 제안)을 FastAPI에서 Spring Boot의 리포트 JSON 저장·조회와 Angular 화면까지 전달합니다. 생성과 수정 후 재검증에 모두 적용합니다. 본문에 정확히 포함되지 않은 인용은 FastAPI에서 제거합니다. 기존 필드만 저장된 리포트도 읽을 수 있습니다. 비교 근거와 수정 제안은 사용자 검토 대상입니다.
+
 
 - [pipeline-state-machine.md](pipeline-state-machine.md) — 상태와 전이 규칙
 - [operations-console.md](operations-console.md) — 운영 조치의 잠금, Ollama 연결과 동시성

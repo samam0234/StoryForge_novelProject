@@ -4,7 +4,7 @@ from app.core.ollama import LLMError
 from app.models.orchestration import chapter_prompt_context
 from app.models.schemas import ChapterAnalysis, ChapterContext, ChapterReviewResult, ContinuityResult
 from app.prompts.orchestration import render
-from app.services.continuity_checker import rule_checks, score
+from app.services.continuity_checker import rule_checks, score, verified_evidence
 
 
 async def analyze(llm: LLMClient, context: ChapterContext, content: str) -> ChapterReviewResult:
@@ -17,5 +17,5 @@ async def analyze(llm: LLMClient, context: ChapterContext, content: str) -> Chap
     summary = result.summary.strip()
     if not summary:
         raise LLMError("챕터 요약이 비어 있어 생성 결과를 완료할 수 없습니다.")
-    issues = rule_checks(context, content) + result.issues
+    issues = rule_checks(context, content) + verified_evidence(result.issues, content)
     return ChapterReviewResult(summary=summary, report=ContinuityResult(issues=issues, score=score(issues)))
